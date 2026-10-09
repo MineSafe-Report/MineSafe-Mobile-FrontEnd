@@ -9,4 +9,9 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="worker_id_required">Enter your Worker ID</string>
+    <string name="password_required">Enter your password</string>
+    <string name="login_success">Signed in as %1$s (%2$s).</string>
+    <string name="login_api_base_url" translatable="false" />
+    <string name="local_network_permission_required">Allow local network access to use the test login API.</string>
 </resources>
