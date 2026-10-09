@@ -43,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText workerIdInput;
     private EditText passwordInput;
     private Button loginButton;
+    private Button continueOfflineButton;
     private ProgressBar loginProgress;
     private TextView loginError;
     private LoginRepository loginRepository;
@@ -62,13 +63,14 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput = findViewById(R.id.workerIdInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
+        continueOfflineButton = findViewById(R.id.continueOfflineButton);
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
 
         String baseUrl = getString(R.string.login_api_base_url);
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         debugLocalApi = debuggable && baseUrl.startsWith("http://10.0.2.2");
-        loginRepository = LoginRepository.getInstance(new ApiLoginDataSource(baseUrl));
+        loginRepository = LoginRepository.getInstance(this, new ApiLoginDataSource(baseUrl));
 
         if (loginRepository.isLoggedIn()) {
             openLandingPage();
@@ -76,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         loginButton.setOnClickListener(v -> attemptLogin());
+        continueOfflineButton.setOnClickListener(v -> openLandingPage());
         passwordInput.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 attemptLogin();
@@ -116,9 +119,6 @@ public class LoginActivity extends AppCompatActivity {
 
         setLoading(true);
         loginExecutor.execute(() -> {
-            if (loginRepository.isLoggedIn()) {
-                loginRepository.logout();
-            }
             Result<LoggedInUser> result = loginRepository.login(workerId, password);
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) {
@@ -150,6 +150,7 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput.setEnabled(!loading);
         passwordInput.setEnabled(!loading);
         loginButton.setEnabled(!loading);
+        continueOfflineButton.setEnabled(!loading);
         loginProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 

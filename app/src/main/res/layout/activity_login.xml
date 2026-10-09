@@ -98,6 +98,22 @@
                 android:textSize="@dimen/login_label_size"
                 android:visibility="gone" />
 
+            <Button
+                android:id="@+id/continueOfflineButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:minHeight="48dp"
+                android:text="@string/continue_offline" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/offline_login_explanation"
+                android:textSize="@dimen/login_label_size" />
+
         </LinearLayout>
     </ScrollView>
 
