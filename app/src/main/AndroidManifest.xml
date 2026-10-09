@@ -21,11 +21,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.login.LoginActivity"
-            android:exported="false"
-            android:label="@string/title_activity_login"
-            android:windowSoftInputMode="adjustResize" />
     </application>
-
 </manifest>
