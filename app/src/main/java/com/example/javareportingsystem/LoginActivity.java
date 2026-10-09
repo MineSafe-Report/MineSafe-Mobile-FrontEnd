@@ -1,6 +1,7 @@
 package com.example.javareportingsystem;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -44,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private ProgressBar loginProgress;
     private TextView loginError;
-    private TextView loginStatus;
     private LoginRepository loginRepository;
     private boolean debugLocalApi;
 
@@ -64,7 +64,6 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
-        loginStatus = findViewById(R.id.loginStatus);
 
         String baseUrl = getString(R.string.login_api_base_url);
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
@@ -72,7 +71,8 @@ public class LoginActivity extends AppCompatActivity {
         loginRepository = LoginRepository.getInstance(new ApiLoginDataSource(baseUrl));
 
         if (loginRepository.isLoggedIn()) {
-            showLoginSuccess(loginRepository.getUser());
+            openLandingPage();
+            return;
         }
 
         loginButton.setOnClickListener(v -> attemptLogin());
@@ -93,7 +93,6 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput.setError(null);
         passwordInput.setError(null);
         loginError.setVisibility(View.GONE);
-        loginStatus.setVisibility(View.GONE);
 
         String workerId = workerIdInput.getText().toString().trim();
         String password = passwordInput.getText().toString();
@@ -128,7 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 if (result instanceof Result.Success) {
                     passwordInput.getText().clear();
-                    showLoginSuccess((LoggedInUser) ((Result.Success<?>) result).getData());
+                    openLandingPage();
                 } else {
                     String message = ((Result.Error) result).getError().getMessage();
                     showLoginError(message == null ? getString(R.string.login_failed) : message);
@@ -137,9 +136,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void showLoginSuccess(LoggedInUser user) {
-        loginStatus.setText(getString(R.string.login_success, user.getDisplayName(), user.getRole()));
-        loginStatus.setVisibility(View.VISIBLE);
+    private void openLandingPage() {
+        startActivity(new Intent(this, LandingPageActivity.class));
+        finish();
     }
 
     private void showLoginError(String message) {
