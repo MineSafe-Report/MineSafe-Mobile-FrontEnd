@@ -1,6 +1,7 @@
 package com.example.javareportingsystem;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -42,9 +43,9 @@ public class LoginActivity extends AppCompatActivity {
     private EditText workerIdInput;
     private EditText passwordInput;
     private Button loginButton;
+    private Button continueOfflineButton;
     private ProgressBar loginProgress;
     private TextView loginError;
-    private TextView loginStatus;
     private LoginRepository loginRepository;
     private boolean debugLocalApi;
 
@@ -62,20 +63,22 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput = findViewById(R.id.workerIdInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
+        continueOfflineButton = findViewById(R.id.continueOfflineButton);
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
-        loginStatus = findViewById(R.id.loginStatus);
 
         String baseUrl = getString(R.string.login_api_base_url);
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         debugLocalApi = debuggable && baseUrl.startsWith("http://10.0.2.2");
-        loginRepository = LoginRepository.getInstance(new ApiLoginDataSource(baseUrl));
+        loginRepository = LoginRepository.getInstance(this, new ApiLoginDataSource(baseUrl));
 
         if (loginRepository.isLoggedIn()) {
-            showLoginSuccess(loginRepository.getUser());
+            openLandingPage();
+            return;
         }
 
         loginButton.setOnClickListener(v -> attemptLogin());
+        continueOfflineButton.setOnClickListener(v -> openLandingPage());
         passwordInput.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 attemptLogin();
@@ -93,7 +96,6 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput.setError(null);
         passwordInput.setError(null);
         loginError.setVisibility(View.GONE);
-        loginStatus.setVisibility(View.GONE);
 
         String workerId = workerIdInput.getText().toString().trim();
         String password = passwordInput.getText().toString();
@@ -117,9 +119,6 @@ public class LoginActivity extends AppCompatActivity {
 
         setLoading(true);
         loginExecutor.execute(() -> {
-            if (loginRepository.isLoggedIn()) {
-                loginRepository.logout();
-            }
             Result<LoggedInUser> result = loginRepository.login(workerId, password);
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) {
@@ -128,7 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 if (result instanceof Result.Success) {
                     passwordInput.getText().clear();
-                    showLoginSuccess((LoggedInUser) ((Result.Success<?>) result).getData());
+                    openLandingPage();
                 } else {
                     String message = ((Result.Error) result).getError().getMessage();
                     showLoginError(message == null ? getString(R.string.login_failed) : message);
@@ -137,9 +136,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void showLoginSuccess(LoggedInUser user) {
-        loginStatus.setText(getString(R.string.login_success, user.getDisplayName(), user.getRole()));
-        loginStatus.setVisibility(View.VISIBLE);
+    private void openLandingPage() {
+        startActivity(new Intent(this, LandingPageActivity.class));
+        finish();
     }
 
     private void showLoginError(String message) {
@@ -151,6 +150,7 @@ public class LoginActivity extends AppCompatActivity {
         workerIdInput.setEnabled(!loading);
         passwordInput.setEnabled(!loading);
         loginButton.setEnabled(!loading);
+        continueOfflineButton.setEnabled(!loading);
         loginProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 

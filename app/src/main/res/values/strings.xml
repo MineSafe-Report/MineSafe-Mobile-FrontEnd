@@ -11,7 +11,14 @@
     <string name="login_failed">"Login failed"</string>
     <string name="worker_id_required">Enter your Worker ID</string>
     <string name="password_required">Enter your password</string>
-    <string name="login_success">Signed in as %1$s (%2$s).</string>
+    <string name="landing_welcome">Welcome, %1$s</string>
+    <string name="offline_welcome">Offline reporting</string>
+    <string name="continue_offline">Continue offline</string>
+    <string name="offline_login_explanation">Open the reporting home page without signing in. Uploading will require sign-in.</string>
+    <string name="offline_landing_explanation">Offline mode. Sign in before uploading reports.</string>
+    <string name="sign_in">Sign in</string>
+    <string name="logout">Log out</string>
+    <string name="logout_failed">Could not log out. Please try again.</string>
     <string name="login_api_base_url" translatable="false" />
     <string name="local_network_permission_required">Allow local network access to use the test login API.</string>
 </resources>
