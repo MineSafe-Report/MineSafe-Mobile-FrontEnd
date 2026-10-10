@@ -1,0 +1,150 @@
+package com.example.javareportingsystem.data.local;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
+import android.content.Context;
+
+import androidx.room.Room;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
+import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
+import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.UUID;
+
+@RunWith(AndroidJUnit4.class)
+public class LocalReportRepositoryTest {
+    private Context context;
+    private String databaseName;
+    private AppDatabase database;
+    private LocalReportRepository repository;
+    private File testMedia;
+
+    @Before
+    public void setUp() {
+        context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        databaseName = "reports-test-" + UUID.randomUUID() + ".db";
+        database = Room.databaseBuilder(context, AppDatabase.class, databaseName).build();
+        repository = new LocalReportRepository(context, database);
+    }
+
+    @After
+    public void tearDown() {
+        database.close();
+        context.deleteDatabase(databaseName);
+        if (testMedia != null) {
+            testMedia.delete();
+        }
+    }
+
+    @Test
+    public void offlineReportWaitsForEveryAttachmentThenSurvivesRestart() throws Exception {
+        DeviceConfigEntity config = repository.getOrCreateDeviceConfig();
+        assertNotNull(config.installationUuid);
+        assertNull(config.serverDeviceId);
+        long locationId = repository.configureLocation(
+                "SHAFT-A", "Shaft A", null, true);
+
+        repository.setServerDeviceId("dev-101");
+        DeviceConfigEntity registered = repository.getOrCreateDeviceConfig();
+        assertEquals(config.installationUuid, registered.installationUuid);
+        assertEquals("dev-101", registered.serverDeviceId);
+        assertNotNull(registered.lastLocationConfigAtEpochMillis);
+
+        long reportId = repository.createDraft(ReportValues.HAZARD);
+        repository.saveDraftDetails(reportId, locationId, "Loose rock above walkway",
+                1791622800000L);
+        testMedia = new File(repository.getMediaDirectory(),
+                "test-" + UUID.randomUUID() + ".jpg");
+        try (FileOutputStream output = new FileOutputStream(testMedia)) {
+            output.write(new byte[] {1, 2, 3});
+        }
+        long attachmentId = repository.addPrivateAttachment(reportId, ReportValues.PHOTO,
+                ReportValues.CAMERA, testMedia, "image/jpeg");
+        repository.submitDraft(reportId);
+        assertEquals(ReportValues.PENDING_UPLOAD,
+                repository.getOfflineReport(reportId).syncState);
+
+        repository.markReportAccepted(reportId, "rpt-101", "MS-101", 1791623100000L);
+        assertThrows(IllegalStateException.class,
+                () -> repository.finishSync(reportId, "PENDING_REVIEW", 1791623100000L));
+        assertNotNull(repository.getOfflineReport(reportId));
+        assertNull(repository.getSyncedReport("rpt-101"));
+
+        repository.markAttachmentAccepted(attachmentId, "att-101", 1791623200000L);
+        repository.finishSync(reportId, "PENDING_REVIEW", 1791623200000L);
+        assertNull(repository.getOfflineReport(reportId));
+
+        database.close();
+        database = Room.databaseBuilder(context, AppDatabase.class, databaseName).build();
+        repository = new LocalReportRepository(context, database);
+        SyncedReportEntity synced = repository.getSyncedReport("rpt-101");
+        assertNotNull(synced);
+        assertTrue(synced.anonymous);
+        assertNull(synced.reporterAccountId);
+        assertEquals("SHAFT-A", synced.locationCode);
+        assertEquals("PENDING_REVIEW", synced.workflowStatus);
+        assertEquals(1, repository.getSyncedAttachments("rpt-101").size());
+        assertTrue(testMedia.exists());
+    }
+
+    @Test
+    public void draftNeedsLocationAndDescriptionOrVoiceNote() throws Exception {
+        long reportId = repository.createDraft(ReportValues.NEAR_MISS);
+        assertThrows(IllegalStateException.class, () -> repository.submitDraft(reportId));
+        assertEquals(ReportValues.DRAFT, repository.getOfflineReport(reportId).syncState);
+
+        long locationId = repository.configureLocation("LEVEL-2", "Level 2", null, true);
+        repository.saveDraftDetails(reportId, locationId, null, System.currentTimeMillis());
+        assertThrows(IllegalStateException.class, () -> repository.submitDraft(reportId));
+
+        testMedia = new File(repository.getMediaDirectory(),
+                "test-" + UUID.randomUUID() + ".m4a");
+        try (FileOutputStream output = new FileOutputStream(testMedia)) {
+            output.write(new byte[] {4, 5, 6});
+        }
+        repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
+                ReportValues.MICROPHONE, testMedia, "audio/mp4");
+        repository.submitDraft(reportId);
+        OfflineReportEntity submitted = repository.getOfflineReport(reportId);
+        assertEquals(ReportValues.PENDING_UPLOAD, submitted.syncState);
+        assertTrue(submitted.anonymous);
+    }
+
+    @Test
+    public void failedIncidentUploadCanBeRetriedWithoutLosingLocalReport() {
+        long locationId = repository.configureLocation("PIT-1", "Pit 1", null, true);
+        long reportId = repository.createDraft(ReportValues.INCIDENT);
+        repository.saveDraftDetails(reportId, locationId, "Worker slipped",
+                System.currentTimeMillis());
+        repository.identifyIncident(reportId, "WORKER001", null);
+        repository.submitDraft(reportId);
+
+        repository.recordReportUploadFailure(reportId, "No connection");
+        OfflineReportEntity pending = repository.getOfflineReport(reportId);
+        assertEquals(ReportValues.FAILED, pending.syncState);
+        assertEquals(1, pending.uploadAttemptCount);
+        assertFalse(pending.anonymous);
+
+        repository.markReportAccepted(reportId, "rpt-202", "MS-202",
+                System.currentTimeMillis());
+        repository.finishSync(reportId, "PENDING_REVIEW", System.currentTimeMillis());
+        assertNull(repository.getOfflineReport(reportId));
+        assertEquals("WORKER001",
+                repository.getSyncedReport("rpt-202").reporterWorkerId);
+    }
+}
