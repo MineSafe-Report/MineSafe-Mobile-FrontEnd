@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ReportTypeActivity">
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="148dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="44dp"
+        android:background="@drawable/back_button"
+        android:gravity="center"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:padding="0dp"
+        android:text="← BACK"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text="Select Report Type"
+        android:textColor="#000000"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnBack" />
+
+    <!-- Incident Button -->
+
+    <!-- Hazard Button -->
+
+    <!-- Near Miss Button -->
+
+    <Button
+        android:id="@+id/btnIncident"
+        android:layout_width="0dp"
+        android:layout_height="116dp"
+        android:layout_marginTop="60dp"
+        android:background="#D92D20"
+        android:gravity="center"
+        android:padding="0dp"
+        android:text="INCIDENT"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintWidth_percent="0.76" />
+
+    <Button
+        android:id="@+id/btnHazard"
+        android:layout_width="0dp"
+        android:layout_height="116dp"
+        android:layout_marginTop="20dp"
+        android:background="#F2B705"
+        android:gravity="center"
+        android:padding="0dp"
+        android:text="HAZARD"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.489"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnIncident"
+        app:layout_constraintWidth_percent="0.76" />
+
+    <Button
+        android:id="@+id/btnNearMiss"
+        android:layout_width="0dp"
+        android:layout_height="116dp"
+        android:layout_marginTop="20dp"
+        android:background="#168AAD"
+        android:gravity="center"
+        android:padding="0dp"
+        android:text="NEAR MISS"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.489"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnHazard"
+        app:layout_constraintWidth_percent="0.76" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
