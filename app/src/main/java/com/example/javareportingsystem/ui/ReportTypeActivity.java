@@ -33,29 +33,39 @@ public class ReportTypeActivity extends AppCompatActivity {
 
         //Back button to LandingPageActivity
         btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    ReportTypeActivity.this,
-                    LandingPageActivity.class
-            );
+            Intent intent = new Intent(ReportTypeActivity.this, LandingPageActivity.class);
             startActivity(intent);
             finish();
         });
 
-        btnIncident.setOnClickListener(v ->
-                showMessage("Incident selected"));
+        //Report Type buttons
+        //INCIDENT
+        btnIncident.setOnClickListener(v -> {
+            showMessage("Incident selected");
+            Intent intent = new Intent( ReportTypeActivity.this, LocationSelectionActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
-        btnHazard.setOnClickListener(v ->
-                showMessage("Hazard selected"));
+        //HAZARD
+        btnHazard.setOnClickListener(v -> {
+            showMessage("Hazard selected");
+            Intent intent = new Intent( ReportTypeActivity.this, LocationSelectionActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
-        btnNearMiss.setOnClickListener(v ->
-                showMessage("Near Miss selected"));
+        //NEAR MISS
+        btnNearMiss.setOnClickListener(v -> {
+            showMessage("Near Miss selected");
+            Intent intent = new Intent( ReportTypeActivity.this, LocationSelectionActivity.class);
+            startActivity(intent);
+            finish();
+        });
+
     }
     private void showMessage(String message) {
-        Toast.makeText(
-                this,
-                message,
-                Toast.LENGTH_SHORT
-        ).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
