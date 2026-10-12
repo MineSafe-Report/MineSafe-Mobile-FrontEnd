@@ -134,14 +134,14 @@ public class LocationSelectionActivity extends AppCompatActivity {
         // Hide Next until a location is selected
         btnNext.setVisibility(View.GONE);
 
-       /* btnNext.setOnClickListener(v -> {
+        btnNext.setOnClickListener(v -> {
             Intent intent = new Intent(
-                    LocationSelectionActivityActivity.this,
-                    DescriptionActivity.class
+                    LocationSelectionActivity.this,
+                    ReportDescriptionActivity.class
             );
 
             startActivity(intent);
-        });*/
+        });
 
 
 

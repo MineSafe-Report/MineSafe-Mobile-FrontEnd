@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ReportDescriptionActivity">
+
+    <!-- Back Button -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="148dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="44dp"
+        android:background="@drawable/back_button"
+        android:gravity="center"
+        android:minHeight="0dp"
+        android:minWidth="0dp"
+        android:padding="0dp"
+        android:text="← BACK"
+        android:textColor="@color/white"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Heading -->
+    <TextView
+        android:id="@+id/tvHeading"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="Describe What\nHappened"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif"
+        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Description Input -->
+    <EditText
+        android:id="@+id/txtDescription"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="34dp"
+        android:gravity="top|start"
+        android:hint="Enter description..."
+        android:autofillHints="Type what happened"
+        android:padding="4dp"
+        android:textColor="#000000"
+        android:textColorHint="#333333"
+        android:textSize="24sp"
+        android:background="@drawable/description_border"
+        android:inputType="textMultiLine|textCapSentences"
+        android:scrollbars="vertical"
+        android:layout_marginBottom="14dp"
+        app:layout_constraintTop_toBottomOf="@id/tvHeading"
+        app:layout_constraintBottom_toTopOf="@id/btnRecord"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0"
+        app:layout_constraintHeight_default="spread"
+        />
+
+    <!-- Record Voice Note -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/btnRecord"
+        android:layout_width="0dp"
+        android:layout_height="81dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/record_button"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="Record voice note"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnNext"
+        app:layout_constraintTop_toBottomOf="@id/txtDescription"
+        app:layout_constraintVertical_bias="0"
+        android:layout_marginBottom="60dp">
+
+        <ImageView
+            android:id="@+id/ivMicrophone"
+            android:layout_width="32dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_microphone"
+            android:contentDescription="Microphone"
+            android:scaleType="fitCenter"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="17dp" />
+
+        <TextView
+            android:id="@+id/tvRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Record voice note"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:fontFamily="sans-serif"
+            app:layout_constraintStart_toEndOf="@id/ivMicrophone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="8dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Next Button -->
+    <Button
+        android:id="@+id/btnNext"
+        android:layout_width="148dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="640dp"
+        android:background="@drawable/next_button"
+        android:gravity="center"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
+        android:text="NEXT →"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.973"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
