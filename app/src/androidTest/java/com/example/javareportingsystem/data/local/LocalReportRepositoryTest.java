@@ -14,6 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
+import com.example.javareportingsystem.data.local.entity.OfflineAttachmentEntity;
 import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 import com.example.javareportingsystem.data.model.RemoteLocation;
@@ -222,5 +223,42 @@ public class LocalReportRepositoryTest {
         assertEquals(first, repository.listDrafts().get(2).localId);
         assertEquals(ReportValues.INCIDENT, repository.getOfflineReport(second).typeCode);
         assertEquals(ReportValues.HAZARD, repository.getOfflineReport(first).typeCode);
+    }
+
+    @Test
+    public void addingVoiceNotesKeepsEarlierRecordingsUntilIndividuallyDeleted() throws Exception {
+        long reportId = repository.createDraft(ReportValues.HAZARD);
+        File first = new File(repository.getMediaDirectory(),
+                "first-" + UUID.randomUUID() + ".m4a");
+        File second = new File(repository.getMediaDirectory(),
+                "second-" + UUID.randomUUID() + ".m4a");
+        try {
+            try (FileOutputStream output = new FileOutputStream(first)) {
+                output.write(new byte[] {1, 2, 3});
+            }
+            try (FileOutputStream output = new FileOutputStream(second)) {
+                output.write(new byte[] {4, 5, 6});
+            }
+            long oldId = repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
+                    ReportValues.MICROPHONE, first, "audio/mp4");
+            long newId = repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
+                    ReportValues.MICROPHONE, second, "audio/mp4");
+
+            assertTrue(newId > oldId);
+            assertTrue(first.exists());
+            assertTrue(second.exists());
+            assertEquals(2, repository.getOfflineAttachments(reportId).size());
+            assertEquals(oldId, repository.getOfflineAttachments(reportId).get(0).localId);
+            assertEquals(newId, repository.getOfflineAttachments(reportId).get(1).localId);
+
+            repository.removeDraftAttachment(oldId);
+            assertFalse(first.exists());
+            assertTrue(second.exists());
+            assertEquals(1, repository.getOfflineAttachments(reportId).size());
+            assertEquals(newId, repository.getOfflineAttachments(reportId).get(0).localId);
+        } finally {
+            first.delete();
+            second.delete();
+        }
     }
 }

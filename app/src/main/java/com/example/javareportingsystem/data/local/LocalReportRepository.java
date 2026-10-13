@@ -286,6 +286,12 @@ public final class LocalReportRepository {
             @NonNull String source, @NonNull File file, @NonNull String mimeType)
             throws IOException {
         requireDraft(localReportId);
+        return offlineDao.insertAttachment(newPrivateAttachment(
+                localReportId, type, source, file, mimeType));
+    }
+
+    private OfflineAttachmentEntity newPrivateAttachment(long localReportId,
+            String type, String source, File file, String mimeType) throws IOException {
         validateAttachment(type, source);
         if (!mediaStore.isManagedFile(file) || !file.isFile() || file.length() == 0) {
             throw new IllegalArgumentException("Attachment must be a nonempty app-private file");
@@ -302,7 +308,7 @@ public final class LocalReportRepository {
         attachment.fileSizeBytes = file.length();
         attachment.capturedAtEpochMillis = System.currentTimeMillis();
         attachment.syncState = ReportValues.ATTACHMENT_PENDING;
-        return offlineDao.insertAttachment(attachment);
+        return attachment;
     }
 
     @WorkerThread

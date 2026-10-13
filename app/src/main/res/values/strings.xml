@@ -42,4 +42,37 @@
     <string name="report_type_near_miss">Near miss</string>
     <string name="draft_option">%1$s · Report #%2$d\n%3$s\n%4$s</string>
     <string name="locations_refresh_failed">Could not refresh locations. Saved locations are still available.</string>
+    <string name="voice_heading">Describe what happened</string>
+    <string name="voice_hint">Add an optional voice note. It saves to this report when you stop recording.</string>
+    <string name="record_voice_note">Record voice note</string>
+    <string name="record_another_voice_note">Record another voice note</string>
+    <string name="stop_voice_recording">Stop recording</string>
+    <string name="voice_recording">Recording…</string>
+    <string name="voice_saving">Saving voice note…</string>
+    <string name="voice_saved">Voice note saved to this report.</string>
+    <plurals name="voice_notes_saved">
+        <item quantity="one">%d voice note saved to this report.</item>
+        <item quantity="other">%d voice notes saved to this report.</item>
+    </plurals>
+    <string name="voice_note_number">Voice note %d</string>
+    <string name="delete_voice_note_number">Delete voice note %d</string>
+    <string name="play_voice_note_number">Play voice note %d</string>
+    <string name="pause_voice_note_number">Pause voice note %d</string>
+    <string name="voice_playback_position_number">Voice note %d playback position</string>
+    <string name="voice_playback_speed_number">Change voice note %d playback speed</string>
+    <string name="voice_permission_required">Microphone permission is needed to record a voice note.</string>
+    <string name="voice_record_failed">Could not record a voice note. Please try again.</string>
+    <string name="voice_play_failed">Could not play this voice note.</string>
+    <string name="voice_save_failed">Could not save the voice note. Please try again.</string>
+    <string name="voice_delete_failed">Could not delete the voice note.</string>
+    <string name="voice_delete_title">Delete voice note?</string>
+    <string name="voice_delete_message">This will remove the recording from this report.</string>
+    <string name="voice_delete_confirm">Delete</string>
+    <string name="voice_delete_cancel">Cancel</string>
+    <string name="delete_voice_note">Delete voice note</string>
+    <string name="play_voice_note">Play voice note</string>
+    <string name="pause_voice_note">Pause voice note</string>
+    <string name="voice_playback_position">Voice note playback position</string>
+    <string name="voice_playback_speed">Change playback speed</string>
+    <string name="next">NEXT →</string>
 </resources>

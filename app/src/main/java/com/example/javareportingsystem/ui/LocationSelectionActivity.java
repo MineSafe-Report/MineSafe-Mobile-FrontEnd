@@ -75,7 +75,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
             locationTableContainer.setVisibility(expanded ? View.VISIBLE : View.GONE);
         });
         btnNext.setOnClickListener(v -> move(true));
-        btnNext.setVisibility(View.GONE);
+        btnNext.setVisibility(View.INVISIBLE);
         setBusy(true);
         reports.observeActiveLocations().observe(this, locations -> {
             if (draftLoaded) {
@@ -140,6 +140,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
         for (LocationEntity location : locations) {
             TableRow row = new TableRow(this);
             row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setMinimumHeight(dp(56));
             GradientDrawable border = new GradientDrawable();
             border.setColor(Color.WHITE);
             border.setStroke(1, Color.LTGRAY);
@@ -148,6 +149,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
             row.addView(cell(location.name));
             row.setClickable(true);
             row.setFocusable(true);
+            row.setContentDescription(location.code + ", " + location.name);
             row.setOnClickListener(v -> selectLocation(location));
             locationTable.addView(row);
 
@@ -156,7 +158,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
                 btnLocationDropdown.setText(location.name);
             }
         }
-        btnNext.setVisibility(selectedLocationId == null ? View.GONE : View.VISIBLE);
+        btnNext.setVisibility(selectedLocationId == null ? View.INVISIBLE : View.VISIBLE);
     }
 
     private TextView cell(String value) {
@@ -164,8 +166,12 @@ public class LocationSelectionActivity extends AppCompatActivity {
         cell.setText(value);
         cell.setTextColor(Color.BLACK);
         cell.setTextSize(14);
-        cell.setPadding(12, 16, 12, 16);
+        cell.setPadding(dp(12), dp(16), dp(12), dp(16));
         return cell;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void selectLocation(LocationEntity location) {
