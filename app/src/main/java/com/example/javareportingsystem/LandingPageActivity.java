@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
+import com.example.javareportingsystem.ui.ReportTypeActivity;
 
 public class LandingPageActivity extends AppCompatActivity {
 
@@ -42,6 +43,10 @@ public class LandingPageActivity extends AppCompatActivity {
                 return;
             }
             openLogin();
+        });
+        findViewById(R.id.btnCreateReport).setOnClickListener(v -> {
+            startActivity(new Intent(this, ReportTypeActivity.class));
+            finish();
         });
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
