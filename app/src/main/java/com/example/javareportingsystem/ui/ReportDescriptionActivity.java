@@ -54,7 +54,13 @@ public class ReportDescriptionActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT
                 ).show();
 
-                // Navigate to your next screen here.
+                // Navigate to next screen here.
+                Intent intent = new Intent(
+                        ReportDescriptionActivity.this,
+                        ReportVoiceActivity.class
+                );
+                startActivity(intent);
+                finish();
 
             }
         });
