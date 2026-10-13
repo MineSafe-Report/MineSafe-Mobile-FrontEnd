@@ -16,12 +16,12 @@
         android:layout_marginTop="44dp"
         android:background="@drawable/back_button"
         android:gravity="center"
-        android:minHeight="0dp"
         android:minWidth="0dp"
+        android:minHeight="0dp"
         android:padding="0dp"
         android:text="← BACK"
-        android:textColor="@color/white"
         android:textAllCaps="false"
+        android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -32,26 +32,27 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
         android:layout_marginTop="32dp"
+        android:layout_marginEnd="24dp"
+        android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="Describe What\nHappened"
         android:textColor="#000000"
         android:textSize="30sp"
         android:textStyle="bold"
-        android:fontFamily="sans-serif"
-        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/btnBack" />
 
     <!-- Description Input -->
     <EditText
         android:id="@+id/txtDescription"
-        android:layout_width="330dp"
-        android:layout_height="390dp"
+        android:layout_width="334dp"
+        android:layout_height="371dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="34dp"
         android:layout_marginEnd="24dp"
+        android:layout_marginBottom="246dp"
         android:autofillHints="Type what happened"
         android:background="@drawable/description_border"
         android:gravity="top|start"
@@ -59,15 +60,15 @@
         android:inputType="textMultiLine|textCapSentences"
         android:padding="4dp"
         android:scrollbars="vertical"
-        android:textColor="#000000"
-        android:textColorHint="#333333"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
         android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_default="spread"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvHeading" />
-
-    <!-- Record Voice Note -->
+        app:layout_constraintTop_toBottomOf="@id/tvHeading"
+        app:layout_constraintVertical_bias="0" />
 
     <!-- Next Button -->
     <Button

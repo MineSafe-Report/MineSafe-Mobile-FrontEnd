@@ -55,6 +55,7 @@ public class ReportDescriptionActivity extends AppCompatActivity {
                 ).show();
 
                 // Navigate to your next screen here.
+
             }
         });
 
