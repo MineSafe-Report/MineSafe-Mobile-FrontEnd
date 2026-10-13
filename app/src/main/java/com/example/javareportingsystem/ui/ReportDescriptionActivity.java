@@ -19,7 +19,6 @@ public class ReportDescriptionActivity extends AppCompatActivity {
 
     private Button btnBack;
     private EditText txtDescription;
-    private View btnRecord;
     private Button btnNext;
 
     @Override
@@ -30,7 +29,6 @@ public class ReportDescriptionActivity extends AppCompatActivity {
 
         btnBack = findViewById(R.id.btnBack);
         txtDescription = findViewById(R.id.txtDescription);
-        btnRecord = findViewById(R.id.btnRecord);
         btnNext = findViewById(R.id.btnNext);
 
         btnBack.setOnClickListener(v -> {
@@ -38,16 +36,6 @@ public class ReportDescriptionActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-
-        // Handle the "Record Voice Note" button click
-        btnRecord.setOnClickListener(v -> {
-            Toast.makeText(
-                    ReportDescriptionActivity.this,
-                    "You are recording a voice note.\n Please describe your experience.",
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
-
 
         // Handle the "Next" button click
         btnNext.setOnClickListener(v -> {
