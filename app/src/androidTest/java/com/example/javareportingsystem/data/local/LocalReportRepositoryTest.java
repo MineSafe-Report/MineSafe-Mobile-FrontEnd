@@ -16,6 +16,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
 import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
+import com.example.javareportingsystem.data.model.RemoteLocation;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,6 +26,8 @@ import org.junit.runner.RunWith;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.UUID;
+import java.util.Arrays;
+import java.util.Collections;
 
 @RunWith(AndroidJUnit4.class)
 public class LocalReportRepositoryTest {
@@ -146,5 +149,78 @@ public class LocalReportRepositoryTest {
         assertNull(repository.getOfflineReport(reportId));
         assertEquals("WORKER001",
                 repository.getSyncedReport("rpt-202").reporterWorkerId);
+    }
+
+    @Test
+    public void draftStepUpdatesSurviveRestartAndTypeChangeClearsIdentity() {
+        long locationId = repository.configureLocation("SHAFT-B", "Shaft B", null, true);
+        long reportId = repository.createDraft(ReportValues.INCIDENT);
+        repository.saveDraftDescription(reportId, "A worker slipped");
+        repository.saveDraftLocation(reportId, locationId);
+        repository.identifyIncident(reportId, "WORKER001", 42);
+
+        database.close();
+        database = Room.databaseBuilder(context, AppDatabase.class, databaseName).build();
+        repository = new LocalReportRepository(context, database);
+        OfflineReportEntity reopened = repository.getOfflineReport(reportId);
+        assertEquals(locationId, reopened.locationLocalId.longValue());
+        assertEquals("A worker slipped", reopened.description);
+        assertEquals("WORKER001", reopened.reporterWorkerId);
+
+        repository.changeDraftType(reportId, ReportValues.NEAR_MISS);
+        OfflineReportEntity anonymous = repository.getOfflineReport(reportId);
+        assertEquals(ReportValues.NEAR_MISS, anonymous.typeCode);
+        assertTrue(anonymous.anonymous);
+        assertNull(anonymous.reporterWorkerId);
+        assertNull(anonymous.reporterAccountId);
+        assertEquals(locationId, anonymous.locationLocalId.longValue());
+        assertEquals("A worker slipped", anonymous.description);
+    }
+
+    @Test
+    public void remoteLocationRefreshKeepsDraftReferenceAndStepAfterRestart() {
+        repository.replaceRemoteLocations(Arrays.asList(
+                new RemoteLocation("loc-1", "LOC-1", "Shaft A"),
+                new RemoteLocation("loc-2", "LOC-2", "Processing Plant")));
+        long locationId = -1L;
+        for (com.example.javareportingsystem.data.local.entity.LocationEntity location
+                : repository.listActiveLocations()) {
+            if ("loc-1".equals(location.serverLocationId)) {
+                locationId = location.localId;
+            }
+        }
+        assertTrue(locationId > 0);
+        long reportId = repository.createDraft(ReportValues.HAZARD);
+        repository.saveDraftLocation(reportId, locationId);
+        repository.setDraftStep(reportId, ReportValues.STEP_DESCRIPTION);
+
+        repository.replaceRemoteLocations(Collections.singletonList(
+                new RemoteLocation("loc-1", "LOC-1", "Shaft A Updated")));
+        assertEquals(1, repository.listActiveLocations().size());
+        assertEquals(locationId, repository.listActiveLocations().get(0).localId);
+        assertEquals("Shaft A Updated", repository.listActiveLocations().get(0).name);
+
+        database.close();
+        database = Room.databaseBuilder(context, AppDatabase.class, databaseName).build();
+        repository = new LocalReportRepository(context, database);
+        OfflineReportEntity resumed = repository.getLatestDraft();
+        assertNotNull(resumed);
+        assertEquals(reportId, resumed.localId);
+        assertEquals(locationId, resumed.locationLocalId.longValue());
+        assertEquals(ReportValues.STEP_DESCRIPTION, resumed.currentStep);
+    }
+
+    @Test
+    public void multipleDraftsCanBeListedAndChosenByTheirOwnId() {
+        long first = repository.createDraft(ReportValues.HAZARD);
+        long second = repository.createDraft(ReportValues.INCIDENT);
+        long third = repository.createDraft(ReportValues.NEAR_MISS);
+
+        assertEquals(3, repository.listDrafts().size());
+        assertEquals(third, repository.listDrafts().get(0).localId);
+        assertEquals(second, repository.listDrafts().get(1).localId);
+        assertEquals(first, repository.listDrafts().get(2).localId);
+        assertEquals(ReportValues.INCIDENT, repository.getOfflineReport(second).typeCode);
+        assertEquals(ReportValues.HAZARD, repository.getOfflineReport(first).typeCode);
     }
 }

@@ -27,6 +27,8 @@ public class OfflineReportEntity {
 
     public Long locationLocalId;
     public String description;
+    @NonNull
+    public String currentStep = "LOCATION";
     public Long occurredAtEpochMillis;
     public long createdAtEpochMillis;
     public Long submittedAtEpochMillis;

@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -22,10 +23,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.data.ApiLoginDataSource;
+import com.example.javareportingsystem.data.ApiLocationDataSource;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.Result;
+import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,6 +51,8 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar loginProgress;
     private TextView loginError;
     private LoginRepository loginRepository;
+    private ApiLocationDataSource locationApi;
+    private LocalReportRepository localReports;
     private boolean debugLocalApi;
 
     @Override
@@ -67,10 +73,12 @@ public class LoginActivity extends AppCompatActivity {
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
 
-        String baseUrl = getString(R.string.login_api_base_url);
+        String baseUrl = getString(R.string.api_base_url);
         boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
         debugLocalApi = debuggable && baseUrl.startsWith("http://10.0.2.2");
         loginRepository = LoginRepository.getInstance(this, new ApiLoginDataSource(baseUrl));
+        locationApi = new ApiLocationDataSource(baseUrl);
+        localReports = new LocalReportRepository(this);
 
         if (loginRepository.isLoggedIn()) {
             openLandingPage();
@@ -120,6 +128,17 @@ public class LoginActivity extends AppCompatActivity {
         setLoading(true);
         loginExecutor.execute(() -> {
             Result<LoggedInUser> result = loginRepository.login(workerId, password);
+            boolean locationsFailed = false;
+            if (result instanceof Result.Success) {
+                LoggedInUser user = (LoggedInUser) ((Result.Success<?>) result).getData();
+                try {
+                    localReports.replaceRemoteLocations(
+                            locationApi.fetchActiveLocations(user.getAccessToken()));
+                } catch (IOException | RuntimeException error) {
+                    locationsFailed = true;
+                }
+            }
+            boolean showLocationWarning = locationsFailed;
             runOnUiThread(() -> {
                 if (isFinishing() || isDestroyed()) {
                     return;
@@ -127,6 +146,10 @@ public class LoginActivity extends AppCompatActivity {
                 setLoading(false);
                 if (result instanceof Result.Success) {
                     passwordInput.getText().clear();
+                    if (showLocationWarning) {
+                        Toast.makeText(this, R.string.locations_refresh_failed,
+                                Toast.LENGTH_LONG).show();
+                    }
                     openLandingPage();
                 } else {
                     String message = ((Result.Error) result).getError().getMessage();

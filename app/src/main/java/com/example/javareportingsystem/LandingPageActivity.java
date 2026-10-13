@@ -13,13 +13,26 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.data.ApiLoginDataSource;
+import com.example.javareportingsystem.data.ApiLocationDataSource;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
-import com.example.javareportingsystem.ui.ReportTypeActivity;
+import com.example.javareportingsystem.data.model.RemoteLocation;
+import com.example.javareportingsystem.data.local.LocalReportRepository;
+import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
+import com.example.javareportingsystem.data.local.entity.LocationEntity;
+import com.example.javareportingsystem.ui.ReportStartActivity;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LandingPageActivity extends AppCompatActivity {
-
+    private final ExecutorService locationExecutor = Executors.newSingleThreadExecutor();
+    private final AtomicBoolean locationRefreshQueued = new AtomicBoolean();
     private LoginRepository repository;
+    private LocalReportRepository reports;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +41,11 @@ public class LandingPageActivity extends AppCompatActivity {
         repository = existingRepository != null
                 ? existingRepository
                 : LoginRepository.getInstance(this,
-                        new ApiLoginDataSource(getString(R.string.login_api_base_url)));
+                        new ApiLoginDataSource(getString(R.string.api_base_url)));
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_landing_page);
+        reports = new LocalReportRepository(this);
         findViewById(R.id.btnLogout).setOnClickListener(v -> {
             if (!repository.isLoggedIn()) {
                 openLogin();
@@ -44,10 +58,8 @@ public class LandingPageActivity extends AppCompatActivity {
             }
             openLogin();
         });
-        findViewById(R.id.btnCreateReport).setOnClickListener(v -> {
-            startActivity(new Intent(this, ReportTypeActivity.class));
-            finish();
-        });
+        findViewById(R.id.btnCreateReport).setOnClickListener(v -> startActivity(
+                new Intent(this, ReportStartActivity.class)));
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -56,10 +68,47 @@ public class LandingPageActivity extends AppCompatActivity {
         refreshSessionUi();
     }
 
+    private void refreshLocationsIfNeeded() {
+        LoggedInUser user = repository.getUser();
+        if (user == null || !locationRefreshQueued.compareAndSet(false, true)) {
+            return;
+        }
+        locationExecutor.execute(() -> {
+            try {
+                DeviceConfigEntity config = reports.getOrCreateDeviceConfig();
+                long lastRefresh = config.lastLocationConfigAtEpochMillis == null
+                        ? 0L : config.lastLocationConfigAtEpochMillis;
+                boolean hasRemoteLocations = false;
+                for (LocationEntity location : reports.listActiveLocations()) {
+                    if (location.serverLocationId != null) {
+                        hasRemoteLocations = true;
+                        break;
+                    }
+                }
+                if (hasRemoteLocations
+                        && System.currentTimeMillis() - lastRefresh < 30 * 60 * 1000L) {
+                    return;
+                }
+                ApiLocationDataSource api = new ApiLocationDataSource(
+                        getString(R.string.api_base_url));
+                List<RemoteLocation> remote =
+                        api.fetchActiveLocations(user.getAccessToken());
+                if (repository.getUser() != null) {
+                    reports.replaceRemoteLocations(remote);
+                }
+            } catch (IOException | RuntimeException ignored) {
+                // Offline use continues with the previously cached catalogue.
+            } finally {
+                locationRefreshQueued.set(false);
+            }
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         refreshSessionUi();
+        refreshLocationsIfNeeded();
     }
 
     private void refreshSessionUi() {
@@ -87,5 +136,11 @@ public class LandingPageActivity extends AppCompatActivity {
         login.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(login);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        locationExecutor.shutdown();
+        super.onDestroy();
     }
 }

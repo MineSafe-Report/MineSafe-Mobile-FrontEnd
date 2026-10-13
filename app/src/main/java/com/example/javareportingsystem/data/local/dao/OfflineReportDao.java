@@ -26,6 +26,14 @@ public interface OfflineReportDao {
     @Query("SELECT * FROM offline_reports WHERE localId = :localId")
     OfflineReportEntity getReport(long localId);
 
+    @Query("SELECT * FROM offline_reports WHERE syncState = 'DRAFT' "
+            + "ORDER BY createdAtEpochMillis DESC, localId DESC LIMIT 1")
+    OfflineReportEntity getLatestDraft();
+
+    @Query("SELECT * FROM offline_reports WHERE syncState = 'DRAFT' "
+            + "ORDER BY createdAtEpochMillis DESC, localId DESC")
+    List<OfflineReportEntity> listDrafts();
+
     @Query("SELECT * FROM offline_reports ORDER BY createdAtEpochMillis DESC")
     LiveData<List<OfflineReportEntity>> observeReports();
 

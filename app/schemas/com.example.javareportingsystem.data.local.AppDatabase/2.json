@@ -1,0 +1,611 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "5865245f01b52863bfd4bb07e1b3d3b1",
+    "entities": [
+      {
+        "tableName": "device_config",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `installationUuid` TEXT NOT NULL, `serverDeviceId` TEXT, `installedAtEpochMillis` INTEGER NOT NULL, `lastLocationConfigAtEpochMillis` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "installationUuid",
+            "columnName": "installationUuid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverDeviceId",
+            "columnName": "serverDeviceId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "installedAtEpochMillis",
+            "columnName": "installedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastLocationConfigAtEpochMillis",
+            "columnName": "lastLocationConfigAtEpochMillis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "local_locations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `code` TEXT NOT NULL, `name` TEXT NOT NULL, `serverLocationId` TEXT, `active` INTEGER NOT NULL, `configuredAtEpochMillis` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverLocationId",
+            "columnName": "serverLocationId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "active",
+            "columnName": "active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "configuredAtEpochMillis",
+            "columnName": "configuredAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_local_locations_code",
+            "unique": true,
+            "columnNames": [
+              "code"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_local_locations_code` ON `${TABLE_NAME}` (`code`)"
+          },
+          {
+            "name": "index_local_locations_serverLocationId",
+            "unique": true,
+            "columnNames": [
+              "serverLocationId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_local_locations_serverLocationId` ON `${TABLE_NAME}` (`serverLocationId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "offline_reports",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `typeCode` TEXT NOT NULL, `locationLocalId` INTEGER, `description` TEXT, `currentStep` TEXT NOT NULL, `occurredAtEpochMillis` INTEGER, `createdAtEpochMillis` INTEGER NOT NULL, `submittedAtEpochMillis` INTEGER, `anonymous` INTEGER NOT NULL, `reporterWorkerId` TEXT, `reporterAccountId` INTEGER, `syncState` TEXT NOT NULL, `serverReportId` TEXT, `referenceNumber` TEXT, `serverReceivedAtEpochMillis` INTEGER, `uploadAttemptCount` INTEGER NOT NULL, `nextAttemptAtEpochMillis` INTEGER, `lastUploadError` TEXT, FOREIGN KEY(`locationLocalId`) REFERENCES `local_locations`(`localId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "typeCode",
+            "columnName": "typeCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationLocalId",
+            "columnName": "locationLocalId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "currentStep",
+            "columnName": "currentStep",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurredAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "submittedAtEpochMillis",
+            "columnName": "submittedAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "anonymous",
+            "columnName": "anonymous",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reporterWorkerId",
+            "columnName": "reporterWorkerId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reporterAccountId",
+            "columnName": "reporterAccountId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "syncState",
+            "columnName": "syncState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverReportId",
+            "columnName": "serverReportId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "referenceNumber",
+            "columnName": "referenceNumber",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "serverReceivedAtEpochMillis",
+            "columnName": "serverReceivedAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "uploadAttemptCount",
+            "columnName": "uploadAttemptCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextAttemptAtEpochMillis",
+            "columnName": "nextAttemptAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastUploadError",
+            "columnName": "lastUploadError",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_offline_reports_locationLocalId",
+            "unique": false,
+            "columnNames": [
+              "locationLocalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_reports_locationLocalId` ON `${TABLE_NAME}` (`locationLocalId`)"
+          },
+          {
+            "name": "index_offline_reports_serverReportId",
+            "unique": true,
+            "columnNames": [
+              "serverReportId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_offline_reports_serverReportId` ON `${TABLE_NAME}` (`serverReportId`)"
+          },
+          {
+            "name": "index_offline_reports_syncState",
+            "unique": false,
+            "columnNames": [
+              "syncState"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_reports_syncState` ON `${TABLE_NAME}` (`syncState`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "local_locations",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "locationLocalId"
+            ],
+            "referencedColumns": [
+              "localId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "offline_attachments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `reportLocalId` INTEGER NOT NULL, `attachmentType` TEXT NOT NULL, `captureSource` TEXT NOT NULL, `localFilePath` TEXT NOT NULL, `mimeType` TEXT NOT NULL, `fileSizeBytes` INTEGER NOT NULL, `capturedAtEpochMillis` INTEGER NOT NULL, `serverAttachmentId` TEXT, `uploadedAtEpochMillis` INTEGER, `syncState` TEXT NOT NULL, `uploadAttemptCount` INTEGER NOT NULL, `lastUploadError` TEXT, FOREIGN KEY(`reportLocalId`) REFERENCES `offline_reports`(`localId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reportLocalId",
+            "columnName": "reportLocalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attachmentType",
+            "columnName": "attachmentType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "captureSource",
+            "columnName": "captureSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localFilePath",
+            "columnName": "localFilePath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mimeType",
+            "columnName": "mimeType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileSizeBytes",
+            "columnName": "fileSizeBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturedAtEpochMillis",
+            "columnName": "capturedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverAttachmentId",
+            "columnName": "serverAttachmentId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "uploadedAtEpochMillis",
+            "columnName": "uploadedAtEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "syncState",
+            "columnName": "syncState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uploadAttemptCount",
+            "columnName": "uploadAttemptCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUploadError",
+            "columnName": "lastUploadError",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_offline_attachments_reportLocalId",
+            "unique": false,
+            "columnNames": [
+              "reportLocalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_attachments_reportLocalId` ON `${TABLE_NAME}` (`reportLocalId`)"
+          },
+          {
+            "name": "index_offline_attachments_serverAttachmentId",
+            "unique": true,
+            "columnNames": [
+              "serverAttachmentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_offline_attachments_serverAttachmentId` ON `${TABLE_NAME}` (`serverAttachmentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "offline_reports",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "reportLocalId"
+            ],
+            "referencedColumns": [
+              "localId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "synced_reports",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`serverReportId` TEXT NOT NULL, `sourceLocalReportId` INTEGER NOT NULL, `referenceNumber` TEXT, `typeCode` TEXT NOT NULL, `locationCode` TEXT NOT NULL, `locationName` TEXT NOT NULL, `description` TEXT, `occurredAtEpochMillis` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL, `submittedAtEpochMillis` INTEGER NOT NULL, `serverReceivedAtEpochMillis` INTEGER NOT NULL, `anonymous` INTEGER NOT NULL, `reporterWorkerId` TEXT, `reporterAccountId` INTEGER, `workflowStatus` TEXT NOT NULL, `statusUpdatedAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`serverReportId`))",
+        "fields": [
+          {
+            "fieldPath": "serverReportId",
+            "columnName": "serverReportId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceLocalReportId",
+            "columnName": "sourceLocalReportId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "referenceNumber",
+            "columnName": "referenceNumber",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "typeCode",
+            "columnName": "typeCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationCode",
+            "columnName": "locationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationName",
+            "columnName": "locationName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "occurredAtEpochMillis",
+            "columnName": "occurredAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "submittedAtEpochMillis",
+            "columnName": "submittedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverReceivedAtEpochMillis",
+            "columnName": "serverReceivedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anonymous",
+            "columnName": "anonymous",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reporterWorkerId",
+            "columnName": "reporterWorkerId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reporterAccountId",
+            "columnName": "reporterAccountId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "workflowStatus",
+            "columnName": "workflowStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusUpdatedAtEpochMillis",
+            "columnName": "statusUpdatedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "serverReportId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_synced_reports_sourceLocalReportId",
+            "unique": true,
+            "columnNames": [
+              "sourceLocalReportId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_synced_reports_sourceLocalReportId` ON `${TABLE_NAME}` (`sourceLocalReportId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "synced_attachments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`serverAttachmentId` TEXT NOT NULL, `serverReportId` TEXT NOT NULL, `sourceLocalAttachmentId` INTEGER NOT NULL, `attachmentType` TEXT NOT NULL, `captureSource` TEXT NOT NULL, `localFilePath` TEXT NOT NULL, `mimeType` TEXT NOT NULL, `fileSizeBytes` INTEGER NOT NULL, `capturedAtEpochMillis` INTEGER NOT NULL, `uploadedAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`serverAttachmentId`), FOREIGN KEY(`serverReportId`) REFERENCES `synced_reports`(`serverReportId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "serverAttachmentId",
+            "columnName": "serverAttachmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverReportId",
+            "columnName": "serverReportId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceLocalAttachmentId",
+            "columnName": "sourceLocalAttachmentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attachmentType",
+            "columnName": "attachmentType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "captureSource",
+            "columnName": "captureSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localFilePath",
+            "columnName": "localFilePath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mimeType",
+            "columnName": "mimeType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileSizeBytes",
+            "columnName": "fileSizeBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturedAtEpochMillis",
+            "columnName": "capturedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uploadedAtEpochMillis",
+            "columnName": "uploadedAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "serverAttachmentId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_synced_attachments_serverReportId",
+            "unique": false,
+            "columnNames": [
+              "serverReportId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_synced_attachments_serverReportId` ON `${TABLE_NAME}` (`serverReportId`)"
+          },
+          {
+            "name": "index_synced_attachments_sourceLocalAttachmentId",
+            "unique": true,
+            "columnNames": [
+              "sourceLocalAttachmentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_synced_attachments_sourceLocalAttachmentId` ON `${TABLE_NAME}` (`sourceLocalAttachmentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "synced_reports",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "serverReportId"
+            ],
+            "referencedColumns": [
+              "serverReportId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5865245f01b52863bfd4bb07e1b3d3b1')"
+    ]
+  }
+}

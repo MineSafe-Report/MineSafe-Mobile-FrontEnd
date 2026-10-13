@@ -17,10 +17,13 @@ import com.example.javareportingsystem.data.local.entity.OfflineAttachmentEntity
 import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedAttachmentEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
+import com.example.javareportingsystem.data.model.RemoteLocation;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -108,6 +111,66 @@ public final class LocalReportRepository {
         return locationDao.observeActive();
     }
 
+    /** Replaces the active server catalogue without changing local IDs used by drafts. */
+    @WorkerThread
+    public void replaceRemoteLocations(@NonNull List<RemoteLocation> remoteLocations) {
+        Set<String> ids = new HashSet<>();
+        Set<String> codes = new HashSet<>();
+        for (RemoteLocation remote : remoteLocations) {
+            if (remote == null || remote.id == null || remote.code == null
+                    || remote.name == null || remote.id.trim().isEmpty()
+                    || remote.code.trim().isEmpty() || remote.name.trim().isEmpty()
+                    || !ids.add(remote.id.trim()) || !codes.add(remote.code.trim())) {
+                throw new IllegalArgumentException("Invalid location catalogue");
+            }
+        }
+        database.runInTransaction(() -> {
+            locationDao.deactivateRemoteLocations();
+            for (RemoteLocation remote : remoteLocations) {
+                String id = remote.id.trim();
+                String code = remote.code.trim();
+                LocationEntity location = locationDao.getByServerId(id);
+                if (location == null) {
+                    location = locationDao.getByCode(code);
+                    if (location != null && location.serverLocationId != null
+                            && !id.equals(location.serverLocationId)) {
+                        throw new IllegalArgumentException("Location code belongs to another ID");
+                    }
+                }
+                if (location == null) {
+                    location = new LocationEntity();
+                }
+                location.serverLocationId = id;
+                location.code = code;
+                location.name = remote.name.trim();
+                location.active = true;
+                location.configuredAtEpochMillis = System.currentTimeMillis();
+                if (location.localId == 0) {
+                    locationDao.insert(location);
+                } else {
+                    locationDao.update(location);
+                }
+            }
+            getOrCreateDeviceConfig();
+            deviceDao.setLastLocationConfigAt(System.currentTimeMillis());
+        });
+    }
+
+    @WorkerThread
+    public OfflineReportEntity getLatestDraft() {
+        return offlineDao.getLatestDraft();
+    }
+
+    @WorkerThread
+    public List<OfflineReportEntity> listDrafts() {
+        return offlineDao.listDrafts();
+    }
+
+    @WorkerThread
+    public LocationEntity getLocation(long localId) {
+        return locationDao.get(localId);
+    }
+
     @WorkerThread
     public long createDraft(@NonNull String typeCode) {
         if (!ReportValues.isReportType(typeCode)) {
@@ -118,8 +181,53 @@ public final class LocalReportRepository {
         report.anonymous = ReportValues.isAnonymousType(typeCode);
         report.createdAtEpochMillis = System.currentTimeMillis();
         report.occurredAtEpochMillis = report.createdAtEpochMillis;
+        report.currentStep = ReportValues.STEP_LOCATION;
         report.syncState = ReportValues.DRAFT;
         return offlineDao.insertReport(report);
+    }
+
+    @WorkerThread
+    public void changeDraftType(long localReportId, @NonNull String typeCode) {
+        if (!ReportValues.isReportType(typeCode)) {
+            throw new IllegalArgumentException("Unknown report type");
+        }
+        OfflineReportEntity report = requireDraft(localReportId);
+        if (!typeCode.equals(report.typeCode)) {
+            report.typeCode = typeCode;
+            report.anonymous = ReportValues.isAnonymousType(typeCode);
+            report.reporterWorkerId = null;
+            report.reporterAccountId = null;
+        }
+        report.currentStep = ReportValues.STEP_LOCATION;
+        offlineDao.updateReport(report);
+    }
+
+    @WorkerThread
+    public void setDraftStep(long localReportId, @NonNull String step) {
+        if (!ReportValues.isDraftStep(step)) {
+            throw new IllegalArgumentException("Unknown report step");
+        }
+        OfflineReportEntity report = requireDraft(localReportId);
+        report.currentStep = step;
+        offlineDao.updateReport(report);
+    }
+
+    @WorkerThread
+    public void saveDraftLocation(long localReportId, long locationLocalId) {
+        OfflineReportEntity report = requireDraft(localReportId);
+        LocationEntity location = locationDao.get(locationLocalId);
+        if (location == null || !location.active) {
+            throw new IllegalArgumentException("Select an active configured location");
+        }
+        report.locationLocalId = locationLocalId;
+        offlineDao.updateReport(report);
+    }
+
+    @WorkerThread
+    public void saveDraftDescription(long localReportId, String description) {
+        OfflineReportEntity report = requireDraft(localReportId);
+        report.description = emptyToNull(description);
+        offlineDao.updateReport(report);
     }
 
     @WorkerThread

@@ -31,6 +31,14 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ui.ReportStartActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.DraftListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.LocationSelectionActivity"
             android:exported="false"
             android:screenOrientation="portrait" />

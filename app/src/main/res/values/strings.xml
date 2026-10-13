@@ -19,6 +19,27 @@
     <string name="sign_in">Sign in</string>
     <string name="logout">Log out</string>
     <string name="logout_failed">Could not log out. Please try again.</string>
-    <string name="login_api_base_url" translatable="false" />
+    <string name="api_base_url" translatable="false" />
     <string name="local_network_permission_required">Allow local network access to use the test login API.</string>
+    <string name="report_draft_missing">This report draft is no longer available.</string>
+    <string name="report_draft_load_failed">Could not load this report draft.</string>
+    <string name="report_draft_save_failed">Could not save this report draft. Please try again.</string>
+    <string name="no_configured_locations">No locations have been configured on this device yet.</string>
+    <string name="select_location">Location  ▼</string>
+    <string name="create_report">CREATE REPORT</string>
+    <string name="resume_report">RESUME REPORT</string>
+    <string name="back">← BACK</string>
+    <string name="report_start_title">Start a report</string>
+    <string name="report_start_explanation">Start a new report or continue one saved on this device.</string>
+    <string name="new_report">NEW REPORT</string>
+    <string name="resume_reports_count">RESUME REPORT (%1$d)</string>
+    <string name="select_draft_title">Select a draft</string>
+    <string name="select_draft_explanation">Tap the report you want to continue.</string>
+    <string name="no_saved_drafts">No saved drafts are available.</string>
+    <string name="draft_location_missing">Location not selected</string>
+    <string name="report_type_hazard">Hazard</string>
+    <string name="report_type_incident">Incident</string>
+    <string name="report_type_near_miss">Near miss</string>
+    <string name="draft_option">%1$s · Report #%2$d\n%3$s\n%4$s</string>
+    <string name="locations_refresh_failed">Could not refresh locations. Saved locations are still available.</string>
 </resources>

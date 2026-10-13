@@ -24,6 +24,12 @@ public interface LocationDao {
     @Query("SELECT * FROM local_locations WHERE code = :code")
     LocationEntity getByCode(String code);
 
+    @Query("SELECT * FROM local_locations WHERE serverLocationId = :serverLocationId")
+    LocationEntity getByServerId(String serverLocationId);
+
+    @Query("UPDATE local_locations SET active = 0 WHERE serverLocationId IS NOT NULL")
+    void deactivateRemoteLocations();
+
     @Query("SELECT * FROM local_locations WHERE active = 1 ORDER BY name")
     List<LocationEntity> listActive();
 

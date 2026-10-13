@@ -5,6 +5,10 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
+import androidx.annotation.NonNull;
 
 import com.example.javareportingsystem.data.local.dao.DeviceConfigDao;
 import com.example.javareportingsystem.data.local.dao.LocationDao;
@@ -27,10 +31,17 @@ import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
                 SyncedReportEntity.class,
                 SyncedAttachmentEntity.class
         },
-        version = 1,
+        version = 2,
         exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE offline_reports ADD COLUMN currentStep "
+                    + "TEXT NOT NULL DEFAULT 'LOCATION'");
+        }
+    };
 
     public abstract DeviceConfigDao deviceConfigDao();
     public abstract LocationDao locationDao();
@@ -45,7 +56,9 @@ public abstract class AppDatabase extends RoomDatabase {
                     instance = Room.databaseBuilder(
                             context.getApplicationContext(),
                             AppDatabase.class,
-                            "mine_safety_reports.db").build();
+                            "mine_safety_reports.db")
+                            .addMigrations(MIGRATION_1_2)
+                            .build();
                 }
             }
         }

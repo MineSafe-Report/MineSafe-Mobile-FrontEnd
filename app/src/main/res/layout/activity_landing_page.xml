@@ -76,7 +76,7 @@
         android:insetBottom="0dp"
         android:padding="0dp"
         android:stateListAnimator="@null"
-        android:text="CREATE REPORT"
+        android:text="@string/create_report"
         android:textColor="#000000"
         android:textSize="22sp"
         android:textStyle="bold"

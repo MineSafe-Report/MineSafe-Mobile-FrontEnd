@@ -10,6 +10,11 @@ public final class ReportValues {
     public static final String REPORT_UPLOADED = "REPORT_UPLOADED";
     public static final String FAILED = "FAILED";
 
+    public static final String STEP_TYPE = "TYPE";
+    public static final String STEP_LOCATION = "LOCATION";
+    public static final String STEP_DESCRIPTION = "DESCRIPTION";
+    public static final String STEP_VOICE = "VOICE";
+
     public static final String ATTACHMENT_PENDING = "PENDING_UPLOAD";
     public static final String ATTACHMENT_UPLOADED = "UPLOADED";
     public static final String PHOTO = "PHOTO";
@@ -26,5 +31,10 @@ public final class ReportValues {
 
     public static boolean isAnonymousType(String code) {
         return HAZARD.equals(code) || NEAR_MISS.equals(code);
+    }
+
+    public static boolean isDraftStep(String step) {
+        return STEP_TYPE.equals(step) || STEP_LOCATION.equals(step)
+                || STEP_DESCRIPTION.equals(step) || STEP_VOICE.equals(step);
     }
 }
