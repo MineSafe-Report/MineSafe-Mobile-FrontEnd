@@ -75,4 +75,6 @@
     <string name="voice_playback_position">Voice note playback position</string>
     <string name="voice_playback_speed">Change playback speed</string>
     <string name="next">NEXT →</string>
+    <string name="save_as_draft">Save as Draft</string>
+    <string name="report_draft_saved">Report saved as a draft.</string>
 </resources>

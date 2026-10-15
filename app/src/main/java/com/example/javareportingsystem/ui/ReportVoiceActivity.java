@@ -1,6 +1,7 @@
 package com.example.javareportingsystem.ui;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -33,6 +34,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Lifecycle;
 
 import com.example.javareportingsystem.R;
+import com.example.javareportingsystem.LandingPageActivity;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.local.ReportValues;
 import com.example.javareportingsystem.data.local.entity.OfflineAttachmentEntity;
@@ -66,6 +68,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
 
     private LocalReportRepository reports;
     private Button btnBack;
+    private Button btnSaveDraft;
     private Button btnNext;
     private Button btnRecord;
     private TextView status;
@@ -74,6 +77,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
     private long draftId;
     private boolean busy = true;
     private boolean draftLoaded;
+    private boolean saveAfterRecording;
     private boolean seeking;
     private MediaRecorder recorder;
     private MediaPlayer player;
@@ -119,6 +123,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
         reports = new LocalReportRepository(this);
 
         btnBack = findViewById(R.id.btnBack);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         btnNext = findViewById(R.id.btnNext);
         btnRecord = findViewById(R.id.btnRecord);
         status = findViewById(R.id.tvVoiceStatus);
@@ -126,6 +131,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
         audioPlayer = findViewById(R.id.audioPlayer);
 
         btnBack.setOnClickListener(v -> returnToDescription());
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         btnRecord.setOnClickListener(v -> {
             if (recorder == null) {
                 requestRecording();
@@ -282,6 +288,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
             if (file != null) {
                 file.delete();
             }
+            saveAfterRecording = false;
             setBusy(false);
             restoreStatus();
             Toast.makeText(this, R.string.voice_record_failed, Toast.LENGTH_SHORT).show();
@@ -305,7 +312,10 @@ public class ReportVoiceActivity extends AppCompatActivity {
                     }
                     showVoiceNotes(attachments);
                     setBusy(false);
-                    if (returnAfterSave) {
+                    if (saveAfterRecording) {
+                        saveAfterRecording = false;
+                        saveDraftAndExit();
+                    } else if (returnAfterSave) {
                         returnToDescription();
                     }
                 });
@@ -316,6 +326,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
                 boolean saved = attachmentSaved;
                 runOnUiThread(() -> {
                     if (!isFinishing() && !isDestroyed()) {
+                        saveAfterRecording = false;
                         setBusy(false);
                         if (saved) {
                             loadVoiceNotes();
@@ -521,6 +532,44 @@ public class ReportVoiceActivity extends AppCompatActivity {
         });
     }
 
+    private void saveDraftAndExit() {
+        if (busy || !draftLoaded) {
+            return;
+        }
+        if (recorder != null) {
+            saveAfterRecording = true;
+            stopRecording(false);
+            return;
+        }
+        setBusy(true);
+        releasePlayer();
+        databaseExecutor.execute(() -> {
+            try {
+                reports.setDraftStep(draftId, ReportValues.STEP_VOICE);
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    Toast.makeText(this, R.string.report_draft_saved,
+                            Toast.LENGTH_SHORT).show();
+                    Intent home = new Intent(this, LandingPageActivity.class);
+                    home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(home);
+                    finish();
+                });
+            } catch (RuntimeException error) {
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        setBusy(false);
+                        Toast.makeText(this, R.string.report_draft_save_failed,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
     private void returnToDescription() {
         if (busy) {
             return;
@@ -558,6 +607,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
         boolean recording = recorder != null;
         boolean hasNote = !voiceNotes.isEmpty();
         btnBack.setEnabled(!busy);
+        btnSaveDraft.setEnabled(draftLoaded && !busy);
         btnNext.setEnabled(draftLoaded && !busy && !recording);
         btnRecord.setEnabled(draftLoaded && !busy);
         btnRecord.setText(recording
