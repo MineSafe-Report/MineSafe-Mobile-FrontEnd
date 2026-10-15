@@ -66,6 +66,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
 
     private LocalReportRepository reports;
     private Button btnBack;
+    private Button btnNext;
     private Button btnRecord;
     private TextView status;
     private TextView recordTimer;
@@ -118,6 +119,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
         reports = new LocalReportRepository(this);
 
         btnBack = findViewById(R.id.btnBack);
+        btnNext = findViewById(R.id.btnNext);
         btnRecord = findViewById(R.id.btnRecord);
         status = findViewById(R.id.tvVoiceStatus);
         recordTimer = findViewById(R.id.tvRecordTimer);
@@ -129,6 +131,12 @@ public class ReportVoiceActivity extends AppCompatActivity {
                 requestRecording();
             } else {
                 stopRecording(false);
+            }
+        });
+        btnNext.setOnClickListener(v -> {
+            if (draftLoaded && !busy && recorder == null) {
+                startActivity(ReportDraftNavigation.to(
+                        this, ReportImagesActivity.class, draftId));
             }
         });
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -550,6 +558,7 @@ public class ReportVoiceActivity extends AppCompatActivity {
         boolean recording = recorder != null;
         boolean hasNote = !voiceNotes.isEmpty();
         btnBack.setEnabled(!busy);
+        btnNext.setEnabled(draftLoaded && !busy && !recording);
         btnRecord.setEnabled(draftLoaded && !busy);
         btnRecord.setText(recording
                 ? R.string.stop_voice_recording

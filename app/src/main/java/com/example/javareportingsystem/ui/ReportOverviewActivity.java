@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.R;
+import com.example.javareportingsystem.LandingPageActivity;
 
 public class ReportOverviewActivity extends AppCompatActivity {
 
@@ -21,6 +22,7 @@ public class ReportOverviewActivity extends AppCompatActivity {
     private Button btnEditDescription;
     private Button btnEditImages;
     private Button btnSubmitReport;
+    private long draftId;
 
 
     @Override
@@ -28,6 +30,10 @@ public class ReportOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_report_overview);
+        draftId = ReportDraftNavigation.readId(this);
+        if (draftId <= 0) {
+            return;
+        }
 
         btnReportType = findViewById(R.id.btnReportType);
         btnLocations = findViewById(R.id.btnLocations);
@@ -38,37 +44,25 @@ public class ReportOverviewActivity extends AppCompatActivity {
 
         btnReportType.setOnClickListener(v -> {
             // Handle Report Type button click
-            Intent intent = new Intent(
-                    ReportOverviewActivity.this,
-                    ReportTypeActivity.class
-            );
+            Intent intent = ReportDraftNavigation.to(this, ReportTypeActivity.class, draftId);
             startActivity(intent);
         });
 
         btnLocations.setOnClickListener(v -> {
             // Handle Locations button click
-            Intent intent = new Intent(
-                    ReportOverviewActivity.this,
-                    LocationSelectionActivity.class
-            );
+            Intent intent = ReportDraftNavigation.to(this, LocationSelectionActivity.class, draftId);
             startActivity(intent);
         });
 
         btnEditDescription.setOnClickListener(v -> {
             // Handle Edit Description button click
-            Intent intent = new Intent(
-                    ReportOverviewActivity.this,
-                    ReportDescriptionActivity.class
-            );
+            Intent intent = ReportDraftNavigation.to(this, ReportDescriptionActivity.class, draftId);
             startActivity(intent);
         });
 
         btnEditImages.setOnClickListener(v -> {
             // Handle Edit Images button click
-            Intent intent = new Intent(
-                    ReportOverviewActivity.this,
-                    ReportImagesActivity.class
-            );
+            Intent intent = ReportDraftNavigation.to(this, ReportImagesActivity.class, draftId);
             startActivity(intent);
         });
 

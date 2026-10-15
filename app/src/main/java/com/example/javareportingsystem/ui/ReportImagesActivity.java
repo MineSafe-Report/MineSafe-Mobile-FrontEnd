@@ -42,6 +42,7 @@ public class ReportImagesActivity extends AppCompatActivity {
     private RecyclerView rvImageThumbnails;
 
     private ImageDatabaseHelper database;
+    private long draftId;
     private ImageThumbnailAdapter adapter;
 
     private final ArrayList<ImageDatabaseHelper.ImageRecord> images =
@@ -106,6 +107,10 @@ public class ReportImagesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_images);
+        draftId = ReportDraftNavigation.readId(this);
+        if (draftId <= 0) {
+            return;
+        }
 
         database = new ImageDatabaseHelper(this);
 
@@ -127,17 +132,12 @@ public class ReportImagesActivity extends AppCompatActivity {
 
         rvImageThumbnails.setAdapter(adapter);
 
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(ReportImagesActivity.this, ReportVoiceActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        btnBack.setOnClickListener(v -> finish());
         btnCamera.setOnClickListener(v -> checkSlotsAndLaunchCamera());
 
         btnGallery.setOnClickListener(v -> checkSlotsAndLaunchGallery());
 
-        btnSkip.setOnClickListener(v ->
-                showMessage("Skipped image selection"));
+        btnSkip.setOnClickListener(v -> openOverview());
 
         btnNext.setOnClickListener(v -> {
             databaseExecutor.execute(() -> {
@@ -149,17 +149,18 @@ public class ReportImagesActivity extends AppCompatActivity {
                     } else {
                         showMessage(
                                 "Images saved.");
-                        Intent intent = new Intent(
-                                ReportImagesActivity.this,
-                                ReportOverviewActivity.class
-                        );
-                        startActivity(intent);
+                        openOverview();
                     }
                 });
             });
         });
 
         reloadImages();
+    }
+
+    private void openOverview() {
+        startActivity(ReportDraftNavigation.to(
+                this, ReportOverviewActivity.class, draftId));
     }
 
     // UI helper: always execute the action on the main thread.
