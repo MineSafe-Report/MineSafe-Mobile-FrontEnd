@@ -23,6 +23,27 @@
         app:layout_constraintTop_toTopOf="parent"
                 app:backgroundTint="@null" />
 
+    <Button
+        android:id="@+id/btnSaveDraft"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/outline_button"
+        android:text="@string/save_as_draft"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="14sp"
+        android:minWidth="0dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:backgroundTint="@null"
+        app:layout_constraintStart_toEndOf="@id/btnBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
+
+
+
     <ScrollView
         android:id="@+id/descriptionContent"
         android:layout_width="0dp"

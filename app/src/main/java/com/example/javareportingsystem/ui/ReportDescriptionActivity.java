@@ -30,6 +30,7 @@ public class ReportDescriptionActivity extends AppCompatActivity {
     private Runnable pendingAutosave;
     private LocalReportRepository reports;
     private Button btnBack;
+    private Button btnSaveDraft;
     private EditText txtDescription;
     private Button btnNext;
     private long draftId;
@@ -46,10 +47,12 @@ public class ReportDescriptionActivity extends AppCompatActivity {
         }
         reports = new LocalReportRepository(this);
         btnBack = findViewById(R.id.btnBack);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         txtDescription = findViewById(R.id.txtDescription);
         btnNext = findViewById(R.id.btnNext);
 
         btnBack.setOnClickListener(v -> saveAndMove(false));
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         btnNext.setOnClickListener(v -> saveAndMove(true));
         txtDescription.addTextChangedListener(new TextWatcher() {
             @Override
@@ -108,6 +111,19 @@ public class ReportDescriptionActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void saveDraftAndExit() {
+        if (busy) {
+            return;
+        }
+        String description = txtDescription.getText().toString().trim();
+        cancelPendingAutosave();
+        setBusy(true);
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () -> {
+            reports.saveDraftDescription(draftId, description);
+            reports.setDraftStep(draftId, ReportValues.STEP_DESCRIPTION);
+        }, () -> setBusy(false));
     }
 
     private void saveAndMove(boolean forward) {
@@ -189,6 +205,7 @@ public class ReportDescriptionActivity extends AppCompatActivity {
     private void setBusy(boolean busy) {
         this.busy = busy;
         btnBack.setEnabled(!busy);
+        btnSaveDraft.setEnabled(!busy);
         btnNext.setEnabled(!busy);
         txtDescription.setEnabled(!busy);
     }

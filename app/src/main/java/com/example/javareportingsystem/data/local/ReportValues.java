@@ -14,6 +14,8 @@ public final class ReportValues {
     public static final String STEP_LOCATION = "LOCATION";
     public static final String STEP_DESCRIPTION = "DESCRIPTION";
     public static final String STEP_VOICE = "VOICE";
+    public static final String STEP_IMAGES = "IMAGES";
+    public static final String STEP_OVERVIEW = "OVERVIEW";
 
     public static final String ATTACHMENT_PENDING = "PENDING_UPLOAD";
     public static final String ATTACHMENT_UPLOADED = "UPLOADED";
@@ -35,6 +37,7 @@ public final class ReportValues {
 
     public static boolean isDraftStep(String step) {
         return STEP_TYPE.equals(step) || STEP_LOCATION.equals(step)
-                || STEP_DESCRIPTION.equals(step) || STEP_VOICE.equals(step);
+                || STEP_DESCRIPTION.equals(step) || STEP_VOICE.equals(step)
+                || STEP_IMAGES.equals(step) || STEP_OVERVIEW.equals(step);
     }
 }

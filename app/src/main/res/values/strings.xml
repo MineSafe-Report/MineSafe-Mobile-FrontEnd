@@ -77,4 +77,5 @@
     <string name="next">NEXT →</string>
     <string name="save_as_draft">Save as Draft</string>
     <string name="report_draft_saved">Report saved as a draft.</string>
+    <string name="report_type_not_selected">Report type not selected</string>
 </resources>

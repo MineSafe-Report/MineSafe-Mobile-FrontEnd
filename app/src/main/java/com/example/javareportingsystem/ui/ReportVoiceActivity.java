@@ -1,7 +1,6 @@
 package com.example.javareportingsystem.ui;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -34,7 +33,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.Lifecycle;
 
 import com.example.javareportingsystem.R;
-import com.example.javareportingsystem.LandingPageActivity;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.local.ReportValues;
 import com.example.javareportingsystem.data.local.entity.OfflineAttachmentEntity;
@@ -543,31 +541,9 @@ public class ReportVoiceActivity extends AppCompatActivity {
         }
         setBusy(true);
         releasePlayer();
-        databaseExecutor.execute(() -> {
-            try {
-                reports.setDraftStep(draftId, ReportValues.STEP_VOICE);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
-                        return;
-                    }
-                    Toast.makeText(this, R.string.report_draft_saved,
-                            Toast.LENGTH_SHORT).show();
-                    Intent home = new Intent(this, LandingPageActivity.class);
-                    home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(home);
-                    finish();
-                });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        setBusy(false);
-                        Toast.makeText(this, R.string.report_draft_save_failed,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
+                () -> reports.setDraftStep(draftId, ReportValues.STEP_VOICE),
+                () -> setBusy(false));
     }
 
     private void returnToDescription() {

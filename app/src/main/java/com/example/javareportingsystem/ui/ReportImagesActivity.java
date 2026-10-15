@@ -24,6 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javareportingsystem.R;
+import com.example.javareportingsystem.data.local.LocalReportRepository;
+import com.example.javareportingsystem.data.local.ReportValues;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -37,11 +39,12 @@ public class ReportImagesActivity extends AppCompatActivity {
     private static final int MAX_DIMENSION = 1600;
     private static final int JPEG_QUALITY = 80;
 
-    private Button btnBack, btnCamera, btnGallery, btnSkip, btnNext;
+    private Button btnBack, btnSaveDraft, btnCamera, btnGallery, btnSkip, btnNext;
     private TextView tvImageCount;
     private RecyclerView rvImageThumbnails;
 
     private ImageDatabaseHelper database;
+    private LocalReportRepository reports;
     private long draftId;
     private ImageThumbnailAdapter adapter;
 
@@ -112,9 +115,11 @@ public class ReportImagesActivity extends AppCompatActivity {
             return;
         }
 
-        database = new ImageDatabaseHelper(this);
+        database = new ImageDatabaseHelper(this, draftId);
+        reports = new LocalReportRepository(this);
 
         btnBack = findViewById(R.id.btnBack);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
         btnSkip = findViewById(R.id.btnSkip);
@@ -133,6 +138,7 @@ public class ReportImagesActivity extends AppCompatActivity {
         rvImageThumbnails.setAdapter(adapter);
 
         btnBack.setOnClickListener(v -> finish());
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         btnCamera.setOnClickListener(v -> checkSlotsAndLaunchCamera());
 
         btnGallery.setOnClickListener(v -> checkSlotsAndLaunchGallery());
@@ -156,6 +162,24 @@ public class ReportImagesActivity extends AppCompatActivity {
         });
 
         reloadImages();
+    }
+
+    private void saveDraftAndExit() {
+        btnSaveDraft.setEnabled(false);
+        btnBack.setEnabled(false);
+        btnSkip.setEnabled(false);
+        btnNext.setEnabled(false);
+        btnCamera.setEnabled(false);
+        btnGallery.setEnabled(false);
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
+                () -> reports.setDraftStep(draftId, ReportValues.STEP_IMAGES),
+                () -> {
+                    btnSaveDraft.setEnabled(true);
+                    btnBack.setEnabled(true);
+                    btnSkip.setEnabled(true);
+                    btnNext.setEnabled(true);
+                    reloadImages();
+                });
     }
 
     private void openOverview() {
@@ -499,8 +523,6 @@ public class ReportImagesActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        boolean destroyed = true;
-
         if (adapter != null) {
             adapter.close();
         }

@@ -34,6 +34,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
     private Button btnBack;
+    private Button btnSaveDraft;
     private Button btnLocationDropdown;
     private HorizontalScrollView locationTableContainer;
     private TableLayout locationTable;
@@ -58,12 +59,14 @@ public class LocationSelectionActivity extends AppCompatActivity {
         reports = new LocalReportRepository(this);
 
         btnBack = findViewById(R.id.btnBack);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         btnLocationDropdown = findViewById(R.id.btnLocationDropdown);
         btnNext = findViewById(R.id.btnNext);
         locationTableContainer = findViewById(R.id.locationTableContainer);
         locationTable = findViewById(R.id.locationTable);
 
         btnBack.setOnClickListener(v -> returnFromLocation());
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -215,6 +218,16 @@ public class LocationSelectionActivity extends AppCompatActivity {
         });
     }
 
+    private void saveDraftAndExit() {
+        if (busy) {
+            return;
+        }
+        setBusy(true);
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
+                () -> reports.setDraftStep(draftId, ReportValues.STEP_LOCATION),
+                () -> setBusy(false));
+    }
+
     private void returnFromLocation() {
         if (busy) {
             return;
@@ -263,6 +276,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
     private void setBusy(boolean busy) {
         this.busy = busy;
         btnBack.setEnabled(!busy);
+        btnSaveDraft.setEnabled(!busy);
         btnLocationDropdown.setEnabled(!busy);
         btnNext.setEnabled(!busy);
     }

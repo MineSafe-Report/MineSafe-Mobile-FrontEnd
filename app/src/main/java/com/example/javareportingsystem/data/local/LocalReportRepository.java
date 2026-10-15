@@ -172,6 +172,17 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
+    public long createEmptyDraft() {
+        OfflineReportEntity report = new OfflineReportEntity();
+        report.typeCode = "";
+        report.createdAtEpochMillis = System.currentTimeMillis();
+        report.occurredAtEpochMillis = report.createdAtEpochMillis;
+        report.currentStep = ReportValues.STEP_TYPE;
+        report.syncState = ReportValues.DRAFT;
+        return offlineDao.insertReport(report);
+    }
+
+    @WorkerThread
     public long createDraft(@NonNull String typeCode) {
         if (!ReportValues.isReportType(typeCode)) {
             throw new IllegalArgumentException("Unknown report type");

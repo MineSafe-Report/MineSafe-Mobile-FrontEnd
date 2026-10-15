@@ -14,9 +14,17 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.LandingPageActivity;
+import com.example.javareportingsystem.data.local.LocalReportRepository;
+import com.example.javareportingsystem.data.local.ReportValues;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReportOverviewActivity extends AppCompatActivity {
 
+    private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
+    private LocalReportRepository reports;
+    private Button btnSaveDraft;
     private Button btnReportType;
     private Button btnLocations;
     private Button btnEditDescription;
@@ -35,11 +43,14 @@ public class ReportOverviewActivity extends AppCompatActivity {
             return;
         }
 
+        reports = new LocalReportRepository(this);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         btnReportType = findViewById(R.id.btnReportType);
         btnLocations = findViewById(R.id.btnLocations);
         btnEditDescription = findViewById(R.id.btnEditDescription);
         btnEditImages = findViewById(R.id.btnEditImages);
         btnSubmitReport = findViewById(R.id.btnSubmitReport);
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
 
 
         btnReportType.setOnClickListener(v -> {
@@ -98,6 +109,28 @@ public class ReportOverviewActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void saveDraftAndExit() {
+        setSavingDraft(true);
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
+                () -> reports.setDraftStep(draftId, ReportValues.STEP_OVERVIEW),
+                () -> setSavingDraft(false));
+    }
+
+    private void setSavingDraft(boolean saving) {
+        btnSaveDraft.setEnabled(!saving);
+        btnReportType.setEnabled(!saving);
+        btnLocations.setEnabled(!saving);
+        btnEditDescription.setEnabled(!saving);
+        btnEditImages.setEnabled(!saving);
+        btnSubmitReport.setEnabled(!saving);
+    }
+
+    @Override
+    protected void onDestroy() {
+        databaseExecutor.shutdown();
+        super.onDestroy();
     }
 
     private void showMessage(String s) {

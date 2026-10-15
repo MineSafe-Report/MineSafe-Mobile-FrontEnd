@@ -75,6 +75,9 @@
 
             <Button
                 android:id="@+id/loginButton"
+                android:background="@drawable/back_button"
+                android:textColor="@color/safety_on_action"
+                app:backgroundTint="@null"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -101,6 +104,9 @@
 
             <Button
                 android:id="@+id/continueOfflineButton"
+                android:background="@drawable/outline_button"
+                android:textColor="@color/safety_text"
+                app:backgroundTint="@null"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

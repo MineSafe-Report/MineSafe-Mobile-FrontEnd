@@ -23,6 +23,7 @@ public class ReportTypeActivity extends AppCompatActivity {
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
     private Button btnBack;
+    private Button btnSaveDraft;
     private Button btnHazard;
     private Button btnIncident;
     private Button btnNearMiss;
@@ -40,11 +41,13 @@ public class ReportTypeActivity extends AppCompatActivity {
         }
 
         btnBack = findViewById(R.id.btnBack);
+        btnSaveDraft = findViewById(R.id.btnSaveDraft);
         btnHazard = findViewById(R.id.btnHazard);
         btnIncident = findViewById(R.id.btnIncident);
         btnNearMiss = findViewById(R.id.btnNearMiss);
 
         btnBack.setOnClickListener(v -> finish());
+        btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         btnHazard.setOnClickListener(v -> selectType(ReportValues.HAZARD));
         btnIncident.setOnClickListener(v -> selectType(ReportValues.INCIDENT));
         btnNearMiss.setOnClickListener(v -> selectType(ReportValues.NEAR_MISS));
@@ -54,6 +57,17 @@ public class ReportTypeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void saveDraftAndExit() {
+        setBusy(true);
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () -> {
+            if (draftId > 0) {
+                reports.setDraftStep(draftId, ReportValues.STEP_TYPE);
+            } else {
+                draftId = reports.createEmptyDraft();
+            }
+        }, () -> setBusy(false));
     }
 
     private void selectType(String typeCode) {
@@ -91,6 +105,7 @@ public class ReportTypeActivity extends AppCompatActivity {
 
     private void setBusy(boolean busy) {
         btnBack.setEnabled(!busy);
+        btnSaveDraft.setEnabled(!busy);
         btnHazard.setEnabled(!busy);
         btnIncident.setEnabled(!busy);
         btnNearMiss.setEnabled(!busy);

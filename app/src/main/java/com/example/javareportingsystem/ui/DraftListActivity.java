@@ -88,7 +88,9 @@ public class DraftListActivity extends AppCompatActivity {
                 ? getString(R.string.report_type_near_miss)
                 : ReportValues.INCIDENT.equals(draft.typeCode)
                         ? getString(R.string.report_type_incident)
-                        : getString(R.string.report_type_hazard);
+                        : ReportValues.HAZARD.equals(draft.typeCode)
+                                ? getString(R.string.report_type_hazard)
+                                : getString(R.string.report_type_not_selected);
         String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
                 .format(new Date(draft.createdAtEpochMillis));
         return getString(R.string.draft_option, type, draft.localId, date, locationName);
