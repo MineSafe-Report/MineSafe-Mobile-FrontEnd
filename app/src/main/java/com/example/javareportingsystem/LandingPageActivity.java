@@ -20,6 +20,7 @@ import com.example.javareportingsystem.data.model.RemoteLocation;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
 import com.example.javareportingsystem.data.local.entity.LocationEntity;
+import com.example.javareportingsystem.ui.MyReportsActivity;
 import com.example.javareportingsystem.ui.ReportStartActivity;
 
 import java.io.IOException;
@@ -60,6 +61,8 @@ public class LandingPageActivity extends AppCompatActivity {
         });
         findViewById(R.id.btnCreateReport).setOnClickListener(v -> startActivity(
                 new Intent(this, ReportStartActivity.class)));
+        findViewById(R.id.btnMyReports).setOnClickListener(v -> startActivity(
+                new Intent(this, MyReportsActivity.class)));
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
