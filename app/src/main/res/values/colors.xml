@@ -2,4 +2,16 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="safety_background">#F5F4EF</color>
+    <color name="safety_surface">#FFFFFF</color>
+    <color name="safety_text">#182B39</color>
+    <color name="safety_text_secondary">#405560</color>
+    <color name="safety_action">#006B66</color>
+    <color name="safety_action_pressed">#005651</color>
+    <color name="safety_on_action">#FFFFFF</color>
+    <color name="safety_border">#CAD5D3</color>
+    <color name="safety_status">#985E00</color>
+    <color name="safety_status_surface">#FFF0D0</color>
+    <color name="safety_success">#176D54</color>
+    <color name="safety_danger">#B3261E</color>
 </resources>

@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="My Reports"
-        android:textColor="#000000"
+        android:textColor="@color/safety_text"
         android:textSize="30sp"
         android:textStyle="bold"
         android:fontFamily="sans"
@@ -54,7 +54,7 @@
                 android:layout_marginStart="7dp"
                 android:text="Report 4"
                 android:textSize="12sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -66,7 +66,7 @@
                 android:layout_marginEnd="7dp"
                 android:text="Pending upload"
                 android:textSize="11sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintEnd_toStartOf="@id/dot4"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -100,7 +100,7 @@
                 android:layout_marginStart="7dp"
                 android:text="Report 3"
                 android:textSize="12sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -112,7 +112,7 @@
                 android:layout_marginEnd="7dp"
                 android:text="Pending review"
                 android:textSize="11sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintEnd_toStartOf="@id/dot3"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -146,7 +146,7 @@
                 android:layout_marginStart="7dp"
                 android:text="Report 2"
                 android:textSize="12sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -158,7 +158,7 @@
                 android:layout_marginEnd="7dp"
                 android:text="Approved"
                 android:textSize="11sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintEnd_toStartOf="@id/dot2"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -192,7 +192,7 @@
                 android:layout_marginStart="7dp"
                 android:text="Report 1"
                 android:textSize="12sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -204,7 +204,7 @@
                 android:layout_marginEnd="7dp"
                 android:text="Denied"
                 android:textSize="11sp"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 app:layout_constraintEnd_toStartOf="@id/dot1"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -233,16 +233,16 @@
         android:layout_marginBottom="26dp"
         android:background="@drawable/back_button"
         android:text="← BACK"
-        android:textColor="#000000"
+        android:textColor="@color/safety_on_action"
         android:textSize="12sp"
         android:fontFamily="sans"
         android:padding="0dp"
         android:minHeight="0dp"
         android:minWidth="0dp"
         android:stateListAnimator="@null"
-        app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+                app:backgroundTint="@null" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,7 +7,7 @@
     android:layout_marginBottom="8dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@color/safety_surface"
     tools:context=".ui.ReportImagesActivity">
 
     <LinearLayout
@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Image 1"
-                android:textColor="#222222"
+                android:textColor="@color/safety_text"
                 android:textStyle="bold"
                 android:textSize="15sp" />
 
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Saved locally"
-                android:textColor="#666666"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="12sp" />
 
         </LinearLayout>
@@ -58,7 +58,7 @@
             android:layout_height="24dp"
             android:contentDescription="Open image"
             android:src="@android:drawable/ic_menu_view"
-            app:tint="@color/black" />
+            app:tint="@color/safety_text" />
 
     </LinearLayout>
 

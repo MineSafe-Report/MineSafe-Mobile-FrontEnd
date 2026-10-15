@@ -1,9 +1,16 @@
- <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.JavaReportingSystem" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Theme.JavaReportingSystem" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/safety_action</item>
+        <item name="colorOnPrimary">@color/safety_on_action</item>
+        <item name="colorSurface">@color/safety_surface</item>
+        <item name="colorOnSurface">@color/safety_text</item>
+        <item name="android:colorAccent">@color/safety_action</item>
+        <item name="android:windowBackground">@color/safety_background</item>
+        <item name="android:statusBarColor">@color/safety_background</item>
+        <item name="android:navigationBarColor">@color/safety_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
-
     <style name="Theme.JavaReportingSystem" parent="Base.Theme.JavaReportingSystem" />
 </resources>

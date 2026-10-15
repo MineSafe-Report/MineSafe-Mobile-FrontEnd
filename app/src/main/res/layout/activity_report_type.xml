@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="@color/safety_background"
     tools:context=".ui.ReportTypeActivity">
 
     <ScrollView
@@ -25,8 +26,9 @@
                 android:background="@drawable/back_button"
                 android:text="@string/back"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textColor="@color/safety_on_action"
+                android:textSize="18sp"
+                app:backgroundTint="@null" />
 
             <TextView
                 android:id="@+id/tvTitle"
@@ -35,7 +37,7 @@
                 android:layout_marginTop="28dp"
                 android:gravity="center"
                 android:text="Select Report Type"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
@@ -44,42 +46,45 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="44dp"
-                android:background="#D92D20"
+                android:background="@drawable/outline_button"
                 android:minHeight="96dp"
                 android:padding="16dp"
                 android:text="INCIDENT"
                 android:textAllCaps="false"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <Button
                 android:id="@+id/btnHazard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="#F2B705"
+                android:background="@drawable/outline_button"
                 android:minHeight="96dp"
                 android:padding="16dp"
                 android:text="HAZARD"
                 android:textAllCaps="false"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <Button
                 android:id="@+id/btnNearMiss"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="#168AAD"
+                android:background="@drawable/outline_button"
                 android:minHeight="96dp"
                 android:padding="16dp"
                 android:text="NEAR MISS"
                 android:textAllCaps="false"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

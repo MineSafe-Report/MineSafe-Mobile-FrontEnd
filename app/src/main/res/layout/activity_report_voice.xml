@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="@color/safety_background"
     tools:context=".ui.ReportVoiceActivity">
 
     <Button
@@ -17,10 +17,11 @@
         android:background="@drawable/back_button"
         android:text="@string/back"
         android:textAllCaps="false"
-        android:textColor="@color/white"
+        android:textColor="@color/safety_on_action"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+                app:backgroundTint="@null" />
 
     <TextView
         android:id="@+id/txtHeading"
@@ -31,7 +32,7 @@
         android:layout_marginEnd="20dp"
         android:gravity="center"
         android:text="@string/voice_heading"
-        android:textColor="@android:color/black"
+        android:textColor="@color/safety_text"
         android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -64,7 +65,7 @@
                 android:gravity="center"
                 android:accessibilityLiveRegion="polite"
                 android:text="@string/voice_hint"
-                android:textColor="#333333"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="16sp" />
 
             <Button
@@ -73,7 +74,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:background="@drawable/record_button"
-                android:backgroundTint="@null"
                 android:insetBottom="0dp"
                 android:insetTop="0dp"
                 android:minHeight="88dp"
@@ -81,9 +81,10 @@
                 android:stateListAnimator="@null"
                 android:text="@string/record_voice_note"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
+                android:textColor="@color/safety_on_action"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <TextView
                 android:id="@+id/tvRecordTimer"
@@ -92,7 +93,7 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:text="0:00"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="18sp"
                 android:visibility="gone" />
 
@@ -116,9 +117,10 @@
         android:enabled="false"
         android:text="@string/next"
         android:textAllCaps="false"
-        android:textColor="@color/white"
+        android:textColor="@color/safety_on_action"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+                app:backgroundTint="@null" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

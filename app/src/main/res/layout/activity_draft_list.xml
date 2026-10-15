@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/safety_background">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,8 +24,9 @@
                 android:background="@drawable/back_button"
                 android:text="@string/back"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+                android:textColor="@color/safety_on_action"
+                android:textSize="18sp"
+                app:backgroundTint="@null" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -32,7 +34,7 @@
                 android:layout_marginTop="32dp"
                 android:gravity="center"
                 android:text="@string/select_draft_title"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
@@ -42,7 +44,7 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:text="@string/select_draft_explanation"
-                android:textColor="#333333"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="16sp" />
 
             <TextView
@@ -52,7 +54,7 @@
                 android:layout_marginTop="32dp"
                 android:gravity="center"
                 android:text="@string/no_saved_drafts"
-                android:textColor="#333333"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="18sp"
                 android:visibility="gone" />
 

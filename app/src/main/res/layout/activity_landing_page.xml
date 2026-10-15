@@ -11,7 +11,7 @@
         android:id="@+id/contentPanel"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@android:color/white"
+        android:background="@color/safety_background"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,7 +35,7 @@
                 android:minWidth="96dp"
                 android:text="@string/logout"
                 android:textAllCaps="false"
-                android:textColor="#333333"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="16sp" />
 
             <TextView
@@ -46,7 +46,7 @@
                 android:fontFamily="sans-serif"
                 android:gravity="center"
                 android:text="Welcome"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="27sp"
                 android:textStyle="bold" />
 
@@ -57,7 +57,7 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:text="@string/offline_landing_explanation"
-                android:textColor="#333333"
+                android:textColor="@color/safety_text_secondary"
                 android:textSize="14sp"
                 android:visibility="gone" />
 
@@ -67,50 +67,50 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="48dp"
                 android:background="@drawable/button_yellow"
-                android:backgroundTint="@null"
                 android:insetBottom="0dp"
                 android:insetTop="0dp"
                 android:minHeight="80dp"
                 android:padding="16dp"
                 android:stateListAnimator="@null"
                 android:text="@string/create_report"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_on_action"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <Button
                 android:id="@+id/btnMyReports"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/button_yellow"
-                android:backgroundTint="@null"
+                android:background="@drawable/outline_button"
                 android:insetBottom="0dp"
                 android:insetTop="0dp"
                 android:minHeight="80dp"
                 android:padding="16dp"
                 android:stateListAnimator="@null"
                 android:text="MY REPORTS"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
 
             <Button
                 android:id="@+id/btnReviewReports"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/button_yellow"
-                android:backgroundTint="@null"
+                android:background="@drawable/outline_button"
                 android:insetBottom="0dp"
                 android:insetTop="0dp"
                 android:minHeight="80dp"
                 android:padding="16dp"
                 android:stateListAnimator="@null"
                 android:text="REVIEW REPORTS"
-                android:textColor="@android:color/black"
+                android:textColor="@color/safety_text"
                 android:textSize="22sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:backgroundTint="@null" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

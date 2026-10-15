@@ -102,7 +102,7 @@ public class DraftListActivity extends AppCompatActivity {
             button.setText(option.label);
             button.setAllCaps(false);
             button.setTextSize(18);
-            button.setTextColor(Color.BLACK);
+            button.setTextColor(getColor(R.color.safety_on_action));
             button.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
             button.setBackgroundResource(R.drawable.button_yellow);
             button.setBackgroundTintList(null);
