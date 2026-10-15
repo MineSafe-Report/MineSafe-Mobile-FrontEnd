@@ -148,7 +148,12 @@ public class ReportImagesActivity extends AppCompatActivity {
                         showMessage("Please add an image or tap Skip");
                     } else {
                         showMessage(
-                                "Images saved. Ready for the next step.");
+                                "Images saved.");
+                        Intent intent = new Intent(
+                                ReportImagesActivity.this,
+                                ReportOverviewActivity.class
+                        );
+                        startActivity(intent);
                     }
                 });
             });

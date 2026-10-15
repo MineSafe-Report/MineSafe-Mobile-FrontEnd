@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.ReportOverviewActivity">
+
+
+    <!-- Report Overview Title -->
+    <TextView
+        android:id="@+id/tvReportOverview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Report Overview"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Report Type Button -->
+
+    <!-- Locations Dropdown Button -->
+
+    <Button
+        android:id="@+id/btnReportType"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="31dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="33dp"
+        android:background="@drawable/outline_button"
+        android:backgroundTint="@null"
+        android:stateListAnimator="@null"
+        android:text="View and Edit Report Type"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvReportOverview" />
+
+    <Button
+        android:id="@+id/btnLocations"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:text="View and Edit Location"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:background="@drawable/outline_button"
+        android:backgroundTint="@null"
+        android:stateListAnimator="@null"
+        app:layout_constraintTop_toBottomOf="@id/btnReportType"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="31dp"
+        android:layout_marginEnd="33dp"
+        android:layout_marginTop="25dp" />
+
+    <!-- Edit Report Description Button -->
+    <Button
+        android:id="@+id/btnEditDescription"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:text="View and Edit Report Description"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:background="@drawable/outline_button"
+        android:backgroundTint="@null"
+        android:stateListAnimator="@null"
+        app:layout_constraintTop_toBottomOf="@id/btnLocations"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="31dp"
+        android:layout_marginEnd="33dp"
+        android:layout_marginTop="25dp" />
+
+    <!-- Edit Images Button -->
+    <Button
+        android:id="@+id/btnEditImages"
+        android:layout_width="0dp"
+        android:layout_height="75dp"
+        android:text="View and Edit Images"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:background="@drawable/outline_button"
+        android:backgroundTint="@null"
+        android:stateListAnimator="@null"
+        app:layout_constraintTop_toBottomOf="@id/btnEditDescription"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="31dp"
+        android:layout_marginEnd="33dp"
+        android:layout_marginTop="25dp" />
+
+    <!-- Submit Report Button -->
+    <Button
+        android:id="@+id/btnSubmitReport"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="Submit Report"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:background="@drawable/black_border"
+        android:backgroundTint="@null"
+        android:stateListAnimator="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="31dp"
+        android:layout_marginEnd="33dp"
+        android:layout_marginBottom="29dp" />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
