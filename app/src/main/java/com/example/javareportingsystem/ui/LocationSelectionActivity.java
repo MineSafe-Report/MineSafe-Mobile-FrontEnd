@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class LocationSelectionActivity extends AppCompatActivity {
+    static final String EXTRA_FROM_OVERVIEW = "com.example.javareportingsystem.FROM_OVERVIEW";
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
     private Button btnBack;
@@ -42,12 +43,14 @@ public class LocationSelectionActivity extends AppCompatActivity {
     private boolean expanded;
     private boolean busy = true;
     private boolean draftLoaded;
+    private boolean fromOverview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_location_selection);
+        fromOverview = getIntent().getBooleanExtra(EXTRA_FROM_OVERVIEW, false);
         draftId = ReportDraftNavigation.readId(this);
         if (draftId <= 0) {
             return;
@@ -60,11 +63,11 @@ public class LocationSelectionActivity extends AppCompatActivity {
         locationTableContainer = findViewById(R.id.locationTableContainer);
         locationTable = findViewById(R.id.locationTable);
 
-        btnBack.setOnClickListener(v -> move(false));
+        btnBack.setOnClickListener(v -> returnFromLocation());
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                move(false);
+                returnFromLocation();
             }
         });
         btnLocationDropdown.setOnClickListener(v -> {
@@ -158,7 +161,8 @@ public class LocationSelectionActivity extends AppCompatActivity {
                 btnLocationDropdown.setText(location.name);
             }
         }
-        btnNext.setVisibility(selectedLocationId == null ? View.INVISIBLE : View.VISIBLE);
+        btnNext.setVisibility(fromOverview || selectedLocationId == null
+                ? View.INVISIBLE : View.VISIBLE);
     }
 
     private TextView cell(String value) {
@@ -195,7 +199,7 @@ public class LocationSelectionActivity extends AppCompatActivity {
                     btnLocationDropdown.setText(location.name);
                     expanded = false;
                     locationTableContainer.setVisibility(View.GONE);
-                    btnNext.setVisibility(View.VISIBLE);
+                    btnNext.setVisibility(fromOverview ? View.INVISIBLE : View.VISIBLE);
                     setBusy(false);
                 });
             } catch (RuntimeException error) {
@@ -209,6 +213,17 @@ public class LocationSelectionActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void returnFromLocation() {
+        if (busy) {
+            return;
+        }
+        if (fromOverview) {
+            finish();
+        } else {
+            move(false);
+        }
     }
 
     private void move(boolean forward) {

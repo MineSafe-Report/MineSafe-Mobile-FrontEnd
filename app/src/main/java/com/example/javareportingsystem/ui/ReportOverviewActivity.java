@@ -51,6 +51,7 @@ public class ReportOverviewActivity extends AppCompatActivity {
         btnLocations.setOnClickListener(v -> {
             // Handle Locations button click
             Intent intent = ReportDraftNavigation.to(this, LocationSelectionActivity.class, draftId);
+            intent.putExtra(LocationSelectionActivity.EXTRA_FROM_OVERVIEW, true);
             startActivity(intent);
         });
 
