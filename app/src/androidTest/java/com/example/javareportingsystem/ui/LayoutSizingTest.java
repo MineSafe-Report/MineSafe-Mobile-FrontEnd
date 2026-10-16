@@ -32,6 +32,9 @@ public class LayoutSizingTest {
             R.layout.activity_location_selection,
             R.layout.activity_report_description,
             R.layout.activity_report_voice,
+            R.layout.activity_report_images,
+            R.layout.activity_report_overview,
+            R.layout.activity_my_reports,
             R.layout.item_voice_note
     };
 

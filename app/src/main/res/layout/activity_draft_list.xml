@@ -26,7 +26,13 @@
                 android:textAllCaps="false"
                 android:textColor="@color/safety_on_action"
                 android:textSize="18sp"
-                app:backgroundTint="@null" />
+                app:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_ms_arrow_back"
+                android:drawableTint="@color/safety_on_action"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
 
             <TextView
                 android:layout_width="match_parent"

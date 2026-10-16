@@ -1,248 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MyReportsActivity">
+    android:background="@color/safety_background"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
 
-    <!-- Title -->
     <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="My Reports"
+        android:gravity="center"
+        android:text="@string/my_reports_title"
         android:textColor="@color/safety_text"
         android:textSize="30sp"
-        android:textStyle="bold"
-        android:fontFamily="sans"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textStyle="bold" />
 
-    <!-- Main reports panel -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/reportPanel"
-        android:layout_width="0dp"
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="17dp"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="26dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintBottom_toTopOf="@id/btnBack"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Report 4 -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/row4"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:background="@drawable/report_row"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+        <LinearLayout
+            android:id="@+id/reportsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
 
             <TextView
-                android:id="@+id/report4"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvNoReports"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:text="Report 4"
-                android:textSize="12sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                android:layout_marginTop="32dp"
+                android:gravity="center"
+                android:text="@string/no_submitted_reports"
+                android:textColor="@color/safety_text_secondary"
+                android:textSize="18sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
 
-            <TextView
-                android:id="@+id/status4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="7dp"
-                android:text="Pending upload"
-                android:textSize="11sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintEnd_toStartOf="@id/dot4"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <View
-                android:id="@+id/dot4"
-                android:layout_width="23dp"
-                android:layout_height="23dp"
-                android:layout_marginEnd="9dp"
-                android:background="@drawable/circle_red"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- Report 3 -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/row3"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:background="@drawable/report_row"
-            app:layout_constraintTop_toBottomOf="@id/row4"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/report3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:text="Report 3"
-                android:textSize="12sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <TextView
-                android:id="@+id/status3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="7dp"
-                android:text="Pending review"
-                android:textSize="11sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintEnd_toStartOf="@id/dot3"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <View
-                android:id="@+id/dot3"
-                android:layout_width="23dp"
-                android:layout_height="23dp"
-                android:layout_marginEnd="9dp"
-                android:background="@drawable/circle_yellow"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- Report 2 -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/row2"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:background="@drawable/report_row"
-            app:layout_constraintTop_toBottomOf="@id/row3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/report2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:text="Report 2"
-                android:textSize="12sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <TextView
-                android:id="@+id/status2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="7dp"
-                android:text="Approved"
-                android:textSize="11sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintEnd_toStartOf="@id/dot2"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <View
-                android:id="@+id/dot2"
-                android:layout_width="23dp"
-                android:layout_height="23dp"
-                android:layout_marginEnd="9dp"
-                android:background="@drawable/circle_green"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- Report 1 -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/row1"
-            android:layout_width="0dp"
-            android:layout_height="32dp"
-            android:background="@drawable/report_row"
-            app:layout_constraintTop_toBottomOf="@id/row2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/report1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="7dp"
-                android:text="Report 1"
-                android:textSize="12sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <TextView
-                android:id="@+id/status1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="7dp"
-                android:text="Denied"
-                android:textSize="11sp"
-                android:textColor="@color/safety_text"
-                app:layout_constraintEnd_toStartOf="@id/dot1"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <View
-                android:id="@+id/dot1"
-                android:layout_width="23dp"
-                android:layout_height="23dp"
-                android:layout_marginEnd="9dp"
-                android:background="@drawable/circle_black"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Back button -->
     <Button
         android:id="@+id/btnBack"
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="17dp"
-        android:layout_marginBottom="26dp"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/back_button"
-        android:text="← BACK"
+        android:drawableStart="@drawable/ic_ms_arrow_back"
+        android:drawableTint="@color/safety_on_action"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/back"
+        android:textAllCaps="false"
         android:textColor="@color/safety_on_action"
-        android:textSize="12sp"
-        android:fontFamily="sans"
-        android:padding="0dp"
-        android:minHeight="0dp"
-        android:minWidth="0dp"
-        android:stateListAnimator="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-                app:backgroundTint="@null" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:textSize="18sp"
+        app:backgroundTint="@null" />
+</LinearLayout>

@@ -13,6 +13,7 @@ public interface ReportListDao {
     @Query("SELECT 'OFFLINE' AS source, localId AS localReportId, "
             + "NULL AS serverReportId, typeCode, syncState AS statusCode, "
             + "createdAtEpochMillis, anonymous FROM offline_reports "
+            + "WHERE syncState != 'DRAFT' "
             + "UNION ALL "
             + "SELECT 'SYNCED' AS source, sourceLocalReportId AS localReportId, "
             + "serverReportId, typeCode, workflowStatus AS statusCode, "

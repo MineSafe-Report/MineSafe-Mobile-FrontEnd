@@ -1,142 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.ReportOverviewActivity">
-
+    android:background="@color/safety_background">
 
     <Button
         android:id="@+id/btnSaveDraft"
-        android:layout_width="148dp"
+        android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="31dp"
+        android:layout_marginEnd="20dp"
         android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_save"
+        android:drawableTint="@color/safety_text"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:text="@string/save_as_draft"
         android:textAllCaps="false"
         android:textColor="@color/safety_text"
-        android:textSize="14sp"
+        android:textSize="16sp"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Report Overview Title -->
-    <TextView
-        android:id="@+id/tvReportOverview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Report Overview"
-        android:textColor="@color/safety_text"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginTop="22dp"
-        app:layout_constraintTop_toBottomOf="@id/btnSaveDraft"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Report Type Button -->
-
-    <!-- Locations Dropdown Button -->
-
-    <Button
-        android:id="@+id/btnReportType"
+    <ScrollView
+        android:id="@+id/overviewScroll"
         android:layout_width="0dp"
-        android:layout_height="75dp"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="33dp"
-        android:background="@drawable/outline_button"
-        android:stateListAnimator="@null"
-        android:text="View and Edit Report Type"
-        android:textAllCaps="false"
-        android:textColor="@color/safety_text"
-        android:textSize="14sp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/btnBack"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvReportOverview"
+        app:layout_constraintTop_toBottomOf="@id/btnSaveDraft">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/report_overview_title"
+                android:textColor="@color/safety_text"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/validationMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:padding="8dp"
+                android:text="@string/overview_complete_highlighted"
+                android:textColor="@color/safety_danger"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btnReportType"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/outline_button"
+                android:drawableStart="@drawable/ic_ms_category"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/edit_report_type"
+                android:textAllCaps="false"
+                android:textColor="@color/safety_text"
+                android:textSize="16sp"
                 app:backgroundTint="@null" />
 
-    <Button
-        android:id="@+id/btnLocations"
-        android:layout_width="0dp"
-        android:layout_height="75dp"
-        android:text="View and Edit Location"
-        android:textAllCaps="false"
-        android:textColor="@color/safety_text"
-        android:textSize="14sp"
-        android:background="@drawable/outline_button"
-        android:stateListAnimator="@null"
-        app:layout_constraintTop_toBottomOf="@id/btnReportType"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="31dp"
-        android:layout_marginEnd="33dp"
-        android:layout_marginTop="25dp"
+            <Button
+                android:id="@+id/btnLocations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/outline_button"
+                android:drawableStart="@drawable/ic_ms_location_on"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/edit_location"
+                android:textAllCaps="false"
+                android:textColor="@color/safety_text"
+                android:textSize="16sp"
                 app:backgroundTint="@null" />
 
-    <!-- Edit Report Description Button -->
-    <Button
-        android:id="@+id/btnEditDescription"
-        android:layout_width="0dp"
-        android:layout_height="75dp"
-        android:text="View and Edit Report Description"
-        android:textAllCaps="false"
-        android:textColor="@color/safety_text"
-        android:textSize="14sp"
-        android:background="@drawable/outline_button"
-        android:stateListAnimator="@null"
-        app:layout_constraintTop_toBottomOf="@id/btnLocations"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="31dp"
-        android:layout_marginEnd="33dp"
-        android:layout_marginTop="25dp"
+            <Button
+                android:id="@+id/btnEditDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/outline_button"
+                android:drawableStart="@drawable/ic_ms_description"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/edit_description"
+                android:textAllCaps="false"
+                android:textColor="@color/safety_text"
+                android:textSize="16sp"
                 app:backgroundTint="@null" />
 
-    <!-- Edit Images Button -->
-    <Button
-        android:id="@+id/btnEditImages"
-        android:layout_width="0dp"
-        android:layout_height="75dp"
-        android:text="View and Edit Images"
-        android:textAllCaps="false"
-        android:textColor="@color/safety_text"
-        android:textSize="14sp"
-        android:background="@drawable/outline_button"
-        android:stateListAnimator="@null"
-        app:layout_constraintTop_toBottomOf="@id/btnEditDescription"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="31dp"
-        android:layout_marginEnd="33dp"
-        android:layout_marginTop="25dp"
+            <Button
+                android:id="@+id/btnEditImages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="75dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/outline_button"
+                android:drawableStart="@drawable/ic_ms_image"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/edit_images"
+                android:textAllCaps="false"
+                android:textColor="@color/safety_text"
+                android:textSize="16sp"
                 app:backgroundTint="@null" />
+        </LinearLayout>
+    </ScrollView>
 
-    <!-- Submit Report Button -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="112dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/back_button"
+        android:drawableStart="@drawable/ic_ms_arrow_back"
+        android:drawableTint="@color/safety_on_action"
+        android:drawablePadding="4dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:text="@string/back"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_on_action"
+        android:textSize="16sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Button
         android:id="@+id/btnSubmitReport"
         android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:text="Submit Report"
+        android:layout_height="56dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/next_button"
+        android:drawableStart="@drawable/ic_ms_check_circle"
+        android:drawableTint="@color/safety_on_action"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:text="@string/submit_report"
         android:textAllCaps="false"
         android:textColor="@color/safety_on_action"
-        android:textSize="14sp"
-        android:background="@drawable/next_button"
-        android:stateListAnimator="@null"
+        android:textSize="16sp"
+        app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginStart="31dp"
-        android:layout_marginEnd="33dp"
-        android:layout_marginBottom="29dp"
-                app:backgroundTint="@null" />
-
-
-
-
+        app:layout_constraintStart_toEndOf="@id/btnBack" />
 </androidx.constraintlayout.widget.ConstraintLayout>

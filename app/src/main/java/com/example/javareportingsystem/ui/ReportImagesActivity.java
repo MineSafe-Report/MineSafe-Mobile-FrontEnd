@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -408,6 +409,8 @@ public class ReportImagesActivity extends AppCompatActivity {
 
                 btnCamera.setEnabled(canAdd);
                 btnGallery.setEnabled(canAdd);
+                btnSkip.setVisibility(images.isEmpty() ? View.VISIBLE : View.GONE);
+                btnNext.setVisibility(images.isEmpty() ? View.GONE : View.VISIBLE);
             });
         });
     }

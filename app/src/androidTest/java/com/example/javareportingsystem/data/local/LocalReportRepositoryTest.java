@@ -10,6 +10,8 @@ import static org.junit.Assert.assertTrue;
 import android.content.Context;
 
 import androidx.room.Room;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -28,6 +30,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.UUID;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.Collections;
 
 @RunWith(AndroidJUnit4.class)
@@ -261,4 +267,44 @@ public class LocalReportRepositoryTest {
             second.delete();
         }
     }
+    @Test
+    public void myReportsListsSubmittedAndSyncedReportsButNotDrafts() throws Exception {
+        repository.createDraft(ReportValues.NEAR_MISS);
+        long location = repository.configureLocation("TEST", "Test location", null, true);
+
+        long pendingId = repository.createDraft(ReportValues.HAZARD);
+        repository.saveDraftDetails(pendingId, location, "Loose rock", System.currentTimeMillis());
+        repository.submitDraft(pendingId);
+
+        long syncedId = repository.createDraft(ReportValues.INCIDENT);
+        repository.saveDraftDetails(syncedId, location, "Minor injury", System.currentTimeMillis());
+        repository.submitDraft(syncedId);
+        repository.markReportAccepted(syncedId, "server-test", "TEST-1",
+                System.currentTimeMillis());
+        repository.finishSync(syncedId, "APPROVED", System.currentTimeMillis());
+
+        LiveData<List<ReportListItem>> reports = database.reportListDao().observeAll();
+        AtomicReference<List<ReportListItem>> result = new AtomicReference<>();
+        CountDownLatch loaded = new CountDownLatch(1);
+        Observer<List<ReportListItem>> observer = value -> {
+            result.set(value);
+            loaded.countDown();
+        };
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> reports.observeForever(observer));
+        try {
+            assertTrue("Report list never loaded", loaded.await(5, TimeUnit.SECONDS));
+            assertNotNull(result.get());
+            assertEquals(2, result.get().size());
+            assertTrue(result.get().stream().anyMatch(item ->
+                    item.localReportId == pendingId
+                            && ReportValues.PENDING_UPLOAD.equals(item.statusCode)));
+            assertTrue(result.get().stream().anyMatch(item ->
+                    item.localReportId == syncedId && "APPROVED".equals(item.statusCode)));
+        } finally {
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    () -> reports.removeObserver(observer));
+        }
+    }
+
 }

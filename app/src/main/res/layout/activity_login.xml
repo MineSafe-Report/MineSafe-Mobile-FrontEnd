@@ -83,7 +83,14 @@
                 android:layout_marginTop="24dp"
                 android:minHeight="56dp"
                 android:text="Log in"
-                android:textSize="@dimen/login_button_size" />
+                android:textSize="@dimen/login_button_size"
+                android:drawableStart="@drawable/ic_ms_login"
+                android:drawableTint="@color/safety_on_action"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAllCaps="false" />
 
             <ProgressBar
                 android:id="@+id/loginProgress"
@@ -111,7 +118,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:minHeight="56dp"
-                android:text="@string/continue_offline" />
+                android:text="@string/continue_offline"
+                android:drawableStart="@drawable/ic_ms_cloud_off"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAllCaps="false" />
 
             <TextView
                 android:layout_width="match_parent"

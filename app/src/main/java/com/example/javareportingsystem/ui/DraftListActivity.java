@@ -1,11 +1,12 @@
 package com.example.javareportingsystem.ui;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import androidx.appcompat.app.AlertDialog;
+import java.io.IOException;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -100,23 +101,90 @@ public class DraftListActivity extends AppCompatActivity {
         draftContainer.removeAllViews();
         emptyNotice.setVisibility(options.isEmpty() ? View.VISIBLE : View.GONE);
         for (DraftOption option : options) {
-            Button button = new Button(this);
-            button.setText(option.label);
-            button.setAllCaps(false);
-            button.setTextSize(18);
-            button.setTextColor(getColor(R.color.safety_on_action));
-            button.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-            button.setBackgroundResource(R.drawable.button_yellow);
-            button.setBackgroundTintList(null);
-            button.setMinHeight(dp(112));
-            button.setPadding(dp(16), dp(12), dp(16), dp(12));
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.bottomMargin = dp(14);
-            draftContainer.addView(button, params);
-            button.setOnClickListener(v -> openDraft(option.id, button));
+            rowParams.bottomMargin = dp(14);
+            draftContainer.addView(row, rowParams);
+
+            Button open = new Button(this);
+            open.setText(option.label);
+            open.setAllCaps(false);
+            open.setTextSize(18);
+            open.setTextColor(getColor(R.color.safety_on_action));
+            open.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+            open.setBackgroundResource(R.drawable.button_yellow);
+            open.setBackgroundTintList(null);
+            open.setMinHeight(dp(112));
+            open.setPadding(dp(16), dp(12), dp(16), dp(12));
+            open.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.ic_ms_history, 0, 0, 0);
+            open.setCompoundDrawableTintList(
+                    android.content.res.ColorStateList.valueOf(getColor(R.color.safety_on_action)));
+            open.setCompoundDrawablePadding(dp(12));
+            row.addView(open, new LinearLayout.LayoutParams(0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+            open.setOnClickListener(v -> openDraft(option.id, open));
+
+            Button delete = new Button(this);
+            delete.setText(R.string.delete_draft);
+            delete.setAllCaps(false);
+            delete.setTextSize(14);
+            delete.setTextColor(getColor(R.color.safety_danger));
+            delete.setContentDescription(getString(R.string.delete_draft_number, option.id));
+            delete.setBackgroundResource(R.drawable.outline_button);
+            delete.setBackgroundTintList(null);
+            delete.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    0, R.drawable.ic_ms_delete, 0, 0);
+            delete.setCompoundDrawableTintList(
+                    android.content.res.ColorStateList.valueOf(getColor(R.color.safety_danger)));
+            delete.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(
+                    dp(88), dp(112));
+            deleteParams.leftMargin = dp(8);
+            row.addView(delete, deleteParams);
+            delete.setOnClickListener(v -> confirmDelete(option, open, delete));
         }
+    }
+
+    private void confirmDelete(DraftOption option, Button open, Button delete) {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_draft_title)
+                .setMessage(getString(R.string.delete_draft_message, option.label))
+                .setNegativeButton(R.string.voice_delete_cancel, null)
+                .setPositiveButton(R.string.delete_draft, (ignored, which) -> {
+                    open.setEnabled(false);
+                    delete.setEnabled(false);
+                    databaseExecutor.execute(() -> {
+                        try {
+                            reports.deleteDraft(option.id);
+                            try (ImageDatabaseHelper images = new ImageDatabaseHelper(this, option.id)) {
+                                images.deleteAllImages();
+                            }
+                            runOnUiThread(() -> {
+                                if (!isFinishing() && !isDestroyed()) {
+                                    Toast.makeText(this, R.string.draft_deleted,
+                                            Toast.LENGTH_SHORT).show();
+                                    loadDrafts();
+                                }
+                            });
+                        } catch (IOException | RuntimeException error) {
+                            runOnUiThread(() -> {
+                                if (!isFinishing() && !isDestroyed()) {
+                                    Toast.makeText(this, R.string.draft_delete_failed,
+                                            Toast.LENGTH_SHORT).show();
+                                    loadDrafts();
+                                }
+                            });
+                        }
+                    });
+                })
+                .show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(getColor(R.color.safety_danger));
     }
 
     private void openDraft(long draftId, Button button) {

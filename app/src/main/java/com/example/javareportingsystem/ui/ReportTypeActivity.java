@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.local.ReportValues;
+import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,6 +60,54 @@ public class ReportTypeActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (draftId <= 0) {
+            showSelectedType(null);
+            return;
+        }
+
+        databaseExecutor.execute(() -> {
+            try {
+                OfflineReportEntity draft = reports.getOfflineReport(draftId);
+                String selectedType = draft == null ? null : draft.typeCode;
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    showSelectedType(selectedType);
+                });
+            } catch (RuntimeException error) {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    Toast.makeText(this, R.string.report_draft_load_failed,
+                            Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private void showSelectedType(String typeCode) {
+        styleTypeButton(btnIncident, R.drawable.ic_ms_personal_injury,
+                ReportValues.INCIDENT.equals(typeCode));
+        styleTypeButton(btnHazard, R.drawable.ic_ms_warning,
+                ReportValues.HAZARD.equals(typeCode));
+        styleTypeButton(btnNearMiss, R.drawable.ic_ms_visibility,
+                ReportValues.NEAR_MISS.equals(typeCode));
+    }
+
+    private void styleTypeButton(Button button, int icon, boolean selected) {
+        button.setSelected(selected);
+        button.setBackgroundResource(selected
+                ? R.drawable.report_type_selected : R.drawable.outline_button);
+        ViewCompat.setBackgroundTintList(button, null);
+        button.setTextColor(getColor(selected ? R.color.safety_action : R.color.safety_text));
+        button.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0,
+                selected ? R.drawable.ic_ms_check_circle : 0, 0);
+        button.setContentDescription(selected
+                ? getString(R.string.report_type_selected_accessibility, button.getText())
+                : button.getText());
+    }
+
     private void saveDraftAndExit() {
         setBusy(true);
         ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () -> {
@@ -86,6 +135,7 @@ public class ReportTypeActivity extends AppCompatActivity {
                         return;
                     }
                     draftId = savedId;
+                    showSelectedType(typeCode);
                     setBusy(false);
                     startActivity(ReportDraftNavigation.to(
                             this, LocationSelectionActivity.class, draftId));

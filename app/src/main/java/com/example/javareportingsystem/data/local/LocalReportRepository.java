@@ -333,20 +333,58 @@ public final class LocalReportRepository {
         mediaStore.deleteManagedFile(new File(attachment.localFilePath));
     }
 
+    /** Missing fields for submitting a draft; images are optional. */
+    public static final class SubmissionStatus {
+        public final boolean missingType;
+        public final boolean missingLocation;
+        public final boolean missingEventTime;
+        public final boolean missingDetails;
+
+        private SubmissionStatus(boolean missingType, boolean missingLocation,
+                boolean missingEventTime, boolean missingDetails) {
+            this.missingType = missingType;
+            this.missingLocation = missingLocation;
+            this.missingEventTime = missingEventTime;
+            this.missingDetails = missingDetails;
+        }
+
+        public boolean isReady() {
+            return !missingType && !missingLocation && !missingEventTime
+                    && !missingDetails;
+        }
+    }
+
+    @WorkerThread
+    public SubmissionStatus getDraftSubmissionStatus(long localReportId) {
+        return checkSubmissionStatus(requireDraft(localReportId));
+    }
+
+    private SubmissionStatus checkSubmissionStatus(OfflineReportEntity report) {
+        boolean hasDescription = report.description != null
+                && !report.description.trim().isEmpty();
+        return new SubmissionStatus(
+                !ReportValues.isReportType(report.typeCode),
+                report.locationLocalId == null
+                        || locationDao.get(report.locationLocalId) == null,
+                report.occurredAtEpochMillis == null,
+                !hasDescription && offlineDao.countVoiceNotes(report.localId) == 0);
+    }
+
     @WorkerThread
     public void submitDraft(long localReportId) {
         database.runInTransaction(() -> {
             OfflineReportEntity report = requireDraft(localReportId);
-            if (report.locationLocalId == null
-                    || locationDao.get(report.locationLocalId) == null) {
+            SubmissionStatus status = checkSubmissionStatus(report);
+            if (status.missingType) {
+                throw new IllegalStateException("Select a report type");
+            }
+            if (status.missingLocation) {
                 throw new IllegalStateException("Select a configured location");
             }
-            if (report.occurredAtEpochMillis == null) {
+            if (status.missingEventTime) {
                 throw new IllegalStateException("Event time is required");
             }
-            boolean hasDescription = report.description != null
-                    && !report.description.trim().isEmpty();
-            if (!hasDescription && offlineDao.countVoiceNotes(localReportId) == 0) {
+            if (status.missingDetails) {
                 throw new IllegalStateException("Add a description or voice note");
             }
             report.submittedAtEpochMillis = System.currentTimeMillis();

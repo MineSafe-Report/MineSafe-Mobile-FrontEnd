@@ -1,8 +1,11 @@
 package com.example.javareportingsystem.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,277 +14,135 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.R;
+import com.example.javareportingsystem.data.local.AppDatabase;
+import com.example.javareportingsystem.data.local.ReportListItem;
+import com.example.javareportingsystem.data.local.ReportValues;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class MyReportsActivity extends AppCompatActivity {
-
-    /**
-     *
-     * DATABASE INTEGRATION PROMPT: add code to the MyReportsActivity that ensures a report is clickable
-     and when it is clicked it returns all data from a sql lite reports table associated with the signed-in user.
-     *
-     *
-     1. Create DatabaseHelper.java
-     *
-     *
-     public class DatabaseHelper extends SQLiteOpenHelper {
-
-     private static final String DATABASE_NAME = "reports.db";
-     private static final int DATABASE_VERSION = 1;
-
-     public static final String TABLE_REPORTS = "reports";
-
-     public DatabaseHelper(Context context) {
-     super(context, DATABASE_NAME, null, DATABASE_VERSION);
-     }
-
-     @Override
-     public void onCreate(SQLiteDatabase db) {
-
-     String createTable = "CREATE TABLE " + TABLE_REPORTS + " ("
-     + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-     + "user_id TEXT NOT NULL, "
-     + "report_number INTEGER NOT NULL, "
-     + "title TEXT, "
-     + "status TEXT, "
-     + "description TEXT, "
-     + "created_at TEXT"
-     + ")";
-
-     db.execSQL(createTable);
-     }
-
-     @Override
-     public void onUpgrade(
-     SQLiteDatabase db,
-     int oldVersion,
-     int newVersion) {
-
-     // Add database migration logic here when the schema changes.
-     }
-
-     // Retrieve every column for the selected user's report.
-     public Cursor getReport(int userId, int reportNumber) {
-
-     SQLiteDatabase db = this.getReadableDatabase();
-
-     return db.query(
-     TABLE_REPORTS,
-     null, // null returns all columns
-     "user_id = ? AND report_number = ?",
-     new String[]{
-     String.valueOf(userId),
-     String.valueOf(reportNumber)
-     },
-     null,
-     null,
-     null
-     );
-     }
-
-     // Retrieve every column for the selected user's report.
-     public Cursor getReport(String userId, int reportNumber) {
-
-     SQLiteDatabase db = this.getReadableDatabase();
-
-     return db.query(
-     TABLE_REPORTS,
-     null,
-     "user_id = ? AND report_number = ?",
-     new String[]{
-     userId,
-     String.valueOf(reportNumber)
-     },
-     null,
-     null,
-     null
-     );
-     }
-
-     // Example method for inserting a report.
-     public long insertReport(
-     String userId,
-     int reportNumber,
-     String title,
-     String status,
-     String description,
-     String createdAt) {
-
-     SQLiteDatabase db = this.getWritableDatabase();
-
-     ContentValues values = new ContentValues();
-     values.put("user_id", userId);
-     values.put("report_number", reportNumber);
-     values.put("title", title);
-     values.put("status", status);
-     values.put("description", description);
-     values.put("created_at", createdAt);
-
-     return db.insert(TABLE_REPORTS, null, values);
-     }
-     }
-
-     *
-      *
-      *
-     2. Create MainActivity.java
-      *
-      *
-     public class MainActivity extends AppCompatActivity {
-
-     private DatabaseHelper databaseHelper;
-
-     @Override
-     protected void onCreate(Bundle savedInstanceState) {
-     super.onCreate(savedInstanceState);
-     setContentView(R.layout.activity_main);
-
-     databaseHelper = new DatabaseHelper(this);
-
-     // Make each report row clickable.
-     findViewById(R.id.row4).setOnClickListener(
-     v -> loadReport(4));
-
-     findViewById(R.id.row3).setOnClickListener(
-     v -> loadReport(3));
-
-     findViewById(R.id.row2).setOnClickListener(
-     v -> loadReport(2));
-
-     findViewById(R.id.row1).setOnClickListener(
-     v -> loadReport(1));
-
-     Button btnBack = findViewById(R.id.btnBack);
-     btnBack.setOnClickListener(v -> finish());
-     }
-
-     private void loadReport(int reportNumber) {
-
-     // Get the ID saved by your login screen.
-     String userId = getSharedPreferences(
-     "MyAppPrefs",
-     MODE_PRIVATE
-     ).getString("signed_in_user_id", null);
-
-     if (userId == null || userId.trim().isEmpty()) {
-     Toast.makeText(
-     this,
-     "Please sign in first.",
-     Toast.LENGTH_SHORT
-     ).show();
-     return;
-     }
-
-     Cursor cursor = null;
-
-     try {
-     cursor = databaseHelper.getReport(
-     userId,
-     reportNumber
-     );
-
-     if (cursor == null || cursor.getCount() == 0) {
-     Toast.makeText(
-     this,
-     "No report found.",
-     Toast.LENGTH_SHORT
-     ).show();
-     return;
-     }
-
-     StringBuilder reportData = new StringBuilder();
-
-     // Read every matching record.
-     while (cursor.moveToNext()) {
-
-     // Read every column in the table.
-     for (int i = 0; i < cursor.getColumnCount(); i++) {
-
-     String columnName =
-     cursor.getColumnName(i);
-
-     String value = cursor.isNull(i)
-     ? "Not available"
-     : cursor.getString(i);
-
-     reportData.append(columnName)
-     .append(": ")
-     .append(value)
-     .append("\n");
-     }
-
-     reportData.append("\n----------------\n\n");
-     }
-
-     new AlertDialog.Builder(this)
-     .setTitle("Report " + reportNumber)
-     .setMessage(reportData.toString())
-     .setPositiveButton("Close", null)
-     .show();
-
-     } catch (Exception e) {
-
-     Toast.makeText(
-     this,
-     "Unable to load report: " + e.getMessage(),
-     Toast.LENGTH_LONG
-     ).show();
-
-     } finally {
-     if (cursor != null) {
-     cursor.close();
-     }
-     }
-     }
-
-     @Override
-     protected void onDestroy() {
-     super.onDestroy();
-
-     if (databaseHelper != null) {
-     databaseHelper.close();
-     }
-     }
-     }
-     *
-      *
-      *
-     3. Save the signed-in user's ID after login as a shared preference.
-     // userId must be the ID of the authenticated database user.
-     getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-     .edit()
-     .putString("signed_in_user_id", String.valueOf(userId))
-     .apply();
-     Replace userId with the actual ID retrieved from your login query. Do not use the username or a hardcoded ID unless that is how your database identifies users.
-
-     When the user logs out, clear the saved ID:
-
-     java
-     getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-     .edit()
-     .remove("signed_in_user_id")
-     .apply();
-
-      *
-      *
-      *
-     * */
-    private Button btnBack;
+    private LinearLayout reportsContainer;
+    private TextView emptyNotice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_my_reports);
+        reportsContainer = findViewById(R.id.reportsContainer);
+        emptyNotice = findViewById(R.id.tvNoReports);
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        btnBack = findViewById(R.id.btnBack);
-
-        btnBack.setOnClickListener(v -> finish());
-
+        AppDatabase.getInstance(this).reportListDao().observeAll()
+                .observe(this, this::showReports);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(bars.left + dp(20), bars.top, bars.right + dp(20), bars.bottom);
             return insets;
         });
+    }
+
+    private void showReports(List<ReportListItem> items) {
+        reportsContainer.removeAllViews();
+        boolean empty = items == null || items.isEmpty();
+        emptyNotice.setVisibility(empty ? View.VISIBLE : View.GONE);
+        reportsContainer.addView(emptyNotice);
+        if (empty) {
+            return;
+        }
+        LayoutInflater inflater = LayoutInflater.from(this);
+        DateFormat dates = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+        for (ReportListItem item : items) {
+            View row = inflater.inflate(R.layout.item_my_report, reportsContainer, false);
+            String type = typeLabel(item.typeCode);
+            ((TextView) row.findViewById(R.id.tvReportName)).setText(
+                    getString(R.string.report_list_name, type, item.localReportId));
+            ((TextView) row.findViewById(R.id.tvReportDate)).setText(
+                    dates.format(new Date(item.createdAtEpochMillis)));
+            ((ImageView) row.findViewById(R.id.imgReportType)).setImageResource(
+                    typeIcon(item.typeCode));
+
+            StatusDisplay status = displayStatus(item.statusCode);
+            TextView statusText = row.findViewById(R.id.tvReportStatus);
+            statusText.setText(status.label);
+            statusText.setTextColor(getColor(status.color));
+            ImageView statusIcon = row.findViewById(R.id.imgReportStatus);
+            statusIcon.setImageResource(status.icon);
+            statusIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    getColor(status.color)));
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.bottomMargin = dp(12);
+            reportsContainer.addView(row, params);
+        }
+    }
+
+    private String typeLabel(String code) {
+        if (ReportValues.HAZARD.equals(code)) return getString(R.string.report_type_hazard);
+        if (ReportValues.INCIDENT.equals(code)) return getString(R.string.report_type_incident);
+        if (ReportValues.NEAR_MISS.equals(code)) return getString(R.string.report_type_near_miss);
+        return getString(R.string.report_type_not_selected);
+    }
+
+    private int typeIcon(String code) {
+        if (ReportValues.HAZARD.equals(code)) return R.drawable.ic_ms_warning;
+        if (ReportValues.INCIDENT.equals(code)) return R.drawable.ic_ms_personal_injury;
+        if (ReportValues.NEAR_MISS.equals(code)) return R.drawable.ic_ms_visibility;
+        return R.drawable.ic_ms_description;
+    }
+
+    private StatusDisplay displayStatus(String code) {
+        String normalized = code == null ? "" : code.trim().toUpperCase(Locale.ROOT)
+                .replace('-', '_').replace(' ', '_');
+        switch (normalized) {
+            case ReportValues.PENDING_UPLOAD:
+                return new StatusDisplay(getString(R.string.status_pending_upload),
+                        R.drawable.ic_ms_cloud_upload, R.color.safety_status);
+            case ReportValues.REPORT_UPLOADED:
+                return new StatusDisplay(getString(R.string.status_finishing_upload),
+                        R.drawable.ic_ms_cloud_upload, R.color.safety_status);
+            case ReportValues.FAILED:
+                return new StatusDisplay(getString(R.string.status_upload_failed),
+                        R.drawable.ic_ms_cancel, R.color.safety_danger);
+            case "PENDING_REVIEW":
+            case "AWAITING_REVIEW":
+            case "SUBMITTED":
+                return new StatusDisplay(getString(R.string.status_pending_review),
+                        R.drawable.ic_ms_schedule, R.color.safety_status);
+            case "APPROVED":
+                return new StatusDisplay(getString(R.string.status_approved),
+                        R.drawable.ic_ms_check_circle, R.color.safety_success);
+            case "DENIED":
+            case "REJECTED":
+                return new StatusDisplay(getString(R.string.status_denied),
+                        R.drawable.ic_ms_cancel, R.color.safety_danger);
+            default:
+                return new StatusDisplay(normalized.isEmpty()
+                        ? getString(R.string.status_unavailable)
+                        : normalized.replace('_', ' ').toLowerCase(Locale.ROOT),
+                        R.drawable.ic_ms_schedule, R.color.safety_text_secondary);
+        }
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private static final class StatusDisplay {
+        final String label;
+        final int icon;
+        final int color;
+
+        StatusDisplay(String label, int icon, int color) {
+            this.label = label;
+            this.icon = icon;
+            this.color = color;
+        }
     }
 }

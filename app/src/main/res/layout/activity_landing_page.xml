@@ -36,7 +36,13 @@
                 android:text="@string/logout"
                 android:textAllCaps="false"
                 android:textColor="@color/safety_text_secondary"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:drawableStart="@drawable/ic_ms_logout"
+                android:drawableTint="@color/safety_text_secondary"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
 
             <TextView
                 android:id="@+id/tvWelcome"
@@ -76,7 +82,14 @@
                 android:textColor="@color/safety_on_action"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                app:backgroundTint="@null" />
+                app:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_ms_note_add"
+                android:drawableTint="@color/safety_on_action"
+                android:drawablePadding="16dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnMyReports"
@@ -93,7 +106,14 @@
                 android:textColor="@color/safety_text"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                app:backgroundTint="@null" />
+                app:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_ms_description"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="16dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btnReviewReports"
@@ -110,7 +130,14 @@
                 android:textColor="@color/safety_text"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                app:backgroundTint="@null" />
+                app:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_ms_groups"
+                android:drawableTint="@color/safety_text"
+                android:drawablePadding="16dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textAllCaps="false" />
         </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
