@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/safety_background"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:background="@drawable/back_button"
+        android:drawableStart="@drawable/ic_ms_arrow_back"
+        android:drawablePadding="8dp"
+        android:drawableTint="@color/safety_on_action"
+        android:gravity="center_vertical"
+        android:minWidth="120dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/back"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_on_action"
+        android:textSize="18sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/review_report_title"
+        android:textColor="@color/safety_text"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:id="@+id/reviewContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/outline_button"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ms_description"
+                        android:tint="@color/safety_text" />
+
+                    <TextView
+                        android:id="@+id/tvReportTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/safety_text"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvReportStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/safety_status_surface"
+                    android:paddingStart="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="10dp"
+                    android:textColor="@color/safety_status"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:text="@string/report_type_label"
+                        android:textColor="@color/safety_text_secondary"
+                        android:textSize="15sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportType"
+                        android:textColor="@color/safety_text"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:text="@string/report_location_label"
+                        android:textColor="@color/safety_text_secondary"
+                        android:textSize="15sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportLocation"
+                        android:textColor="@color/safety_text"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:text="@string/report_created_label"
+                        android:textColor="@color/safety_text_secondary"
+                        android:textSize="15sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportSubmitted"
+                        android:textColor="@color/safety_text"
+                        android:textSize="18sp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:text="@string/report_description_label"
+                        android:textColor="@color/safety_text_secondary"
+                        android:textSize="15sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportDescription"
+                        android:textColor="@color/safety_text"
+                        android:textSize="18sp"
+                        android:layout_marginTop="6dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:text="@string/report_attachments_label"
+                        android:textColor="@color/safety_text_secondary"
+                        android:textSize="15sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportImages"
+                        android:textColor="@color/safety_text"
+                        android:textSize="18sp"
+                        android:layout_marginTop="6dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                    <TextView
+                        android:id="@+id/tvReportVoiceNotes"
+                        android:textColor="@color/safety_text"
+                        android:textSize="18sp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/safety_status_surface"
+                    android:padding="14dp"
+                    android:text="@string/review_action_not_connected_message"
+                    android:textColor="@color/safety_text"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/reviewLoading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/report_loading"
+            android:textColor="@color/safety_text_secondary"
+            android:textSize="18sp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnDeny"
+            android:layout_width="0dp"
+            android:layout_height="68dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/outline_button"
+            android:drawableStart="@drawable/ic_ms_cancel"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/safety_danger"
+            android:gravity="center"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="@string/review_deny"
+            android:textAllCaps="false"
+            android:textColor="@color/safety_danger"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnApprove"
+            android:layout_width="0dp"
+            android:layout_height="68dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/next_button"
+            android:drawableStart="@drawable/ic_ms_check_circle"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/safety_on_action"
+            android:gravity="center"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="@string/review_approve"
+            android:textAllCaps="false"
+            android:textColor="@color/safety_on_action"
+            android:textSize="16sp" />
+    </LinearLayout>
+</LinearLayout>

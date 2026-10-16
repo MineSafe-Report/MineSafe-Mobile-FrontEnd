@@ -164,12 +164,14 @@
     <string name="review_approve">Approve report</string>
     <string name="review_deny">Deny report</string>
     <string name="review_approve_title">Approve this report?</string>
-    <string name="review_approve_message">Confirming will send this decision to the reporting service.</string>
+    <string name="review_approve_message">The review API is not connected in this build, so an approval cannot be saved yet.</string>
     <string name="review_deny_title">Reason for denial</string>
     <string name="review_deny_reason_hint">Enter the reason for denying this report</string>
     <string name="review_deny_reason_required">Enter a reason before continuing.</string>
     <string name="review_action_not_connected_title">Decision not sent</string>
     <string name="review_action_not_connected_message">The report review API is not available in this build. No decision or denial reason was saved; the report remains unchanged.</string>
+    <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="continue_label">Continue</string>
 </resources>
