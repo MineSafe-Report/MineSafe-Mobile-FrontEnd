@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/safety_background"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/review_queue_title"
+        android:textColor="@color/safety_text"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/review_queue_helper"
+        android:textColor="@color/safety_text_secondary"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btnLocationFilter"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_location_on"
+        android:drawableEnd="@drawable/ic_ms_expand_more"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/safety_text"
+        android:gravity="center_vertical|start"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/review_filter_all_locations"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnSortBy"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_history"
+        android:drawableEnd="@drawable/ic_ms_expand_more"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/safety_text"
+        android:gravity="center_vertical|start"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/review_sort_default"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="18sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="14dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerReports"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvQueueEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/review_queue_empty"
+                android:textColor="@color/safety_text"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvQueueSyncNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text="@string/review_queue_sync_note"
+                android:textColor="@color/safety_text_secondary"
+                android:textSize="16sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/back_button"
+        android:drawableStart="@drawable/ic_ms_arrow_back"
+        android:drawablePadding="10dp"
+        android:drawableTint="@color/safety_on_action"
+        android:gravity="center_vertical|start"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/back"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_on_action"
+        android:textSize="18sp" />
+</LinearLayout>

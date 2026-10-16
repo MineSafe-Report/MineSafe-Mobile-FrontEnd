@@ -57,5 +57,7 @@
         <activity android:name=".ui.ReportOverviewActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.MyReportsActivity" android:exported="false" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.SubmittedReportOverviewActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.ReportsWaitingActivity" android:exported="false" android:screenOrientation="portrait" />
+        <activity android:name=".ui.ReviewReportActivity" android:exported="false" android:screenOrientation="portrait" />
     </application>
 </manifest>

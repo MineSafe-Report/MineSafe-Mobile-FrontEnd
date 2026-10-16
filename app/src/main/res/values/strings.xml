@@ -137,4 +137,39 @@
         <item quantity="one">%d voice note</item>
         <item quantity="other">%d voice notes</item>
     </plurals>
+    <string name="supervisor_sign_in_required">Sign in with a supervisor account to review reports.</string>
+    <string name="review_queue_title">Reports waiting for review</string>
+    <string name="review_queue_helper">Select a report to view its details.</string>
+    <string name="review_queue_empty">No reports are waiting for review.</string>
+    <string name="review_queue_sync_note">Report sync is not connected in this API build, so reports from other devices cannot appear here yet.</string>
+    <string name="review_queue_filter_empty">No reports match this location.</string>
+    <string name="review_queue_location_value">Location: %1$s</string>
+    <string name="review_queue_item_accessibility">%1$s report at %2$s, submitted %3$s. Open to review.</string>
+    <string name="review_filter_all_locations">All locations</string>
+    <string name="review_filter_location">Location: %1$s</string>
+    <string name="review_filter_location_title">Filter by location</string>
+    <string name="review_sort_default">Sort: submitted, newest first</string>
+    <string name="review_sort_button">Sort: %1$s</string>
+    <string name="review_sort_title">Sort reports</string>
+    <string-array name="review_queue_sort_options">
+        <item>Submitted, newest first</item>
+        <item>Submitted, oldest first</item>
+        <item>Location name, A to Z</item>
+        <item>Location name, Z to A</item>
+        <item>Report type, A to Z</item>
+        <item>Report type, Z to A</item>
+    </string-array>
+    <string name="review_report_title">Review report</string>
+    <string name="review_report_unavailable">This report is no longer available in the local cache.</string>
+    <string name="review_approve">Approve report</string>
+    <string name="review_deny">Deny report</string>
+    <string name="review_approve_title">Approve this report?</string>
+    <string name="review_approve_message">Confirming will send this decision to the reporting service.</string>
+    <string name="review_deny_title">Reason for denial</string>
+    <string name="review_deny_reason_hint">Enter the reason for denying this report</string>
+    <string name="review_deny_reason_required">Enter a reason before continuing.</string>
+    <string name="review_action_not_connected_title">Decision not sent</string>
+    <string name="review_action_not_connected_message">The report review API is not available in this build. No decision or denial reason was saved; the report remains unchanged.</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 </resources>
