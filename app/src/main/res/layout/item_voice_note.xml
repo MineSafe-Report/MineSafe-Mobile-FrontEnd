@@ -30,7 +30,7 @@
             android:backgroundTint="@null"
             android:contentDescription="@string/delete_voice_note"
             android:padding="14dp"
-            android:src="@drawable/ic_ms_delete"     android:tint="@color/safety_text" />
+            android:src="@drawable/ic_ms_delete"     app:tint="@color/safety_text" />
     </LinearLayout>
 
     <LinearLayout
@@ -47,7 +47,7 @@
             android:backgroundTint="@null"
             android:contentDescription="@string/play_voice_note"
             android:padding="12dp"
-            android:src="@drawable/ic_ms_play_arrow"     android:tint="@color/safety_text" />
+            android:src="@drawable/ic_ms_play_arrow"     app:tint="@color/safety_text" />
 
         <SeekBar
             android:id="@+id/seekAudio"

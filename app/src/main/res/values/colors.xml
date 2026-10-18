@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="safety_background">#F5F4EF</color>
     <color name="safety_surface">#FFFFFF</color>
     <color name="safety_text">#182B39</color>
     <color name="safety_text_secondary">#405560</color>
     <color name="safety_action">#006B66</color>
-    <color name="safety_action_pressed">#005651</color>
     <color name="safety_selection_surface">#DFF1EE</color>
     <color name="safety_on_action">#FFFFFF</color>
     <color name="safety_border">#CAD5D3</color>

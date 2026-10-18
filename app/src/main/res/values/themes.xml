@@ -10,7 +10,6 @@
         <item name="android:statusBarColor">@color/safety_background</item>
         <item name="android:navigationBarColor">@color/safety_background</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
     </style>
     <style name="Theme.JavaReportingSystem" parent="Base.Theme.JavaReportingSystem" />
 </resources>
