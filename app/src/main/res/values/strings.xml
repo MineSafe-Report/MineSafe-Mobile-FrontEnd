@@ -10,6 +10,8 @@
     <string name="offline_landing_explanation">Offline mode. Sign in before uploading reports.</string>
     <string name="sign_in">Sign in</string>
     <string name="logout">Log out</string>
+    <string name="logout_confirm_title">Log out?</string>
+    <string name="logout_confirm_message">Are you sure you want to log out?</string>
     <string name="logout_failed">Could not log out. Please try again.</string>
     <string name="api_base_url" translatable="false" />
     <string name="review_refresh">Refresh reports</string>
@@ -164,7 +166,25 @@
         <item quantity="one">%d voice note</item>
         <item quantity="other">%d voice notes</item>
     </plurals>
-    <string name="supervisor_sign_in_required">Sign in with a supervisor account to review reports.</string>
+    <string name="supervisor_sign_in_required">Sign in with a supervisor or Safety Officer account to view reports.</string>
+    <string name="so_incidents_title">Incidents</string>
+    <string name="so_section_new">New incidents</string>
+    <string name="so_section_opened">Opened recently</string>
+    <string name="so_section_past">Past incidents</string>
+    <string name="so_opened_label">Opened</string>
+    <string name="so_incidents_helper">Select an incident to view its details.</string>
+    <string name="so_incidents_empty">No incidents yet.</string>
+    <string name="so_incidents_loading">Loading incidents…</string>
+    <string name="so_incidents_load_failed">Could not load incidents.</string>
+    <string name="so_incidents_filter_empty">No incidents match this location.</string>
+    <string name="so_incident_reported">Incident reported</string>
+    <string name="so_incident_approved">Approved incident</string>
+    <string name="so_incident_item_accessibility">%1$s at %2$s, incident time %3$s. %4$s. Open incident.</string>
+    <string name="so_incident_detail_title">Incident details</string>
+    <string name="so_incident_unavailable">This incident is no longer available.</string>
+    <string name="so_open_dashboard">Open in dashboard</string>
+    <string name="so_dashboard_unavailable">The dashboard link for this incident is not available yet.</string>
+    <string name="so_browser_unavailable">No browser is available to open the dashboard.</string>
     <string name="review_queue_title">Reports waiting for review</string>
     <string name="review_queue_helper">Select a report to view its details.</string>
     <string name="review_queue_empty">No reports are waiting for review.</string>

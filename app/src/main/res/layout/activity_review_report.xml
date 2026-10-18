@@ -25,6 +25,7 @@
         android:textSize="18sp" />
 
     <TextView
+        android:id="@+id/tvReviewHeading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -268,6 +269,7 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/reviewDecisionActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -308,5 +310,34 @@
             android:textAllCaps="false"
             android:textColor="@color/safety_on_action"
             android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/soDashboardActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvDashboardUnavailable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="@string/so_dashboard_unavailable"
+            android:textColor="@color/safety_text_secondary"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnOpenDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/next_button"
+            android:text="@string/so_open_dashboard"
+            android:textAllCaps="false"
+            android:textColor="@color/safety_on_action"
+            android:textSize="18sp" />
     </LinearLayout>
 </LinearLayout>

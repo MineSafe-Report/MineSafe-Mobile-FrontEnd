@@ -1,6 +1,7 @@
 """Contract checks for the local debug API, including supervisor report review."""
 
 import json
+import os
 import tempfile
 from threading import Thread
 import unittest
@@ -156,6 +157,64 @@ class MockApiTest(unittest.TestCase):
         self.assertEqual(403, status)
         self.assertEqual("PENDING_REVIEW", mock_api.REPORTS["RPT-1004"]["status"])
 
+    def test_safety_officer_sees_only_incidents_and_cannot_review(self):
+        token = self.login("SO001")
+        status, queue = self.request_json(
+            "GET", "/api/safety-officer/incidents", token=token)
+        self.assertEqual(200, status)
+        self.assertTrue(queue["items"])
+        self.assertTrue(all(item["type"] == "INCIDENT" for item in queue["items"]))
+        incident_id = queue["items"][0]["reportId"]
+        status, detail = self.request_json(
+            "GET", f"/api/safety-officer/incidents/{incident_id}", token=token)
+        self.assertEqual(200, status)
+        self.assertEqual("INCIDENT", detail["report"]["type"])
+        original = os.environ.get("SO_DASHBOARD_REPORT_URL_TEMPLATE")
+        try:
+            os.environ["SO_DASHBOARD_REPORT_URL_TEMPLATE"] = (
+                "https://dashboard.example/incidents/{reportId}")
+            status, linked = self.request_json(
+                "GET", f"/api/safety-officer/incidents/{incident_id}", token=token)
+            self.assertEqual(200, status)
+            self.assertEqual(f"https://dashboard.example/incidents/{incident_id}",
+                             linked["report"]["dashboardUrl"])
+        finally:
+            if original is None:
+                os.environ.pop("SO_DASHBOARD_REPORT_URL_TEMPLATE", None)
+            else:
+                os.environ["SO_DASHBOARD_REPORT_URL_TEMPLATE"] = original
+
+        supervisor = self.login("SUP001")
+        status, _ = self.request_json(
+            "POST", f"/api/supervisor/reports/{incident_id}/review",
+            {"decision": "APPROVE"}, supervisor)
+        self.assertEqual(200, status)
+        status, updated_queue = self.request_json(
+            "GET", "/api/safety-officer/incidents", token=token)
+        self.assertEqual(200, status)
+        self.assertEqual("APPROVED", next(item["status"] for item in updated_queue["items"]
+                                          if item["reportId"] == incident_id))
+        self.assertNotIn("RPT-1000", [item["reportId"] for item in updated_queue["items"]])
+
+        status, _ = self.request_json(
+            "GET", "/api/supervisor/reports", token=token)
+        self.assertEqual(403, status)
+        status, _ = self.request_json(
+            "POST", f"/api/supervisor/reports/{incident_id}/review",
+            {"decision": "APPROVE"}, token)
+        self.assertEqual(403, status)
+        status, _ = self.request_json(
+            "GET", "/api/safety-officer/incidents/RPT-1004", token=token)
+        self.assertEqual(404, status)
+        status, _ = self.request_json("POST", "/api/reports", {}, token)
+        self.assertEqual(403, status)
+        status, _ = self.request_json("POST", "/api/devices", {}, token)
+        self.assertEqual(403, status)
+        worker = self.login("WORKER001")
+        status, _ = self.request_json(
+            "GET", "/api/safety-officer/incidents", token=worker)
+        self.assertEqual(403, status)
+
     def test_supervisor_can_approve_and_report_cannot_be_reviewed_twice(self):
         token = self.login("SUP001")
         status, body = self.request_json(
@@ -221,6 +280,8 @@ class MockApiTest(unittest.TestCase):
         self.assertIn(report_id, [item["reportId"] for item in queue["items"]])
         status, detail = self.request_json("GET", f"/api/supervisor/reports/{report_id}", token=supervisor)
         self.assertFalse(detail["report"]["evidenceComplete"])
+        self.assertEqual(report_body["occurredAtEpochMillis"],
+                         detail["report"]["occurredAtEpochMillis"])
         self.assertNotIn("reporterWorkerId", detail["report"])
         status, blocked = self.request_json("POST", f"/api/supervisor/reports/{report_id}/review",
                                              {"decision": "APPROVE"}, supervisor)

@@ -19,12 +19,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javareportingsystem.R;
+import com.example.javareportingsystem.LoginActivity;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiReportReviewDataSource;
 import com.example.javareportingsystem.data.ApiConnection;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
 import com.example.javareportingsystem.data.model.ReviewReport;
+import com.example.javareportingsystem.data.local.ReportValues;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,8 +38,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Supervisor queue loaded from the authenticated report review API. */
+/** Supervisor review queue or Safety Officer incident list, according to the signed-in role. */
 public class ReportsWaitingActivity extends AppCompatActivity {
+    private static final long TWO_DAYS_MILLIS = 2L * 24 * 60 * 60 * 1000;
     private static final int SORT_NEWEST = 0;
     private static final int SORT_OLDEST = 1;
     private static final int SORT_LOCATION_AZ = 2;
@@ -65,6 +68,8 @@ public class ReportsWaitingActivity extends AppCompatActivity {
     private boolean loading;
     private String selectedLocation;
     private int selectedSort = SORT_NEWEST;
+    private boolean safetyOfficerMode;
+    private int safetyOfficerAccountId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +81,10 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         loginRepository = LoginRepository.getInstance(this,
                 new ApiLoginDataSource(getString(R.string.api_base_url)));
         LoggedInUser user = loginRepository.getCachedUser();
-        if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
+        safetyOfficerMode = user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole());
+        if (safetyOfficerMode) safetyOfficerAccountId = user.getAccountId();
+        if (user == null || (!safetyOfficerMode
+                && !"SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
             Toast.makeText(this, R.string.supervisor_sign_in_required, Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -87,23 +95,52 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         locationFilter = findViewById(R.id.btnLocationFilter);
         sortButton = findViewById(R.id.btnSortBy);
         refreshButton = findViewById(R.id.btnRefresh);
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        Button backButton = findViewById(R.id.btnBack);
+        Button logoutButton = findViewById(R.id.btnSoLogout);
+        if (safetyOfficerMode) {
+            ((TextView) findViewById(R.id.tvQueueTitle)).setText(R.string.so_incidents_title);
+            ((TextView) findViewById(R.id.tvQueueHelper)).setText(R.string.so_incidents_helper);
+            backButton.setVisibility(View.GONE);
+            logoutButton.setVisibility(View.VISIBLE);
+            logoutButton.setOnClickListener(v -> confirmLogout());
+        } else {
+            backButton.setOnClickListener(v -> finish());
+        }
         locationFilter.setOnClickListener(v -> showLocationFilter());
         sortButton.setOnClickListener(v -> showSortOptions());
         refreshButton.setOnClickListener(v -> loadReviewQueue());
 
-        adapter = new ReviewQueueAdapter(report -> {
+        adapter = new ReviewQueueAdapter(this, report -> {
             Intent intent = new Intent(this, ReviewReportActivity.class);
             intent.putExtra(ReviewReportActivity.EXTRA_SERVER_ID, report.getReportId());
             startActivity(intent);
-        });
+        }, safetyOfficerMode);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.logout_confirm_title)
+                .setMessage(R.string.logout_confirm_message)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.logout, (dialog, which) -> {
+                    if (!loginRepository.logout()) {
+                        Toast.makeText(this, R.string.logout_failed, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Intent login = new Intent(this, LoginActivity.class);
+                    login.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(login);
+                    finish();
+                })
+                .show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (adapter != null && safetyOfficerMode) updateRows();
         if (refreshOnResume) {
             refreshOnResume = false;
             loadReviewQueue();
@@ -122,7 +159,8 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         if (loading || loginRepository == null) return;
         loading = true;
         refreshButton.setEnabled(false);
-        emptyNotice.setText(R.string.review_queue_loading);
+        emptyNotice.setText(safetyOfficerMode
+                ? R.string.so_incidents_loading : R.string.review_queue_loading);
         emptyNotice.setVisibility(View.VISIBLE);
         syncNote.setVisibility(View.GONE);
         apiExecutor.execute(() -> {
@@ -131,12 +169,16 @@ public class ReportsWaitingActivity extends AppCompatActivity {
                     throw new IOException("Cannot reach the review service. Try Refresh when connected.");
                 }
                 LoggedInUser user = loginRepository.getFreshUser();
-                if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
-                    throw new IOException("Sign in as a supervisor to refresh reports.");
+                if (user == null || !(safetyOfficerMode
+                        ? "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())
+                        : "SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
+                    throw new IOException("Sign in again to refresh reports.");
                 }
                 ApiReportReviewDataSource reviewApi = new ApiReportReviewDataSource(
                         getString(R.string.api_base_url), user.getAccessToken());
-                List<ReviewReport> reports = reviewApi.getReports("PENDING_REVIEW");
+                List<ReviewReport> reports = safetyOfficerMode
+                        ? reviewApi.getSafetyOfficerIncidents()
+                        : reviewApi.getReports("PENDING_REVIEW");
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) return;
                     loading = false;
@@ -151,7 +193,8 @@ public class ReportsWaitingActivity extends AppCompatActivity {
                     refreshButton.setEnabled(true);
                     pendingReports.clear();
                     updateRows();
-                    emptyNotice.setText(R.string.review_queue_load_failed);
+                    emptyNotice.setText(safetyOfficerMode
+                            ? R.string.so_incidents_load_failed : R.string.review_queue_load_failed);
                     emptyNotice.setVisibility(View.VISIBLE);
                     syncNote.setText(error.getMessage() == null
                             ? getString(R.string.review_queue_sync_note) : error.getMessage());
@@ -174,7 +217,11 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         pendingReports.clear();
         if (reports != null) {
             for (ReviewReport report : reports) {
-                if (isPendingReview(report.getStatus())) pendingReports.add(report);
+                if (safetyOfficerMode
+                        ? ReportValues.INCIDENT.equalsIgnoreCase(report.getType())
+                        : isPendingReview(report.getStatus())) {
+                    pendingReports.add(report);
+                }
             }
         }
         updateRows();
@@ -187,15 +234,42 @@ public class ReportsWaitingActivity extends AppCompatActivity {
                 visible.add(report);
             }
         }
-        Collections.sort(visible, comparatorFor(selectedSort));
-        adapter.setReports(visible);
+        Comparator<ReviewReport> comparator = comparatorFor(selectedSort);
+        if (safetyOfficerMode) {
+            List<ReviewReport> newIncidents = new ArrayList<>();
+            List<ReviewReport> openedRecently = new ArrayList<>();
+            List<ReviewReport> pastIncidents = new ArrayList<>();
+            long deviceNow = System.currentTimeMillis();
+            for (ReviewReport report : visible) {
+                long occurredAt = report.getOccurredAtEpochMillis() > 0
+                        ? report.getOccurredAtEpochMillis() : report.getSubmittedAtEpochMillis();
+                if (deviceNow - occurredAt > TWO_DAYS_MILLIS) {
+                    pastIncidents.add(report);
+                } else if (SafetyOfficerIncidentState.wasOpened(
+                        this, safetyOfficerAccountId, report.getReportId())) {
+                    openedRecently.add(report);
+                } else {
+                    newIncidents.add(report);
+                }
+            }
+            Collections.sort(newIncidents, comparator);
+            Collections.sort(openedRecently, comparator);
+            Collections.sort(pastIncidents, comparator);
+            adapter.setSafetyOfficerSections(newIncidents, openedRecently,
+                    pastIncidents, safetyOfficerAccountId);
+        } else {
+            Collections.sort(visible, comparator);
+            adapter.setReports(visible);
+        }
 
         boolean noReports = visible.isEmpty();
         emptyNotice.setVisibility(noReports ? View.VISIBLE : View.GONE);
         if (pendingReports.isEmpty()) {
-            emptyNotice.setText(R.string.review_queue_empty);
+            emptyNotice.setText(safetyOfficerMode
+                    ? R.string.so_incidents_empty : R.string.review_queue_empty);
         } else {
-            emptyNotice.setText(R.string.review_queue_filter_empty);
+            emptyNotice.setText(safetyOfficerMode
+                    ? R.string.so_incidents_filter_empty : R.string.review_queue_filter_empty);
         }
         locationFilter.setText(selectedLocation == null
                 ? getString(R.string.review_filter_all_locations)

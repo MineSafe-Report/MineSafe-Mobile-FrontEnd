@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="white">#FFFFFFFF</color>
     <color name="safety_background">#F5F4EF</color>
     <color name="safety_surface">#FFFFFF</color>
     <color name="safety_text">#182B39</color>

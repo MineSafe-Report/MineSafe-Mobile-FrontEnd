@@ -29,6 +29,7 @@ import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.Result;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
+import com.example.javareportingsystem.ui.ReportsWaitingActivity;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -92,8 +93,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         if (loginRepository.isLoggedIn()) {
-            ReportSyncWorker.enqueueNow(this);
-            openLandingPage();
+            openHomeForUser(loginRepository.getUser());
         } else if (loginRepository.getCachedUser() != null) {
             setLoading(true);
             loginExecutor.execute(() -> {
@@ -102,8 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (isFinishing() || isDestroyed()) return;
                     setLoading(false);
                     if (restored != null) {
-                        ReportSyncWorker.enqueueNow(this);
-                        openLandingPage();
+                        openHomeForUser(restored);
                     }
                 });
             });
@@ -145,11 +144,13 @@ public class LoginActivity extends AppCompatActivity {
             boolean locationsFailed = false;
             if (result instanceof Result.Success) {
                 LoggedInUser user = (LoggedInUser) ((Result.Success<?>) result).getData();
-                try {
-                    localReports.replaceRemoteLocations(
-                            locationApi.fetchActiveLocations(user.getAccessToken()));
-                } catch (IOException | RuntimeException error) {
-                    locationsFailed = true;
+                if (!"SAFETY_OFFICER".equalsIgnoreCase(user.getRole())) {
+                    try {
+                        localReports.replaceRemoteLocations(
+                                locationApi.fetchActiveLocations(user.getAccessToken()));
+                    } catch (IOException | RuntimeException error) {
+                        locationsFailed = true;
+                    }
                 }
             }
             boolean showLocationWarning = locationsFailed;
@@ -159,13 +160,12 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 setLoading(false);
                 if (result instanceof Result.Success) {
-                    ReportSyncWorker.enqueueNow(this);
                     passwordInput.getText().clear();
                     if (showLocationWarning) {
                         Toast.makeText(this, R.string.locations_refresh_failed,
                                 Toast.LENGTH_LONG).show();
                     }
-                    openLandingPage();
+                    openHomeForUser((LoggedInUser) ((Result.Success<?>) result).getData());
                 } else {
                     String message = ((Result.Error) result).getError().getMessage();
                     showLoginError(message == null ? getString(R.string.login_failed) : message);
@@ -177,6 +177,16 @@ public class LoginActivity extends AppCompatActivity {
     private void openLandingPage() {
         startActivity(new Intent(this, LandingPageActivity.class));
         finish();
+    }
+
+    private void openHomeForUser(LoggedInUser user) {
+        if (user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())) {
+            startActivity(new Intent(this, ReportsWaitingActivity.class));
+            finish();
+            return;
+        }
+        ReportSyncWorker.enqueueNow(this);
+        openLandingPage();
     }
 
     private void showLoginError(String message) {

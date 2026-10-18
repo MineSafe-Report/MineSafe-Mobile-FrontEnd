@@ -3,6 +3,9 @@ package com.example.javareportingsystem.ui;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -38,7 +41,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Report details and approve/deny actions for supervisors. */
+/** Report details for supervisors and Safety Officers; only supervisors can review. */
 public class ReviewReportActivity extends AppCompatActivity {
     public static final String EXTRA_SERVER_ID = "review_server_report_id";
 
@@ -60,6 +63,9 @@ public class ReviewReportActivity extends AppCompatActivity {
     private boolean currentEvidenceComplete;
     private Button approveButton;
     private Button denyButton;
+    private Button dashboardButton;
+    private TextView dashboardUnavailable;
+    private boolean safetyOfficerMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +77,9 @@ public class ReviewReportActivity extends AppCompatActivity {
         loginRepository = LoginRepository.getInstance(this,
                 new ApiLoginDataSource(getString(R.string.api_base_url)));
         LoggedInUser user = loginRepository.getCachedUser();
-        if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
+        safetyOfficerMode = user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole());
+        if (user == null || (!safetyOfficerMode
+                && !"SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
             Toast.makeText(this, R.string.supervisor_sign_in_required, Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -80,9 +88,18 @@ public class ReviewReportActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         approveButton = findViewById(R.id.btnApprove);
         denyButton = findViewById(R.id.btnDeny);
-        setDecisionButtonsEnabled(false);
-        approveButton.setOnClickListener(v -> confirmApproval());
-        denyButton.setOnClickListener(v -> showDenialReason());
+        dashboardButton = findViewById(R.id.btnOpenDashboard);
+        dashboardUnavailable = findViewById(R.id.tvDashboardUnavailable);
+        if (safetyOfficerMode) {
+            findViewById(R.id.reviewDecisionActions).setVisibility(View.GONE);
+            findViewById(R.id.soDashboardActions).setVisibility(View.VISIBLE);
+            ((TextView) findViewById(R.id.tvReviewHeading)).setText(R.string.so_incident_detail_title);
+            dashboardButton.setEnabled(false);
+        } else {
+            setDecisionButtonsEnabled(false);
+            approveButton.setOnClickListener(v -> confirmApproval());
+            denyButton.setOnClickListener(v -> showDenialReason());
+        }
 
         reportTitle = findViewById(R.id.tvReportTitle);
         reportStatus = findViewById(R.id.tvReportStatus);
@@ -105,8 +122,10 @@ public class ReviewReportActivity extends AppCompatActivity {
 
     private ApiReportReviewDataSource freshApi() throws IOException {
         LoggedInUser user = loginRepository.getFreshUser();
-        if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
-            throw new IOException("Sign in as a supervisor to review reports.");
+        if (user == null || !(safetyOfficerMode
+                ? "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())
+                : "SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
+            throw new IOException("Sign in again to view this report.");
         }
         return new ApiReportReviewDataSource(
                 getString(R.string.api_base_url), user.getAccessToken());
@@ -123,9 +142,21 @@ public class ReviewReportActivity extends AppCompatActivity {
 
     private void loadReport() {
         try {
-            ReviewReport report = freshApi().getReport(serverReportId);
+            ApiReportReviewDataSource api = freshApi();
+            ReviewReport report = safetyOfficerMode
+                    ? api.getSafetyOfficerIncident(serverReportId)
+                    : api.getReport(serverReportId);
             runOnUiThread(() -> {
-                if (!isFinishing() && !isDestroyed()) render(report);
+                if (!isFinishing() && !isDestroyed()) {
+                    render(report);
+                    if (safetyOfficerMode) {
+                        LoggedInUser user = loginRepository.getCachedUser();
+                        if (user != null) {
+                            SafetyOfficerIncidentState.markOpened(this,
+                                    user.getAccountId(), report.getReportId());
+                        }
+                    }
+                }
             });
         } catch (IOException error) {
             showUnavailable(error.getMessage());
@@ -133,6 +164,10 @@ public class ReviewReportActivity extends AppCompatActivity {
     }
 
     private void render(ReviewReport report) {
+        if (safetyOfficerMode && !ReportValues.INCIDENT.equalsIgnoreCase(report.getType())) {
+            showUnavailable(getString(R.string.so_incident_unavailable));
+            return;
+        }
         String type = typeLabel(report.getType());
         reportTitle.setText(hasText(report.getReferenceNumber())
                 ? report.getReferenceNumber().trim() : report.getReportId());
@@ -176,11 +211,26 @@ public class ReviewReportActivity extends AppCompatActivity {
                 ? getString(R.string.review_reason_value, report.getReviewReason()) : "");
         reportReviewReason.setVisibility(hasReviewReason ? View.VISIBLE : View.GONE);
 
-        boolean pending = isPendingReview(report.getStatus()) && report.isEvidenceComplete();
-        approveButton.setEnabled(pending);
-        denyButton.setEnabled(pending);
-        approveButton.setAlpha(pending ? 1f : 0.55f);
-        denyButton.setAlpha(pending ? 1f : 0.55f);
+        if (safetyOfficerMode) {
+            String url = report.getDashboardUrl();
+            Uri link = url == null ? null : Uri.parse(url.trim());
+            boolean validLink = link != null && ("https".equalsIgnoreCase(link.getScheme())
+                    || "http".equalsIgnoreCase(link.getScheme()))
+                    && link.getHost() != null && !link.getHost().isEmpty();
+            dashboardButton.setEnabled(validLink);
+            dashboardButton.setAlpha(validLink ? 1f : 0.55f);
+            dashboardUnavailable.setVisibility(validLink ? View.GONE : View.VISIBLE);
+            dashboardButton.setOnClickListener(validLink ? view -> {
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, link));
+                } catch (ActivityNotFoundException error) {
+                    Toast.makeText(this, R.string.so_browser_unavailable, Toast.LENGTH_LONG).show();
+                }
+            } : null);
+        } else {
+            boolean pending = isPendingReview(report.getStatus()) && report.isEvidenceComplete();
+            setDecisionButtonsEnabled(pending);
+        }
         findViewById(R.id.reviewContent).setVisibility(View.VISIBLE);
         findViewById(R.id.reviewLoading).setVisibility(View.GONE);
     }

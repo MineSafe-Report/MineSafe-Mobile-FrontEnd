@@ -13,6 +13,7 @@ public final class ReviewReport {
     private final String locationName;
     private final String description;
     private final long submittedAtEpochMillis;
+    private final long occurredAtEpochMillis;
     private final String status;
     private final boolean anonymous;
     private final int imageCount;
@@ -20,12 +21,13 @@ public final class ReviewReport {
     private final String reviewReason;
     private final boolean evidenceComplete;
     private final List<ReviewAttachment> attachments;
+    private final String dashboardUrl;
 
     public ReviewReport(String reportId, String referenceNumber, String type,
             String locationCode, String locationName, String description,
-            long submittedAtEpochMillis, String status, boolean anonymous,
+            long submittedAtEpochMillis, long occurredAtEpochMillis, String status, boolean anonymous,
             int imageCount, int voiceNoteCount, String reviewReason,
-            boolean evidenceComplete, List<ReviewAttachment> attachments) {
+            boolean evidenceComplete, List<ReviewAttachment> attachments, String dashboardUrl) {
         this.reportId = reportId;
         this.referenceNumber = referenceNumber;
         this.type = type;
@@ -33,6 +35,7 @@ public final class ReviewReport {
         this.locationName = locationName;
         this.description = description;
         this.submittedAtEpochMillis = submittedAtEpochMillis;
+        this.occurredAtEpochMillis = occurredAtEpochMillis;
         this.status = status;
         this.anonymous = anonymous;
         this.imageCount = imageCount;
@@ -40,6 +43,7 @@ public final class ReviewReport {
         this.reviewReason = reviewReason;
         this.evidenceComplete = evidenceComplete;
         this.attachments = Collections.unmodifiableList(new ArrayList<>(attachments));
+        this.dashboardUrl = dashboardUrl;
     }
 
     public String getReportId() { return reportId; }
@@ -49,6 +53,7 @@ public final class ReviewReport {
     public String getLocationName() { return locationName; }
     public String getDescription() { return description; }
     public long getSubmittedAtEpochMillis() { return submittedAtEpochMillis; }
+    public long getOccurredAtEpochMillis() { return occurredAtEpochMillis; }
     public String getStatus() { return status; }
     public boolean isAnonymous() { return anonymous; }
     public int getImageCount() { return imageCount; }
@@ -56,4 +61,5 @@ public final class ReviewReport {
     public String getReviewReason() { return reviewReason; }
     public boolean isEvidenceComplete() { return evidenceComplete; }
     public List<ReviewAttachment> getAttachments() { return attachments; }
+    public String getDashboardUrl() { return dashboardUrl; }
 }

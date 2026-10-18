@@ -13,7 +13,7 @@ import secrets
 import struct
 import tempfile
 from threading import Lock
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, quote, urlsplit
 import wave
 import zlib
 
@@ -34,6 +34,14 @@ ACCOUNTS = {
         "workerId": "SUP001",
         "fullName": "Demo Supervisor",
         "role": "SUPERVISOR",
+        "assignedLocations": ["LOC-1", "LOC-2", "LOC-3"],
+        "isActive": True,
+    },
+    "SO001": {
+        "accountId": 4,
+        "workerId": "SO001",
+        "fullName": "Demo Safety Officer",
+        "role": "SAFETY_OFFICER",
         "assignedLocations": ["LOC-1", "LOC-2", "LOC-3"],
         "isActive": True,
     },
@@ -284,7 +292,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(400, {"code": "BAD_REQUEST", "message": "Invalid JSON request."})
             return None
 
-    def authenticated_session(self, supervisor=False):
+    def authenticated_session(self, supervisor=False, safety_officer=False):
         authorization = self.headers.get("Authorization", "")
         token = authorization[7:] if authorization.startswith("Bearer ") else ""
         with TOKEN_LOCK:
@@ -294,6 +302,9 @@ class Handler(BaseHTTPRequestHandler):
             return None
         if supervisor and session["account"].get("role", "").upper() != "SUPERVISOR":
             self.send_json(403, {"code": "FORBIDDEN", "message": "Supervisor access is required."})
+            return None
+        if safety_officer and session["account"].get("role", "").upper() != "SAFETY_OFFICER":
+            self.send_json(403, {"code": "FORBIDDEN", "message": "Safety Officer access is required."})
             return None
         return session
 
@@ -316,6 +327,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def may_view_report(self, session, report):
         return session["account"]["role"] == "SUPERVISOR" or (
+            session["account"]["role"] == "SAFETY_OFFICER"
+            and report.get("type") == "INCIDENT") or (
             report.get("deviceId") and self.owns_device(session, report["deviceId"]))
 
     def do_GET(self):
@@ -402,6 +415,32 @@ class Handler(BaseHTTPRequestHandler):
                     self.send_json(403, {"code": "FORBIDDEN", "message": "Report access denied."})
                     return
                 result = self.public_report(report)
+            self.send_json(200, {"report": result})
+        elif request_url.path == "/api/safety-officer/incidents":
+            session = self.authenticated_session(safety_officer=True)
+            if session is None:
+                return
+            with REPORT_LOCK:
+                reports = [self.public_report(report) for report in REPORTS.values()
+                           if report["type"] == "INCIDENT"
+                           and report["status"] in ("PENDING_REVIEW", "APPROVED")]
+            reports.sort(key=lambda report: report["submittedAtEpochMillis"], reverse=True)
+            self.send_json(200, {"items": reports, "total": len(reports)})
+        elif request_url.path.startswith("/api/safety-officer/incidents/"):
+            session = self.authenticated_session(safety_officer=True)
+            if session is None:
+                return
+            report_id = request_url.path.rsplit("/", 1)[-1]
+            with REPORT_LOCK:
+                report = REPORTS.get(report_id)
+                result = self.public_report(report) if report and report["type"] == "INCIDENT" else None
+            if result is None:
+                self.send_json(404, {"code": "REPORT_NOT_FOUND", "message": "Incident not found."})
+                return
+            dashboard_template = os.environ.get("SO_DASHBOARD_REPORT_URL_TEMPLATE", "")
+            if "{reportId}" in dashboard_template:
+                result["dashboardUrl"] = dashboard_template.replace(
+                    "{reportId}", quote(report_id, safe=""))
             self.send_json(200, {"report": result})
         elif request_url.path == "/api/supervisor/reports":
             session = self.authenticated_session(supervisor=True)
@@ -513,6 +552,9 @@ class Handler(BaseHTTPRequestHandler):
         session = self.authenticated_session()
         if session is None:
             return
+        if session["account"]["role"] == "SAFETY_OFFICER":
+            self.send_json(403, {"code": "FORBIDDEN", "message": "Safety Officers cannot create reports."})
+            return
         request = self.read_json_request(max_bytes=4096)
         if request is None:
             return
@@ -535,6 +577,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_report_submit(self):
         session = self.authenticated_session()
         if session is None:
+            return
+        if session["account"]["role"] == "SAFETY_OFFICER":
+            self.send_json(403, {"code": "FORBIDDEN", "message": "Safety Officers cannot create reports."})
             return
         request = self.read_json_request(max_bytes=65536)
         if request is None:
@@ -568,6 +613,7 @@ class Handler(BaseHTTPRequestHandler):
                           "deviceId": device_id, "localReportId": local_id,
                           "type": report_type, "locationCode": location["code"],
                           "locationName": location["name"], "description": request.get("description", ""),
+                          "occurredAtEpochMillis": request["occurredAtEpochMillis"],
                           "submittedAtEpochMillis": request["submittedAtEpochMillis"],
                           "receivedAtEpochMillis": now, "statusUpdatedAtEpochMillis": now,
                           "status": "PENDING_REVIEW", "anonymous": anonymous,
@@ -588,6 +634,9 @@ class Handler(BaseHTTPRequestHandler):
     def handle_attachment(self, path):
         session = self.authenticated_session()
         if session is None:
+            return
+        if session["account"]["role"] == "SAFETY_OFFICER":
+            self.send_json(403, {"code": "FORBIDDEN", "message": "Safety Officers cannot upload evidence."})
             return
         report_id = path.split("/")[3]
         try:

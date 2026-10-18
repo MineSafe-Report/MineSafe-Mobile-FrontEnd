@@ -70,7 +70,9 @@ public final class ReportSyncWorker extends Worker {
         LoginRepository login = LoginRepository.getInstance(context,
                 new ApiLoginDataSource(baseUrl));
         LoggedInUser user = login.getFreshUser();
-        if (user == null) return Result.success(); // Sign-in will enqueue again.
+        if (user == null || "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())) {
+            return Result.success(); // Sign-in with a reporting role will enqueue again.
+        }
         ApiReportingDataSource api = new ApiReportingDataSource(baseUrl, user.getAccessToken());
         LocalReportRepository reports = new LocalReportRepository(context);
         try {
@@ -164,7 +166,7 @@ public final class ReportSyncWorker extends Worker {
         LoginRepository login = LoginRepository.getInstance(context,
                 new ApiLoginDataSource(baseUrl));
         LoggedInUser user = login.getFreshUser();
-        if (user == null) return;
+        if (user == null || "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())) return;
         LocalReportRepository reports = new LocalReportRepository(context);
         ApiReportingDataSource api = new ApiReportingDataSource(baseUrl, user.getAccessToken());
         try {

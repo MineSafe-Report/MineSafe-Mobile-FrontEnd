@@ -52,6 +52,7 @@
             android:textSize="14sp" />
 
         <TextView
+            android:id="@+id/tvReportQueueStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
@@ -62,6 +63,19 @@
             android:textColor="@color/safety_status"
             android:textSize="15sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvIncidentOpened"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:drawableStart="@drawable/ic_ms_check_circle"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/safety_text_secondary"
+            android:text="@string/so_opened_label"
+            android:textColor="@color/safety_text_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <ImageView

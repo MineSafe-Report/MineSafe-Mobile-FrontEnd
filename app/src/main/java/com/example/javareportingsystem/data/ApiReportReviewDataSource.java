@@ -46,6 +46,31 @@ public final class ApiReportReviewDataSource {
         }
     }
 
+    /** Safety Officers can read incident notifications, but cannot make review decisions. */
+    public List<ReviewReport> getSafetyOfficerIncidents() throws IOException {
+        try {
+            JSONObject response = request("GET", "/api/safety-officer/incidents", null);
+            JSONArray items = response.getJSONArray("items");
+            List<ReviewReport> reports = new ArrayList<>();
+            for (int i = 0; i < items.length(); i++) {
+                reports.add(parseReport(items.getJSONObject(i)));
+            }
+            return reports;
+        } catch (JSONException error) {
+            throw new IOException("The incident service returned an invalid list.", error);
+        }
+    }
+
+    public ReviewReport getSafetyOfficerIncident(String reportId) throws IOException {
+        try {
+            JSONObject response = request("GET", "/api/safety-officer/incidents/"
+                    + encodePath(reportId), null);
+            return parseReport(response.getJSONObject("report"));
+        } catch (JSONException error) {
+            throw new IOException("The incident service returned an invalid report.", error);
+        }
+    }
+
     public ReviewReport getReport(String reportId) throws IOException {
         try {
             JSONObject response = request("GET", "/api/supervisor/reports/"
@@ -181,12 +206,14 @@ public final class ApiReportReviewDataSource {
                 json.optString("locationName", ""),
                 json.optString("description", ""),
                 json.optLong("submittedAtEpochMillis", 0L),
+                json.optLong("occurredAtEpochMillis", 0L),
                 status,
                 json.optBoolean("anonymous", false),
                 Math.max(0, json.optInt("imageCount", 0)),
                 Math.max(0, json.optInt("voiceNoteCount", 0)),
                 json.isNull("reviewReason") ? null : json.optString("reviewReason", null),
-                json.optBoolean("evidenceComplete", true), attachments);
+                json.optBoolean("evidenceComplete", true), attachments,
+                json.optString("dashboardUrl", ""));
     }
 
     private static String encodePath(String value) throws IOException {

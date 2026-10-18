@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -56,6 +57,13 @@ public class LandingPageActivity extends AppCompatActivity {
                 : LoginRepository.getInstance(this,
                         new ApiLoginDataSource(getString(R.string.api_base_url)));
 
+        LoggedInUser account = repository.getCachedUser();
+        if (account != null && "SAFETY_OFFICER".equalsIgnoreCase(account.getRole())) {
+            startActivity(new Intent(this, ReportsWaitingActivity.class));
+            finish();
+            return;
+        }
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_landing_page);
         reports = new LocalReportRepository(this);
@@ -64,12 +72,7 @@ public class LandingPageActivity extends AppCompatActivity {
                 openLogin();
                 return;
             }
-            if (!repository.logout()) {
-                android.widget.Toast.makeText(this, R.string.logout_failed,
-                        android.widget.Toast.LENGTH_SHORT).show();
-                return;
-            }
-            openLogin();
+            confirmLogout();
         });
         findViewById(R.id.btnCreateReport).setOnClickListener(v -> startActivity(
                 new Intent(this, ReportStartActivity.class)));
@@ -83,6 +86,22 @@ public class LandingPageActivity extends AppCompatActivity {
             return insets;
         });
         refreshSessionUi();
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.logout_confirm_title)
+                .setMessage(R.string.logout_confirm_message)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.logout, (dialog, which) -> {
+                    if (!repository.logout()) {
+                        android.widget.Toast.makeText(this, R.string.logout_failed,
+                                android.widget.Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    openLogin();
+                })
+                .show();
     }
 
     private void refreshLocationsIfNeeded() {

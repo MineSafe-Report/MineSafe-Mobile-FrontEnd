@@ -6,7 +6,26 @@
     android:background="@color/safety_background"
     android:orientation="vertical">
 
+    <Button
+        android:id="@+id/btnSoLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_gravity="end"
+        android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_logout"
+        android:drawablePadding="8dp"
+        android:drawableTint="@color/safety_text"
+        android:minWidth="112dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:text="@string/logout"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
     <TextView
+        android:id="@+id/tvQueueTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -16,6 +35,7 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/tvQueueHelper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
