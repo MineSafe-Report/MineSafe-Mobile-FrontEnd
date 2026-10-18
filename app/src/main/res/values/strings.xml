@@ -117,4 +117,24 @@
     <string name="edit_description">View and edit description</string>
     <string name="edit_images">View and edit images</string>
     <string name="submit_report">Submit report</string>
+    <string name="report_open_accessibility">Open %1$s, %2$s</string>
+    <string name="report_quick_overview_title">Report Overview</string>
+    <string name="report_loading">Loading report…</string>
+    <string name="report_unavailable">This report is no longer available.</string>
+    <string name="report_value_unavailable">Not available</string>
+    <string name="report_description_empty">No written description.</string>
+    <string name="report_status_label">Status</string>
+    <string name="report_type_label">Report type</string>
+    <string name="report_location_label">Location</string>
+    <string name="report_created_label">Created</string>
+    <string name="report_description_label">What happened</string>
+    <string name="report_attachments_label">Attachments</string>
+    <plurals name="report_image_count">
+        <item quantity="one">%d image</item>
+        <item quantity="other">%d images</item>
+    </plurals>
+    <plurals name="report_voice_count">
+        <item quantity="one">%d voice note</item>
+        <item quantity="other">%d voice notes</item>
+    </plurals>
 </resources>

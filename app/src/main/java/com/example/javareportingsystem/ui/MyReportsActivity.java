@@ -1,5 +1,6 @@
 package com.example.javareportingsystem.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,6 +76,18 @@ public class MyReportsActivity extends AppCompatActivity {
             statusIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
                     getColor(status.color)));
 
+            row.setContentDescription(getString(R.string.report_open_accessibility,
+                    getString(R.string.report_list_name, type, item.localReportId),
+                    status.label));
+            row.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SubmittedReportOverviewActivity.class);
+                intent.putExtra(SubmittedReportOverviewActivity.EXTRA_SOURCE, item.source);
+                intent.putExtra(SubmittedReportOverviewActivity.EXTRA_LOCAL_ID,
+                        item.localReportId);
+                intent.putExtra(SubmittedReportOverviewActivity.EXTRA_SERVER_ID,
+                        item.serverReportId);
+                startActivity(intent);
+            });
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
