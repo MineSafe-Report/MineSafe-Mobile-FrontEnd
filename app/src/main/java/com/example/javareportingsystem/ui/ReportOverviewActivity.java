@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.LandingPageActivity;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
+import com.example.javareportingsystem.data.ReportSyncWorker;
 import com.example.javareportingsystem.data.local.ReportValues;
 import com.example.javareportingsystem.data.local.entity.LocationEntity;
 import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
@@ -191,6 +192,7 @@ public class ReportOverviewActivity extends AppCompatActivity {
                 reports.submitDraft(draftId);
                 runOnUiThread(() -> {
                     if (isFinishing() || isDestroyed()) return;
+                    ReportSyncWorker.enqueueNow(this);
                     Toast.makeText(this, R.string.report_submitted, Toast.LENGTH_LONG).show();
                     Intent home = new Intent(this, LandingPageActivity.class);
                     home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

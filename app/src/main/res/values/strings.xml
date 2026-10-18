@@ -20,6 +20,36 @@
     <string name="logout">Log out</string>
     <string name="logout_failed">Could not log out. Please try again.</string>
     <string name="api_base_url" translatable="false" />
+    <string name="review_refresh">Refresh reports</string>
+    <string name="review_view_image">View image %1$d</string>
+    <string name="review_play_voice">Play voice note %1$d</string>
+    <string name="review_pause_voice">Pause voice note</string>
+    <string name="review_evidence_pending">Evidence is still uploading. Review will be available when it arrives.</string>
+    <string name="review_evidence_unavailable">Could not open this evidence. Try again when connected.</string>
+    <string name="review_play_voice_action">Play voice note</string>
+    <string name="my_reports_search_hint">Search reports</string>
+    <string name="my_reports_all_statuses">All statuses</string>
+    <string name="my_reports_all_types">All report types</string>
+    <string name="my_reports_filter_status_title">Filter by status</string>
+    <string name="my_reports_filter_type_title">Filter by report type</string>
+    <string-array name="my_reports_status_options">
+        <item>@string/my_reports_all_statuses</item>
+        <item>@string/status_pending_upload</item>
+        <item>@string/status_upload_failed</item>
+        <item>@string/status_pending_review</item>
+        <item>@string/status_approved</item>
+        <item>@string/status_denied</item>
+    </string-array>
+    <string-array name="my_reports_type_options">
+        <item>@string/my_reports_all_types</item>
+        <item>@string/report_type_hazard</item>
+        <item>@string/report_type_incident</item>
+        <item>@string/report_type_near_miss</item>
+    </string-array>
+    <string name="my_reports_pending_heading">Pending and needing attention</string>
+    <string name="my_reports_older_heading">Older reports</string>
+    <string name="my_reports_search_results_heading">Search results</string>
+    <string name="my_reports_no_results">No matching reports</string>
     <string name="local_network_permission_required">Allow local network access to use the test login API.</string>
     <string name="report_draft_missing">This report draft is no longer available.</string>
     <string name="report_draft_load_failed">Could not load this report draft.</string>
@@ -84,6 +114,13 @@
     <string name="status_pending_upload">Pending upload</string>
     <string name="status_finishing_upload">Finishing upload</string>
     <string name="status_upload_failed">Upload failed</string>
+    <string name="status_upload_paused">Upload paused</string>
+    <string name="report_upload_problem">Upload stopped because a file could not be sent. Check the reason below, then reupload.</string>
+    <string name="report_retry_upload">Retry upload</string>
+    <string name="report_replace_voice">Replace missing voice note</string>
+    <string name="report_upload_retry_started">Reupload requested.</string>
+    <string name="report_upload_retry_failed">Could not request reupload.</string>
+    <string name="report_voice_replace_failed">Could not replace the voice note. Choose an audio file up to 25 MB.</string>
     <string name="status_pending_review">Pending review</string>
     <string name="status_approved">Approved</string>
     <string name="status_denied">Denied</string>
@@ -141,7 +178,9 @@
     <string name="review_queue_title">Reports waiting for review</string>
     <string name="review_queue_helper">Select a report to view its details.</string>
     <string name="review_queue_empty">No reports are waiting for review.</string>
-    <string name="review_queue_sync_note">Report sync is not connected in this API build, so reports from other devices cannot appear here yet.</string>
+    <string name="review_queue_loading">Loading reports for review…</string>
+    <string name="review_queue_load_failed">Could not load reports from the review service.</string>
+    <string name="review_queue_sync_note">Check the connection and sign in again if your session has expired.</string>
     <string name="review_queue_filter_empty">No reports match this location.</string>
     <string name="review_queue_location_value">Location: %1$s</string>
     <string name="review_queue_item_accessibility">%1$s report at %2$s, submitted %3$s. Open to review.</string>
@@ -160,16 +199,23 @@
         <item>Report type, Z to A</item>
     </string-array>
     <string name="review_report_title">Review report</string>
-    <string name="review_report_unavailable">This report is no longer available in the local cache.</string>
+    <string name="review_report_unavailable">This report could not be loaded from the review service.</string>
     <string name="review_approve">Approve report</string>
     <string name="review_deny">Deny report</string>
     <string name="review_approve_title">Approve this report?</string>
-    <string name="review_approve_message">The review API is not connected in this build, so an approval cannot be saved yet.</string>
+    <string name="review_approve_message">This report will be marked as approved on the review service.</string>
+    <string name="review_approve_confirm">Approve</string>
+    <string name="review_reason_value">Reason for denial: %1$s</string>
+    <string name="report_denial_reason_label">Reason for denial</string>
+    <string name="report_denial_reason_pending">Reason not available yet. Connect to refresh this report.</string>
+    <string name="report_attachment_unavailable">This attachment is no longer available on this device.</string>
+    <string name="review_approved_saved">Report approved.</string>
+    <string name="review_denied_saved">Report denied and reason saved.</string>
+    <string name="review_request_failed_title">Review could not be saved</string>
+    <string name="review_request_failed_message">The review service could not save this decision. Try again.</string>
     <string name="review_deny_title">Reason for denial</string>
     <string name="review_deny_reason_hint">Enter the reason for denying this report</string>
     <string name="review_deny_reason_required">Enter a reason before continuing.</string>
-    <string name="review_action_not_connected_title">Decision not sent</string>
-    <string name="review_action_not_connected_message">The report review API is not available in this build. No decision or denial reason was saved; the report remains unchanged.</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>

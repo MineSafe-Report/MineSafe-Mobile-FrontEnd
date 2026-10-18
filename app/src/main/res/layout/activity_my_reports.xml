@@ -19,10 +19,63 @@
         android:textSize="30sp"
         android:textStyle="bold" />
 
+    <EditText
+        android:id="@+id/searchReports"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/outline_button"
+        android:hint="@string/my_reports_search_hint"
+        android:inputType="text"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:singleLine="true"
+        android:textColor="@color/safety_text"
+        android:textColorHint="@color/safety_text_secondary"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/btnStatusFilter"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_schedule"
+        android:drawableEnd="@drawable/ic_ms_expand_more"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/safety_text"
+        android:gravity="center_vertical|start"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/my_reports_all_statuses"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="18sp"
+        app:backgroundTint="@null" />
+
+    <Button
+        android:id="@+id/btnTypeFilter"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/outline_button"
+        android:drawableStart="@drawable/ic_ms_category"
+        android:drawableEnd="@drawable/ic_ms_expand_more"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/safety_text"
+        android:gravity="center_vertical|start"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:text="@string/my_reports_all_types"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="18sp"
+        app:backgroundTint="@null" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="14dp"
         android:layout_weight="1"
         android:fillViewport="true">
 

@@ -8,6 +8,7 @@ public final class ReportValues {
     public static final String DRAFT = "DRAFT";
     public static final String PENDING_UPLOAD = "PENDING_UPLOAD";
     public static final String REPORT_UPLOADED = "REPORT_UPLOADED";
+    public static final String UPLOAD_PAUSED = "UPLOAD_PAUSED";
     public static final String FAILED = "FAILED";
 
     public static final String STEP_TYPE = "TYPE";

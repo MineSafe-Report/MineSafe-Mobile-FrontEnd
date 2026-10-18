@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.data.local.ReportValues;
-import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
+import com.example.javareportingsystem.data.model.ReviewReport;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -20,17 +20,17 @@ import java.util.List;
 
 final class ReviewQueueAdapter extends RecyclerView.Adapter<ReviewQueueAdapter.ReportViewHolder> {
     interface OnReportSelectedListener {
-        void onReportSelected(SyncedReportEntity report);
+        void onReportSelected(ReviewReport report);
     }
 
-    private final List<SyncedReportEntity> reports = new ArrayList<>();
+    private final List<ReviewReport> reports = new ArrayList<>();
     private final OnReportSelectedListener listener;
 
     ReviewQueueAdapter(OnReportSelectedListener listener) {
         this.listener = listener;
     }
 
-    void setReports(List<SyncedReportEntity> newReports) {
+    void setReports(List<ReviewReport> newReports) {
         reports.clear();
         if (newReports != null) reports.addAll(newReports);
         notifyDataSetChanged();
@@ -46,19 +46,17 @@ final class ReviewQueueAdapter extends RecyclerView.Adapter<ReviewQueueAdapter.R
 
     @Override
     public void onBindViewHolder(@NonNull ReportViewHolder holder, int position) {
-        SyncedReportEntity report = reports.get(position);
-        String type = typeLabel(holder.itemView, report.typeCode);
-        String title = report.referenceNumber == null || report.referenceNumber.trim().isEmpty()
-                ? holder.itemView.getContext().getString(R.string.report_list_name,
-                        type, report.sourceLocalReportId)
-                : report.referenceNumber.trim();
-        String location = report.locationName == null || report.locationName.trim().isEmpty()
+        ReviewReport report = reports.get(position);
+        String type = typeLabel(holder.itemView, report.getType());
+        String title = report.getReferenceNumber() == null || report.getReferenceNumber().trim().isEmpty()
+                ? report.getReportId() : report.getReferenceNumber().trim();
+        String location = report.getLocationName() == null || report.getLocationName().trim().isEmpty()
                 ? holder.itemView.getContext().getString(R.string.report_value_unavailable)
-                : report.locationName.trim();
+                : report.getLocationName().trim();
         String created = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                .format(new Date(report.submittedAtEpochMillis));
+                .format(new Date(report.getSubmittedAtEpochMillis()));
 
-        holder.typeIcon.setImageResource(typeIcon(report.typeCode));
+        holder.typeIcon.setImageResource(typeIcon(report.getType()));
         holder.title.setText(title);
         holder.location.setText(holder.itemView.getContext().getString(
                 R.string.review_queue_location_value, location));
@@ -74,16 +72,16 @@ final class ReviewQueueAdapter extends RecyclerView.Adapter<ReviewQueueAdapter.R
     }
 
     private String typeLabel(View view, String typeCode) {
-        if (ReportValues.HAZARD.equals(typeCode)) return view.getContext().getString(R.string.report_type_hazard);
-        if (ReportValues.INCIDENT.equals(typeCode)) return view.getContext().getString(R.string.report_type_incident);
-        if (ReportValues.NEAR_MISS.equals(typeCode)) return view.getContext().getString(R.string.report_type_near_miss);
+        if (ReportValues.HAZARD.equalsIgnoreCase(typeCode)) return view.getContext().getString(R.string.report_type_hazard);
+        if (ReportValues.INCIDENT.equalsIgnoreCase(typeCode)) return view.getContext().getString(R.string.report_type_incident);
+        if (ReportValues.NEAR_MISS.equalsIgnoreCase(typeCode)) return view.getContext().getString(R.string.report_type_near_miss);
         return view.getContext().getString(R.string.report_type_not_selected);
     }
 
     private int typeIcon(String typeCode) {
-        if (ReportValues.HAZARD.equals(typeCode)) return R.drawable.ic_ms_warning;
-        if (ReportValues.INCIDENT.equals(typeCode)) return R.drawable.ic_ms_personal_injury;
-        if (ReportValues.NEAR_MISS.equals(typeCode)) return R.drawable.ic_ms_visibility;
+        if (ReportValues.HAZARD.equalsIgnoreCase(typeCode)) return R.drawable.ic_ms_warning;
+        if (ReportValues.INCIDENT.equalsIgnoreCase(typeCode)) return R.drawable.ic_ms_personal_injury;
+        if (ReportValues.NEAR_MISS.equalsIgnoreCase(typeCode)) return R.drawable.ic_ms_visibility;
         return R.drawable.ic_ms_description;
     }
 

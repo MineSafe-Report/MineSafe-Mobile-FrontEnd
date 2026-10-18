@@ -55,6 +55,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="@string/status_pending_review"
+            android:drawableStart="@drawable/ic_ms_schedule"
+            android:drawablePadding="6dp"
+            android:drawableTint="@color/safety_status"
             android:textColor="@color/safety_status"
             android:textSize="15sp"
             android:textStyle="bold" />

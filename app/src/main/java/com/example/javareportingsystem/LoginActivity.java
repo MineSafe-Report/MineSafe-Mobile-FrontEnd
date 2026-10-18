@@ -24,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiLocationDataSource;
+import com.example.javareportingsystem.data.ReportSyncWorker;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.Result;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
@@ -80,11 +81,6 @@ public class LoginActivity extends AppCompatActivity {
         locationApi = new ApiLocationDataSource(baseUrl);
         localReports = new LocalReportRepository(this);
 
-        if (loginRepository.isLoggedIn()) {
-            openLandingPage();
-            return;
-        }
-
         loginButton.setOnClickListener(v -> attemptLogin());
         continueOfflineButton.setOnClickListener(v -> openLandingPage());
         passwordInput.setOnEditorActionListener((v, actionId, event) -> {
@@ -94,6 +90,24 @@ public class LoginActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        if (loginRepository.isLoggedIn()) {
+            ReportSyncWorker.enqueueNow(this);
+            openLandingPage();
+        } else if (loginRepository.getCachedUser() != null) {
+            setLoading(true);
+            loginExecutor.execute(() -> {
+                LoggedInUser restored = loginRepository.getFreshUser();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    setLoading(false);
+                    if (restored != null) {
+                        ReportSyncWorker.enqueueNow(this);
+                        openLandingPage();
+                    }
+                });
+            });
+        }
     }
 
     private void attemptLogin() {
@@ -145,6 +159,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 setLoading(false);
                 if (result instanceof Result.Success) {
+                    ReportSyncWorker.enqueueNow(this);
                     passwordInput.getText().clear();
                     if (showLocationWarning) {
                         Toast.makeText(this, R.string.locations_refresh_failed,

@@ -78,7 +78,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
             int newVersion) {
 
         if (oldVersion < 2) {
-            // Older images remain shared because the previous schema had no report ID.
+            // Old images cannot be attributed to a report. Keep them out of new reports.
             db.execSQL("ALTER TABLE " + TABLE_IMAGES + " ADD COLUMN "
                     + COL_REPORT_LOCAL_ID + " INTEGER NOT NULL DEFAULT 0");
             db.execSQL("CREATE INDEX index_report_images_report_local_id ON "
@@ -96,7 +96,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
 
         try (Cursor cursor = db.rawQuery(
                 "SELECT COUNT(*) FROM " + TABLE_IMAGES
-                        + " WHERE " + COL_REPORT_LOCAL_ID + " IN (?, 0)",
+                        + " WHERE " + COL_REPORT_LOCAL_ID + " = ?",
                 new String[]{String.valueOf(reportLocalId)})) {
 
             if (cursor.moveToFirst()) {
@@ -105,6 +105,20 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
 
             return 0;
         }
+    }
+
+    /** Image IDs for report viewers, without loading every image into memory. */
+    @WorkerThread
+    @NonNull
+    public List<Long> getImageIds() {
+        List<Long> ids = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cursor = db.query(TABLE_IMAGES, new String[]{COL_ID},
+                COL_REPORT_LOCAL_ID + " = ?",
+                new String[]{String.valueOf(reportLocalId)}, null, null, COL_ID + " ASC")) {
+            while (cursor.moveToNext()) ids.add(cursor.getLong(0));
+        }
+        return ids;
     }
 
     /**
@@ -128,7 +142,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
             // cannot be exceeded by concurrent writers.
             try (Cursor cursor = db.rawQuery(
                     "SELECT COUNT(*) FROM " + TABLE_IMAGES
-                            + " WHERE " + COL_REPORT_LOCAL_ID + " IN (?, 0)",
+                            + " WHERE " + COL_REPORT_LOCAL_ID + " = ?",
                     new String[]{String.valueOf(reportLocalId)})) {
 
                 if (!cursor.moveToFirst()
@@ -174,7 +188,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
         try (Cursor cursor = db.query(
                 TABLE_IMAGES,
                 columns,
-                COL_REPORT_LOCAL_ID + " IN (?, 0)",
+                COL_REPORT_LOCAL_ID + " = ?",
                 new String[]{String.valueOf(reportLocalId)},
                 null,
                 null,
@@ -205,7 +219,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
     public ImageRecord getImage(long imageId) {
         SQLiteDatabase db = getReadableDatabase();
 
-        String selection = COL_ID + " = ? AND " + COL_REPORT_LOCAL_ID + " IN (?, 0)";
+        String selection = COL_ID + " = ? AND " + COL_REPORT_LOCAL_ID + " = ?";
         String[] selectionArgs = {
                 String.valueOf(imageId), String.valueOf(reportLocalId)};
 
@@ -245,7 +259,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper {
 
         int deletedRows = db.delete(
                 TABLE_IMAGES,
-                COL_ID + " = ? AND " + COL_REPORT_LOCAL_ID + " IN (?, 0)",
+                COL_ID + " = ? AND " + COL_REPORT_LOCAL_ID + " = ?",
                 new String[]{String.valueOf(imageId), String.valueOf(reportLocalId)}
         );
 

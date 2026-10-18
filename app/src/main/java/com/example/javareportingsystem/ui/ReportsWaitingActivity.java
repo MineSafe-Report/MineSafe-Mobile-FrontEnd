@@ -2,6 +2,8 @@ package com.example.javareportingsystem.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,10 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
+import com.example.javareportingsystem.data.ApiReportReviewDataSource;
+import com.example.javareportingsystem.data.ApiConnection;
 import com.example.javareportingsystem.data.LoginRepository;
-import com.example.javareportingsystem.data.local.AppDatabase;
-import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 import com.example.javareportingsystem.data.model.LoggedInUser;
+import com.example.javareportingsystem.data.model.ReviewReport;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,8 +32,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/** Supervisor queue for server-confirmed reports cached on this device. */
+/** Supervisor queue loaded from the authenticated report review API. */
 public class ReportsWaitingActivity extends AppCompatActivity {
     private static final int SORT_NEWEST = 0;
     private static final int SORT_OLDEST = 1;
@@ -39,12 +45,24 @@ public class ReportsWaitingActivity extends AppCompatActivity {
     private static final int SORT_TYPE_AZ = 4;
     private static final int SORT_TYPE_ZA = 5;
 
-    private final List<SyncedReportEntity> pendingReports = new ArrayList<>();
+    private final List<ReviewReport> pendingReports = new ArrayList<>();
+    private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshTick = new Runnable() {
+        @Override public void run() {
+            loadReviewQueue();
+            refreshHandler.postDelayed(this, 60_000L);
+        }
+    };
     private ReviewQueueAdapter adapter;
+    private LoginRepository loginRepository;
+    private boolean refreshOnResume = true;
     private TextView emptyNotice;
     private TextView syncNote;
     private Button locationFilter;
     private Button sortButton;
+    private Button refreshButton;
+    private boolean loading;
     private String selectedLocation;
     private int selectedSort = SORT_NEWEST;
 
@@ -55,41 +73,92 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reports_waiting);
         applyWindowInsets();
 
-        if (!hasSupervisorSession()) {
+        loginRepository = LoginRepository.getInstance(this,
+                new ApiLoginDataSource(getString(R.string.api_base_url)));
+        LoggedInUser user = loginRepository.getCachedUser();
+        if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
             Toast.makeText(this, R.string.supervisor_sign_in_required, Toast.LENGTH_LONG).show();
             finish();
             return;
         }
-
         RecyclerView recycler = findViewById(R.id.recyclerReports);
         emptyNotice = findViewById(R.id.tvQueueEmpty);
         syncNote = findViewById(R.id.tvQueueSyncNote);
         locationFilter = findViewById(R.id.btnLocationFilter);
         sortButton = findViewById(R.id.btnSortBy);
+        refreshButton = findViewById(R.id.btnRefresh);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         locationFilter.setOnClickListener(v -> showLocationFilter());
         sortButton.setOnClickListener(v -> showSortOptions());
+        refreshButton.setOnClickListener(v -> loadReviewQueue());
 
         adapter = new ReviewQueueAdapter(report -> {
             Intent intent = new Intent(this, ReviewReportActivity.class);
-            intent.putExtra(ReviewReportActivity.EXTRA_SERVER_ID, report.serverReportId);
+            intent.putExtra(ReviewReportActivity.EXTRA_SERVER_ID, report.getReportId());
             startActivity(intent);
         });
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
-
-        AppDatabase.getInstance(this).syncedReportDao().observeReports()
-                .observe(this, this::showPendingReports);
     }
 
-    private boolean hasSupervisorSession() {
-        LoginRepository login = LoginRepository.getExistingInstance();
-        if (login == null) {
-            login = LoginRepository.getInstance(this,
-                    new ApiLoginDataSource(getString(R.string.api_base_url)));
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (refreshOnResume) {
+            refreshOnResume = false;
+            loadReviewQueue();
         }
-        LoggedInUser user = login.getUser();
-        return user != null && "SUPERVISOR".equalsIgnoreCase(user.getRole());
+        refreshHandler.postDelayed(refreshTick, 60_000L);
+    }
+
+    @Override
+    protected void onPause() {
+        refreshOnResume = true;
+        refreshHandler.removeCallbacks(refreshTick);
+        super.onPause();
+    }
+
+    private void loadReviewQueue() {
+        if (loading || loginRepository == null) return;
+        loading = true;
+        refreshButton.setEnabled(false);
+        emptyNotice.setText(R.string.review_queue_loading);
+        emptyNotice.setVisibility(View.VISIBLE);
+        syncNote.setVisibility(View.GONE);
+        apiExecutor.execute(() -> {
+            try {
+                if (!ApiConnection.isReachable(getString(R.string.api_base_url))) {
+                    throw new IOException("Cannot reach the review service. Try Refresh when connected.");
+                }
+                LoggedInUser user = loginRepository.getFreshUser();
+                if (user == null || !"SUPERVISOR".equalsIgnoreCase(user.getRole())) {
+                    throw new IOException("Sign in as a supervisor to refresh reports.");
+                }
+                ApiReportReviewDataSource reviewApi = new ApiReportReviewDataSource(
+                        getString(R.string.api_base_url), user.getAccessToken());
+                List<ReviewReport> reports = reviewApi.getReports("PENDING_REVIEW");
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    loading = false;
+                    refreshButton.setEnabled(true);
+                    showPendingReports(reports);
+                    syncNote.setVisibility(View.GONE);
+                });
+            } catch (IOException error) {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    loading = false;
+                    refreshButton.setEnabled(true);
+                    pendingReports.clear();
+                    updateRows();
+                    emptyNotice.setText(R.string.review_queue_load_failed);
+                    emptyNotice.setVisibility(View.VISIBLE);
+                    syncNote.setText(error.getMessage() == null
+                            ? getString(R.string.review_queue_sync_note) : error.getMessage());
+                    syncNote.setVisibility(View.VISIBLE);
+                });
+            }
+        });
     }
 
     private void applyWindowInsets() {
@@ -101,20 +170,20 @@ public class ReportsWaitingActivity extends AppCompatActivity {
         });
     }
 
-    private void showPendingReports(List<SyncedReportEntity> reports) {
+    private void showPendingReports(List<ReviewReport> reports) {
         pendingReports.clear();
         if (reports != null) {
-            for (SyncedReportEntity report : reports) {
-                if (isPendingReview(report.workflowStatus)) pendingReports.add(report);
+            for (ReviewReport report : reports) {
+                if (isPendingReview(report.getStatus())) pendingReports.add(report);
             }
         }
         updateRows();
     }
 
     private void updateRows() {
-        List<SyncedReportEntity> visible = new ArrayList<>();
-        for (SyncedReportEntity report : pendingReports) {
-            if (selectedLocation == null || selectedLocation.equals(report.locationName)) {
+        List<ReviewReport> visible = new ArrayList<>();
+        for (ReviewReport report : pendingReports) {
+            if (selectedLocation == null || selectedLocation.equals(report.getLocationName())) {
                 visible.add(report);
             }
         }
@@ -123,7 +192,6 @@ public class ReportsWaitingActivity extends AppCompatActivity {
 
         boolean noReports = visible.isEmpty();
         emptyNotice.setVisibility(noReports ? View.VISIBLE : View.GONE);
-        syncNote.setVisibility(pendingReports.isEmpty() ? View.VISIBLE : View.GONE);
         if (pendingReports.isEmpty()) {
             emptyNotice.setText(R.string.review_queue_empty);
         } else {
@@ -138,9 +206,9 @@ public class ReportsWaitingActivity extends AppCompatActivity {
 
     private void showLocationFilter() {
         TreeSet<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        for (SyncedReportEntity report : pendingReports) {
-            if (report.locationName != null && !report.locationName.trim().isEmpty()) {
-                names.add(report.locationName.trim());
+        for (ReviewReport report : pendingReports) {
+            if (report.getLocationName() != null && !report.getLocationName().trim().isEmpty()) {
+                names.add(report.getLocationName().trim());
             }
         }
         List<String> locations = new ArrayList<>();
@@ -173,26 +241,25 @@ public class ReportsWaitingActivity extends AppCompatActivity {
                 .show();
     }
 
-    private Comparator<SyncedReportEntity> comparatorFor(int option) {
+    private Comparator<ReviewReport> comparatorFor(int option) {
         switch (option) {
             case SORT_OLDEST:
-                return Comparator.comparingLong(report -> report.submittedAtEpochMillis);
+                return Comparator.comparingLong(ReviewReport::getSubmittedAtEpochMillis);
             case SORT_LOCATION_AZ:
-                return Comparator.comparing(report -> safe(report.locationName),
+                return Comparator.comparing(report -> safe(report.getLocationName()),
                         String.CASE_INSENSITIVE_ORDER);
             case SORT_LOCATION_ZA:
-                return Comparator.comparing((SyncedReportEntity report) -> safe(report.locationName),
+                return Comparator.comparing((ReviewReport report) -> safe(report.getLocationName()),
                         String.CASE_INSENSITIVE_ORDER).reversed();
             case SORT_TYPE_AZ:
-                return Comparator.comparing(report -> safe(report.typeCode),
+                return Comparator.comparing(report -> safe(report.getType()),
                         String.CASE_INSENSITIVE_ORDER);
             case SORT_TYPE_ZA:
-                return Comparator.comparing((SyncedReportEntity report) -> safe(report.typeCode),
+                return Comparator.comparing((ReviewReport report) -> safe(report.getType()),
                         String.CASE_INSENSITIVE_ORDER).reversed();
             case SORT_NEWEST:
             default:
-                return Comparator.comparingLong(
-                        (SyncedReportEntity report) -> report.submittedAtEpochMillis).reversed();
+                return Comparator.comparingLong(ReviewReport::getSubmittedAtEpochMillis).reversed();
         }
     }
 
@@ -210,5 +277,12 @@ public class ReportsWaitingActivity extends AppCompatActivity {
 
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    protected void onDestroy() {
+        refreshHandler.removeCallbacks(refreshTick);
+        apiExecutor.shutdown();
+        super.onDestroy();
     }
 }

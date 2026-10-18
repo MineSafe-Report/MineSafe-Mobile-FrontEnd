@@ -9,4 +9,5 @@ public class ReportListItem {
     public String statusCode;
     public long createdAtEpochMillis;
     public boolean anonymous;
+    public String locationName;
 }

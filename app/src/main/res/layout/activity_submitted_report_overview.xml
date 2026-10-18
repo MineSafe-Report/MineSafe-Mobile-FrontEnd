@@ -83,6 +83,70 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/reportUploadProblemCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/outline_button"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/report_upload_problem"
+                        android:textColor="@color/safety_danger"
+                        android:textSize="18sp" />
+                    <TextView
+                        android:id="@+id/tvUploadProblem"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/safety_text"
+                        android:textSize="16sp" />
+                    <Button
+                        android:id="@+id/btnReplaceVoice"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/report_replace_voice"
+                        android:textAllCaps="false"
+                        android:visibility="gone" />
+                    <Button
+                        android:id="@+id/btnRetryUpload"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/report_retry_upload"
+                        android:textAllCaps="false" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/reportReviewReasonCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/outline_button"
+                    android:minHeight="88dp"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/report_denial_reason_label"
+                        android:textColor="@color/safety_danger"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/tvReportReviewReason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/safety_text"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
@@ -205,6 +269,12 @@
                         android:layout_marginTop="4dp"
                         android:textColor="@color/safety_text"
                         android:textSize="18sp" />
+                    <LinearLayout
+                        android:id="@+id/reportAttachmentActions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

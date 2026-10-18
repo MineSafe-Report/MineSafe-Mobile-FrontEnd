@@ -482,17 +482,60 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void recordReportUploadFailure(long localReportId, @NonNull String message) {
+    public boolean recordReportUploadFailure(long localReportId, @NonNull String message) {
         OfflineReportEntity report = requireReport(localReportId);
         if (ReportValues.DRAFT.equals(report.syncState)) {
             throw new IllegalStateException("Draft has not been submitted");
         }
         report.uploadAttemptCount++;
         report.lastUploadError = message;
-        if (report.serverReportId == null) {
-            report.syncState = ReportValues.FAILED;
-        }
+        boolean retryAutomatically = report.serverReportId == null;
+        report.syncState = retryAutomatically ? ReportValues.FAILED
+                : ReportValues.UPLOAD_PAUSED;
         offlineDao.updateReport(report);
+        return retryAutomatically;
+    }
+
+    /** The user explicitly requests another attempt after an attachment failure. */
+    @WorkerThread
+    public void resumePausedUpload(long localReportId) {
+        OfflineReportEntity report = requireReport(localReportId);
+        if (!ReportValues.UPLOAD_PAUSED.equals(report.syncState)
+                || report.serverReportId == null) {
+            throw new IllegalStateException("This report is not waiting for reupload");
+        }
+        report.syncState = ReportValues.REPORT_UPLOADED;
+        report.lastUploadError = null;
+        offlineDao.updateReport(report);
+    }
+
+    /** Replace a voice note whose local file is no longer usable, preserving its upload ID. */
+    @WorkerThread
+    public void replacePendingVoiceNote(long localReportId, long attachmentId,
+            @NonNull Uri source, @NonNull String mimeType) throws IOException {
+        OfflineReportEntity report = requireReport(localReportId);
+        OfflineAttachmentEntity attachment = offlineDao.getAttachment(attachmentId);
+        if (!ReportValues.UPLOAD_PAUSED.equals(report.syncState)
+                || attachment == null || attachment.reportLocalId != localReportId
+                || attachment.serverAttachmentId != null
+                || !ReportValues.VOICE_NOTE.equals(attachment.attachmentType)
+                || !mimeType.startsWith("audio/")) {
+            throw new IllegalArgumentException("No pending voice note to replace");
+        }
+        ReportMediaStore.StoredMedia replacement = mediaStore.copyFromUri(source, mimeType);
+        if (replacement.sizeBytes <= 0 || replacement.sizeBytes > 25L * 1024 * 1024) {
+            mediaStore.deleteManagedFile(replacement.file);
+            throw new IOException("Voice note must be between 1 byte and 25 MB.");
+        }
+        File oldFile = new File(attachment.localFilePath);
+        attachment.localFilePath = replacement.file.getAbsolutePath();
+        attachment.mimeType = replacement.mimeType;
+        attachment.fileSizeBytes = replacement.sizeBytes;
+        attachment.capturedAtEpochMillis = System.currentTimeMillis();
+        attachment.lastUploadError = null;
+        offlineDao.updateAttachment(attachment);
+        mediaStore.deleteManagedFile(oldFile);
+        resumePausedUpload(localReportId);
     }
 
     @WorkerThread
@@ -547,6 +590,7 @@ public final class LocalReportRepository {
             synced.reporterAccountId = offline.reporterAccountId;
             synced.workflowStatus = workflowStatus.trim();
             synced.statusUpdatedAtEpochMillis = statusUpdatedAtEpochMillis;
+            synced.reviewReason = null;
             syncedDao.insertReport(synced);
 
             for (OfflineAttachmentEntity attachment
@@ -571,7 +615,7 @@ public final class LocalReportRepository {
 
     @WorkerThread
     public void updateWorkflowStatus(@NonNull String serverReportId,
-            @NonNull String status, long updatedAtEpochMillis) {
+            @NonNull String status, long updatedAtEpochMillis, String reviewReason) {
         SyncedReportEntity report = syncedDao.getReport(serverReportId);
         if (report == null) {
             throw new IllegalArgumentException("Unknown synced report");
@@ -579,6 +623,7 @@ public final class LocalReportRepository {
         if (updatedAtEpochMillis >= report.statusUpdatedAtEpochMillis) {
             report.workflowStatus = status;
             report.statusUpdatedAtEpochMillis = updatedAtEpochMillis;
+            report.reviewReason = reviewReason;
             syncedDao.updateReport(report);
         }
     }

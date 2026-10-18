@@ -2,6 +2,8 @@ package com.example.javareportingsystem;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiLocationDataSource;
 import com.example.javareportingsystem.data.LoginRepository;
+import com.example.javareportingsystem.data.ReportSyncWorker;
 import com.example.javareportingsystem.data.model.LoggedInUser;
 import com.example.javareportingsystem.data.model.RemoteLocation;
 import com.example.javareportingsystem.data.local.LocalReportRepository;
@@ -33,6 +36,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LandingPageActivity extends AppCompatActivity {
     private final ExecutorService locationExecutor = Executors.newSingleThreadExecutor();
     private final AtomicBoolean locationRefreshQueued = new AtomicBoolean();
+    private final Handler syncHandler = new Handler(Looper.getMainLooper());
+    private final Runnable syncTick = new Runnable() {
+        @Override public void run() {
+            ReportSyncWorker.enqueue(LandingPageActivity.this);
+            refreshSessionIfNeeded();
+            syncHandler.postDelayed(this, 60_000L);
+        }
+    };
     private LoginRepository repository;
     private LocalReportRepository reports;
 
@@ -114,7 +125,27 @@ public class LandingPageActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshSessionUi();
+        refreshSessionIfNeeded();
         refreshLocationsIfNeeded();
+        syncHandler.post(syncTick);
+    }
+
+    private void refreshSessionIfNeeded() {
+        if (repository.getUser() != null || repository.getCachedUser() == null) return;
+        locationExecutor.execute(() -> {
+            LoggedInUser restored = repository.getFreshUser();
+            if (restored != null) runOnUiThread(() -> {
+                if (isFinishing() || isDestroyed()) return;
+                refreshSessionUi();
+                refreshLocationsIfNeeded();
+            });
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        syncHandler.removeCallbacks(syncTick);
+        super.onPause();
     }
 
     private void refreshSessionUi() {

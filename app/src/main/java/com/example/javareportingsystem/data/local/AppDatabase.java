@@ -31,7 +31,7 @@ import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
                 SyncedReportEntity.class,
                 SyncedAttachmentEntity.class
         },
-        version = 2,
+        version = 3,
         exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
@@ -40,6 +40,12 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE offline_reports ADD COLUMN currentStep "
                     + "TEXT NOT NULL DEFAULT 'LOCATION'");
+        }
+    };
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE synced_reports ADD COLUMN reviewReason TEXT");
         }
     };
 
@@ -57,7 +63,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             context.getApplicationContext(),
                             AppDatabase.class,
                             "mine_safety_reports.db")
-                            .addMigrations(MIGRATION_1_2)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                             .build();
                 }
             }

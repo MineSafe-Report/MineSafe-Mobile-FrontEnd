@@ -86,6 +86,38 @@ public final class ApiLoginDataSource implements LoginDataSource {
         }
     }
 
+    @Override
+    public Result<LoggedInUser> refresh(String refreshToken) {
+        if (baseUrl == null || baseUrl.isEmpty() || refreshToken == null
+                || refreshToken.isEmpty()) {
+            return new Result.Error(new IOException("No session is available to renew."));
+        }
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(baseUrl + "/api/auth/refresh").openConnection();
+            connection.setRequestMethod("POST");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.setRequestProperty("Accept", "application/json");
+            byte[] body = new JSONObject().put("refreshToken", refreshToken)
+                    .toString().getBytes(StandardCharsets.UTF_8);
+            connection.setFixedLengthStreamingMode(body.length);
+            try (OutputStream output = connection.getOutputStream()) {
+                output.write(body);
+            }
+            if (connection.getResponseCode() != 200) {
+                return new Result.Error(new IOException("Sign in again to continue syncing."));
+            }
+            return new Result.Success<>(parseLoginResponse(readBody(connection.getInputStream())));
+        } catch (IOException | JSONException | ParseException error) {
+            return new Result.Error(new IOException("Could not renew the session.", error));
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+    }
+
     private static LoggedInUser parseLoginResponse(String body)
             throws JSONException, ParseException {
         JSONObject response = new JSONObject(body);
@@ -139,7 +171,27 @@ public final class ApiLoginDataSource implements LoginDataSource {
     }
 
     @Override
-    public void logout() {
-        // TODO: POST /api/auth/logout when the real backend provides it.
+    public void logout(String refreshToken) {
+        if (baseUrl == null || baseUrl.isEmpty() || refreshToken == null
+                || refreshToken.isEmpty()) return;
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(baseUrl + "/api/auth/logout")
+                    .openConnection();
+            connection.setRequestMethod("POST");
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            byte[] body = new JSONObject().put("refreshToken", refreshToken)
+                    .toString().getBytes(StandardCharsets.UTF_8);
+            connection.setFixedLengthStreamingMode(body.length);
+            try (OutputStream output = connection.getOutputStream()) { output.write(body); }
+            connection.getResponseCode();
+        } catch (IOException | JSONException ignored) {
+            // Local sign-out still succeeds when the API cannot be reached.
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
     }
 }

@@ -24,6 +24,17 @@
         android:textSize="16sp" />
 
     <Button
+        android:id="@+id/btnRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/outline_button"
+        android:text="@string/review_refresh"
+        android:textAllCaps="false"
+        android:textColor="@color/safety_text"
+        android:textSize="18sp" />
+
+    <Button
         android:id="@+id/btnLocationFilter"
         android:layout_width="match_parent"
         android:layout_height="64dp"

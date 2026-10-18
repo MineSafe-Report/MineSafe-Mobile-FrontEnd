@@ -18,10 +18,6 @@ public final class LoginRepository {
         this.dataSource = dataSource;
         this.sessionStore = new SessionStore(context);
         this.user = sessionStore.restore();
-        if (user != null && user.getAccessExpiresAtMillis() <= System.currentTimeMillis()) {
-            user = null;
-            sessionStore.clear();
-        }
     }
 
     public static synchronized LoginRepository getInstance(
@@ -40,16 +36,30 @@ public final class LoginRepository {
         return isLoggedIn() ? user : null;
     }
 
+    /** Restored identity for routing; never use its possibly expired token for an API call. */
+    public synchronized LoggedInUser getCachedUser() {
+        return user;
+    }
+
     public synchronized boolean isLoggedIn() {
-        if (user == null) {
-            return false;
+        return user != null && user.getAccessExpiresAtMillis() > System.currentTimeMillis();
+    }
+
+    /** Call on a worker thread before protected API requests. */
+    public synchronized LoggedInUser getFreshUser() {
+        if (isLoggedIn()) return user;
+        if (user == null) return null;
+        Result<LoggedInUser> result = dataSource.refresh(user.getRefreshToken());
+        if (!(result instanceof Result.Success)) return null;
+        LoggedInUser refreshed = (LoggedInUser) ((Result.Success<?>) result).getData();
+        if (refreshed.getAccessExpiresAtMillis() <= System.currentTimeMillis()) return null;
+        try {
+            sessionStore.save(refreshed);
+            user = refreshed;
+            return user;
+        } catch (Exception ignored) {
+            return null;
         }
-        if (user.getAccessExpiresAtMillis() <= System.currentTimeMillis()) {
-            user = null;
-            sessionStore.clear();
-            return false;
-        }
-        return true;
     }
 
     public Result<LoggedInUser> login(String workerId, String password) {
@@ -73,12 +83,17 @@ public final class LoginRepository {
         return result;
     }
 
-    /** Clears local credentials. Server-side token revocation awaits the real API. */
+    /** Clear local credentials immediately, then revoke the refresh token if reachable. */
     public synchronized boolean logout() {
+        String refreshToken = user == null ? null : user.getRefreshToken();
         if (!sessionStore.clear()) {
             return false;
         }
         user = null;
+        if (refreshToken != null) {
+            Thread revoke = new Thread(() -> dataSource.logout(refreshToken), "session-logout");
+            revoke.start();
+        }
         return true;
     }
 }

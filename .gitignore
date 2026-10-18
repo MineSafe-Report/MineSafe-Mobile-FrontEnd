@@ -17,3 +17,5 @@ local.properties
 *.docx
 __pycache__/
 *.pyc
+/tools/mock_api_state.json
+/tools/mock_api_sessions.json

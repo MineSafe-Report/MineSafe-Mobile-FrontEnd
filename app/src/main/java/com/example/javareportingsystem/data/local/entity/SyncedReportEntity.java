@@ -40,4 +40,5 @@ public class SyncedReportEntity {
     public String workflowStatus = "";
 
     public long statusUpdatedAtEpochMillis;
+    public String reviewReason;
 }

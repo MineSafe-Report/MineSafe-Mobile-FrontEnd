@@ -38,6 +38,7 @@ public interface OfflineReportDao {
     LiveData<List<OfflineReportEntity>> observeReports();
 
     @Query("SELECT * FROM offline_reports WHERE syncState != 'DRAFT' "
+            + "AND syncState != 'UPLOAD_PAUSED' "
             + "ORDER BY createdAtEpochMillis ASC")
     List<OfflineReportEntity> listSubmittedReports();
 
