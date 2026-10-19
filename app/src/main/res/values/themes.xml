@@ -12,4 +12,10 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
     <style name="Theme.JavaReportingSystem" parent="Base.Theme.JavaReportingSystem" />
+    <style name="Theme.JavaReportingSystem.Starting" parent="Theme.JavaReportingSystem">
+        <item name="android:windowBackground">@drawable/splash_screen_background</item>
+        <item name="android:statusBarColor">@color/safety_action</item>
+        <item name="android:navigationBarColor">@color/safety_action</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

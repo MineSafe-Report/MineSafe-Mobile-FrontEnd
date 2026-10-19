@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.JavaReportingSystem.Starting" parent="Theme.JavaReportingSystem">
+        <item name="android:windowSplashScreenBackground">@color/safety_action</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_hazard_splash</item>
+        <item name="android:windowBackground">@color/safety_action</item>
+        <item name="android:statusBarColor">@color/safety_action</item>
+        <item name="android:navigationBarColor">@color/safety_action</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
