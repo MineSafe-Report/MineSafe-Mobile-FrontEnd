@@ -14,7 +14,6 @@ public final class LoggedInUser {
     private final String role;
     private final String accessToken;
     private final long accessExpiresAtMillis;
-    private final String refreshToken;
     private final List<String> assignedLocations;
 
     public LoggedInUser(
@@ -24,7 +23,6 @@ public final class LoggedInUser {
             String role,
             String accessToken,
             long accessExpiresAtMillis,
-            String refreshToken,
             List<String> assignedLocations) {
         this.accountId = accountId;
         this.workerId = workerId;
@@ -32,7 +30,6 @@ public final class LoggedInUser {
         this.role = role;
         this.accessToken = accessToken;
         this.accessExpiresAtMillis = accessExpiresAtMillis;
-        this.refreshToken = refreshToken;
         this.assignedLocations = Collections.unmodifiableList(new ArrayList<>(assignedLocations));
     }
 
@@ -58,10 +55,6 @@ public final class LoggedInUser {
 
     public long getAccessExpiresAtMillis() {
         return accessExpiresAtMillis;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
     }
 
     public List<String> getAssignedLocations() {

@@ -15,10 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Reads the protected, paged location catalogue from the API. */
+/** Reads the signed-in user's active locations from the API. */
 public final class ApiLocationDataSource {
-    private static final int PAGE_SIZE = 100;
-    private static final int MAX_PAGES = 10;
     private static final int MAX_RESPONSE_BYTES = 1024 * 1024;
 
     private final String baseUrl;
@@ -33,44 +31,25 @@ public final class ApiLocationDataSource {
             throw new IOException("Location API or session is not configured");
         }
         List<RemoteLocation> locations = new ArrayList<>();
-        for (int page = 1; page <= MAX_PAGES; page++) {
-            JSONObject response = fetchPage(page, accessToken);
-            try {
-                int returnedPage = response.getInt("page");
-                int pageSize = response.getInt("pageSize");
-                int total = response.getInt("total");
-                JSONArray items = response.getJSONArray("items");
-                if (returnedPage != page || pageSize < 1 || pageSize > PAGE_SIZE
-                        || total < 0 || total > PAGE_SIZE * MAX_PAGES
-                        || items.length() > pageSize
-                        || (items.length() == 0 && locations.size() < total)) {
-                    throw new IOException("Invalid locations response");
-                }
-                for (int index = 0; index < items.length(); index++) {
-                    JSONObject item = items.getJSONObject(index);
-                    locations.add(new RemoteLocation(
-                            item.getString("locationId"),
-                            item.getString("code"),
-                            item.getString("name")));
-                }
-                if (locations.size() == total) {
-                    return locations;
-                }
-                if (locations.size() > total) {
-                    throw new IOException("Locations response exceeds its total");
-                }
-            } catch (JSONException error) {
-                throw new IOException("Invalid locations response", error);
+        JSONArray items = fetchLocations(accessToken);
+        try {
+            for (int index = 0; index < items.length(); index++) {
+                JSONObject item = items.getJSONObject(index);
+                locations.add(new RemoteLocation(
+                        String.valueOf(item.getInt("locationId")),
+                        item.getString("locationCode"),
+                        item.getString("locationName")));
             }
+        } catch (JSONException error) {
+            throw new IOException("Invalid locations response", error);
         }
-        throw new IOException("Too many location pages");
+        return locations;
     }
 
-    private JSONObject fetchPage(int page, String accessToken) throws IOException {
+    private JSONArray fetchLocations(String accessToken) throws IOException {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(baseUrl + "/api/locations?page=" + page
-                    + "&pageSize=" + PAGE_SIZE);
+            URL url = new URL(baseUrl + "/api/locations");
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setInstanceFollowRedirects(false);
@@ -84,7 +63,7 @@ public final class ApiLocationDataSource {
                         + connection.getResponseCode() + ")");
             }
             byte[] body = readLimited(connection.getInputStream());
-            return new JSONObject(new String(body, StandardCharsets.UTF_8));
+            return new JSONArray(new String(body, StandardCharsets.UTF_8));
         } catch (JSONException error) {
             throw new IOException("Invalid locations response", error);
         } finally {

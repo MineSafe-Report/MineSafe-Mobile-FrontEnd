@@ -2,6 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+def releaseSigningFile = rootProject.file("release-signing.properties")
+def releaseSigning = new Properties()
+if (releaseSigningFile.isFile()) {
+    releaseSigningFile.withInputStream { releaseSigning.load(it) }
+    ["storeFile", "storePassword", "keyAlias", "keyPassword", "apiBaseUrl"].each { name ->
+        if (!releaseSigning.getProperty(name)?.trim()) {
+            throw new GradleException("Missing ${name} in release-signing.properties")
+        }
+    }
+    if (!rootProject.file(releaseSigning.getProperty("storeFile")).isFile()) {
+        throw new GradleException("Release signing keystore is missing")
+    }
+}
+
 android {
     namespace = "com.example.javareportingsystem"
     compileSdk {
@@ -24,8 +38,27 @@ android {
         }
     }
 
+    signingConfigs {
+        localRelease {
+            if (releaseSigningFile.isFile()) {
+                storeFile rootProject.file(releaseSigning.getProperty("storeFile"))
+                storePassword releaseSigning.getProperty("storePassword")
+                keyAlias releaseSigning.getProperty("keyAlias")
+                keyPassword releaseSigning.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // Emulator by default; override for a phone on the same local network.
+            resValue "string", "api_base_url", providers.gradleProperty("mineSafeApiBaseUrl")
+                    .orElse("http://10.0.2.2:5080").get()
+        }
         release {
+            signingConfig signingConfigs.localRelease
+            resValue "string", "api_base_url", providers.gradleProperty("mineSafeReleaseApiBaseUrl")
+                    .orElse(releaseSigning.getProperty("apiBaseUrl", "")).get()
             optimization {
                 enable = false
             }
@@ -37,6 +70,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        resValues = true
     }
     sourceSets {
         androidTest.assets.srcDirs += ["schemas"]

@@ -13,16 +13,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
- * Login transport. The debug URL points to the local mock API; release has no URL yet.
+ * Login transport for the configured API endpoint.
  */
 public final class ApiLoginDataSource implements LoginDataSource {
     private final String baseUrl;
@@ -51,7 +46,7 @@ public final class ApiLoginDataSource implements LoginDataSource {
             connection.setRequestProperty("Accept", "application/json");
 
             JSONObject request = new JSONObject();
-            request.put("workerId", workerId);
+            request.put("login", workerId);
             request.put("password", password);
             byte[] body = request.toString().getBytes(StandardCharsets.UTF_8);
             connection.setFixedLengthStreamingMode(body.length);
@@ -66,18 +61,20 @@ public final class ApiLoginDataSource implements LoginDataSource {
                             : connection.getErrorStream());
 
             if (status == 200) {
-                return new Result.Success<>(parseLoginResponse(responseBody));
+                LoggedInUser user = parseLoginResponse(responseBody);
+                if ("ADMINISTRATOR".equals(user.getRole())) {
+                    return new Result.Error(new IOException(
+                            "Administrators use the web dashboard."));
+                }
+                return new Result.Success<>(user);
             }
             if (status == 401) {
                 return new Result.Error(new IOException("Worker ID or password is incorrect."));
             }
-            if (status == 403) {
-                return new Result.Error(new IOException("This account is inactive."));
-            }
             return new Result.Error(new IOException("Sign-in failed (HTTP " + status + ")."));
         } catch (IOException e) {
             return new Result.Error(new IOException("Cannot connect to the sign-in service.", e));
-        } catch (JSONException | ParseException e) {
+        } catch (JSONException e) {
             return new Result.Error(new IOException("Invalid sign-in response.", e));
         } finally {
             if (connection != null) {
@@ -86,71 +83,49 @@ public final class ApiLoginDataSource implements LoginDataSource {
         }
     }
 
-    @Override
-    public Result<LoggedInUser> refresh(String refreshToken) {
-        if (baseUrl == null || baseUrl.isEmpty() || refreshToken == null
-                || refreshToken.isEmpty()) {
-            return new Result.Error(new IOException("No session is available to renew."));
-        }
-        HttpURLConnection connection = null;
-        try {
-            connection = (HttpURLConnection) new URL(baseUrl + "/api/auth/refresh").openConnection();
-            connection.setRequestMethod("POST");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestProperty("Accept", "application/json");
-            byte[] body = new JSONObject().put("refreshToken", refreshToken)
-                    .toString().getBytes(StandardCharsets.UTF_8);
-            connection.setFixedLengthStreamingMode(body.length);
-            try (OutputStream output = connection.getOutputStream()) {
-                output.write(body);
-            }
-            if (connection.getResponseCode() != 200) {
-                return new Result.Error(new IOException("Sign in again to continue syncing."));
-            }
-            return new Result.Success<>(parseLoginResponse(readBody(connection.getInputStream())));
-        } catch (IOException | JSONException | ParseException error) {
-            return new Result.Error(new IOException("Could not renew the session.", error));
-        } finally {
-            if (connection != null) connection.disconnect();
-        }
-    }
-
     private static LoggedInUser parseLoginResponse(String body)
-            throws JSONException, ParseException {
+            throws JSONException {
         JSONObject response = new JSONObject(body);
-        JSONObject account = response.getJSONObject("account");
-        JSONArray locations = account.getJSONArray("assignedLocations");
+        JSONObject account = response.getJSONObject("user");
+        JSONArray locations = account.getJSONArray("locations");
         List<String> assignedLocations = new ArrayList<>();
         for (int index = 0; index < locations.length(); index++) {
-            assignedLocations.add(locations.getString(index));
+            assignedLocations.add(locations.getJSONObject(index).getString("locationCode"));
         }
-
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-        format.setTimeZone(TimeZone.getTimeZone("UTC"));
-        format.setLenient(false);
-        Date expiry = format.parse(response.getString("expiresAt"));
-        if (expiry == null) {
-            throw new ParseException("Missing expiry", 0);
-        }
-
-        String accessToken = response.getString("accessToken");
-        String refreshToken = response.getString("refreshToken");
-        if (accessToken.isEmpty() || refreshToken.isEmpty()) {
+        long expiry = ApiDates.parseIsoToMillis(response.getString("expiresAt"));
+        String accessToken = response.getString("token");
+        if (accessToken.isEmpty() || expiry == 0L) {
             throw new JSONException("Missing session token");
         }
-
         return new LoggedInUser(
                 account.getInt("accountId"),
                 account.getString("workerId"),
                 account.getString("fullName"),
-                account.getString("role"),
+                mobileRole(account.getJSONArray("roles")),
                 accessToken,
-                expiry.getTime(),
-                refreshToken,
+                expiry,
                 assignedLocations);
+    }
+
+    private static String mobileRole(JSONArray roles) throws JSONException {
+        boolean worker = false;
+        boolean supervisor = false;
+        boolean safetyOfficer = false;
+        boolean administrator = false;
+        for (int index = 0; index < roles.length(); index++) {
+            switch (roles.getString(index)) {
+                case "Worker": worker = true; break;
+                case "Supervisor": supervisor = true; break;
+                case "SafetyOfficer": safetyOfficer = true; break;
+                case "Administrator": administrator = true; break;
+                default: break;
+            }
+        }
+        if (supervisor) return "SUPERVISOR";
+        if (safetyOfficer) return "SAFETY_OFFICER";
+        if (worker) return "WORKER";
+        if (administrator) return "ADMINISTRATOR";
+        throw new JSONException("No supported mobile role");
     }
 
     private static String readBody(InputStream input) throws IOException {
@@ -170,28 +145,4 @@ public final class ApiLoginDataSource implements LoginDataSource {
         }
     }
 
-    @Override
-    public void logout(String refreshToken) {
-        if (baseUrl == null || baseUrl.isEmpty() || refreshToken == null
-                || refreshToken.isEmpty()) return;
-        HttpURLConnection connection = null;
-        try {
-            connection = (HttpURLConnection) new URL(baseUrl + "/api/auth/logout")
-                    .openConnection();
-            connection.setRequestMethod("POST");
-            connection.setConnectTimeout(3000);
-            connection.setReadTimeout(3000);
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            byte[] body = new JSONObject().put("refreshToken", refreshToken)
-                    .toString().getBytes(StandardCharsets.UTF_8);
-            connection.setFixedLengthStreamingMode(body.length);
-            try (OutputStream output = connection.getOutputStream()) { output.write(body); }
-            connection.getResponseCode();
-        } catch (IOException | JSONException ignored) {
-            // Local sign-out still succeeds when the API cannot be reached.
-        } finally {
-            if (connection != null) connection.disconnect();
-        }
-    }
 }

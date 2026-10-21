@@ -33,31 +33,29 @@ public final class ApiReportReviewDataSource {
     public List<ReviewReport> getReports(String status) throws IOException {
         String query = status == null || status.trim().isEmpty()
                 ? "PENDING_REVIEW" : status.trim().toUpperCase();
-        try {
-            JSONObject response = request("GET", "/api/supervisor/reports?status=" + query, null);
-            JSONArray items = response.getJSONArray("items");
-            List<ReviewReport> reports = new ArrayList<>();
-            for (int i = 0; i < items.length(); i++) {
-                reports.add(parseReport(items.getJSONObject(i)));
-            }
-            return reports;
-        } catch (JSONException error) {
-            throw new IOException("The report review service returned an invalid queue.", error);
-        }
+        return getPagedReports("/api/supervisor/reports?status=" + query + "&", "review queue");
     }
 
     /** Safety Officers can read incident notifications, but cannot make review decisions. */
     public List<ReviewReport> getSafetyOfficerIncidents() throws IOException {
+        return getPagedReports("/api/safety-officer/incidents?", "incident list");
+    }
+
+    private List<ReviewReport> getPagedReports(String path, String name) throws IOException {
         try {
-            JSONObject response = request("GET", "/api/safety-officer/incidents", null);
-            JSONArray items = response.getJSONArray("items");
             List<ReviewReport> reports = new ArrayList<>();
-            for (int i = 0; i < items.length(); i++) {
-                reports.add(parseReport(items.getJSONObject(i)));
+            for (int page = 1; page <= 100; page++) {
+                JSONObject response = request("GET", path + "page=" + page + "&pageSize=100", null);
+                JSONArray items = response.getJSONArray("items");
+                for (int i = 0; i < items.length(); i++) {
+                    reports.add(parseReport(items.getJSONObject(i)));
+                }
+                if (reports.size() >= response.optInt("total", reports.size())
+                        || items.length() < 100) return reports;
             }
-            return reports;
+            throw new IOException("Too many " + name + " pages.");
         } catch (JSONException error) {
-            throw new IOException("The incident service returned an invalid list.", error);
+            throw new IOException("The report service returned an invalid " + name + ".", error);
         }
     }
 
@@ -184,7 +182,7 @@ public final class ApiReportReviewDataSource {
 
     private static ReviewReport parseReport(JSONObject json) throws IOException {
         String reportId = json.optString("reportId", "");
-        String status = json.optString("status", "");
+        String status = json.optString("statusCode", "");
         if (reportId.isEmpty() || status.isEmpty()) {
             throw new IOException("The report review service returned an incomplete report.");
         }
@@ -200,13 +198,13 @@ public final class ApiReportReviewDataSource {
             }
         }
         return new ReviewReport(reportId,
-                json.optString("referenceNumber", reportId),
-                json.optString("type", ""),
+                json.optString("reportNumber", reportId),
+                json.optString("typeCode", ""),
                 json.optString("locationCode", ""),
                 json.optString("locationName", ""),
                 json.optString("description", ""),
-                json.optLong("submittedAtEpochMillis", 0L),
-                json.optLong("occurredAtEpochMillis", 0L),
+                ApiDates.parseIsoToMillis(json.optString("submittedAt")),
+                ApiDates.parseIsoToMillis(json.optString("occurredAt")),
                 status,
                 json.optBoolean("anonymous", false),
                 Math.max(0, json.optInt("imageCount", 0)),

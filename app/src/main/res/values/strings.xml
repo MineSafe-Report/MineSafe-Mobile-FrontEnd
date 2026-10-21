@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Java Reporting System</string>
+    <string name="app_name">MineSafe</string>
     <string name="login_failed">"Login failed"</string>
     <string name="worker_id_required">Enter your Worker ID</string>
     <string name="password_required">Enter your password</string>
@@ -44,7 +44,7 @@
     <string name="my_reports_older_heading">Older reports</string>
     <string name="my_reports_search_results_heading">Search results</string>
     <string name="my_reports_no_results">No matching reports</string>
-    <string name="local_network_permission_required">Allow local network access to use the test login API.</string>
+    <string name="local_network_permission_required">Allow local network access to sign in and sync reports.</string>
     <string name="report_draft_missing">This report draft is no longer available.</string>
     <string name="report_draft_load_failed">Could not load this report draft.</string>
     <string name="report_draft_save_failed">Could not save this report draft. Please try again.</string>

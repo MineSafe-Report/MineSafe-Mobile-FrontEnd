@@ -13,9 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+/release-signing.properties
+/release-signing/
 /.idea/
 *.docx
 __pycache__/
 *.pyc
-/tools/mock_api_state.json
-/tools/mock_api_sessions.json

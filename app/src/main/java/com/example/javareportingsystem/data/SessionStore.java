@@ -30,7 +30,8 @@ import javax.crypto.spec.GCMParameterSpec;
 final class SessionStore {
     private static final String KEY_ALIAS = "reporting_system_session_key";
     private static final String KEYSTORE = "AndroidKeyStore";
-    private static final int FORMAT_VERSION = 1;
+    // Old mock-server sessions had refresh tokens and cannot authenticate with the real API.
+    private static final int FORMAT_VERSION = 2;
     private static final int IV_LENGTH = 12;
     private static final int TAG_BITS = 128;
     private static final int MAX_RECORD_BYTES = 16384;
@@ -55,7 +56,6 @@ final class SessionStore {
         session.put("role", user.getRole());
         session.put("accessToken", user.getAccessToken());
         session.put("accessExpiresAtMillis", user.getAccessExpiresAtMillis());
-        session.put("refreshToken", user.getRefreshToken());
         session.put("assignedLocations", locations);
 
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -119,9 +119,8 @@ final class SessionStore {
                     session.getString("role"),
                     session.getString("accessToken"),
                     session.getLong("accessExpiresAtMillis"),
-                    session.getString("refreshToken"),
                     locations);
-            if (user.getAccessToken().isEmpty() || user.getRefreshToken().isEmpty()) {
+            if (user.getAccessToken().isEmpty()) {
                 throw new IOException("Saved session has no token");
             }
             return user;

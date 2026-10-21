@@ -2,7 +2,6 @@ package com.example.javareportingsystem;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
     private LoginRepository loginRepository;
     private ApiLocationDataSource locationApi;
     private LocalReportRepository localReports;
-    private boolean debugLocalApi;
+    private boolean localNetworkApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +76,9 @@ public class LoginActivity extends AppCompatActivity {
         loginError = findViewById(R.id.loginError);
 
         String baseUrl = getString(R.string.api_base_url);
-        boolean debuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        debugLocalApi = debuggable && baseUrl.startsWith("http://10.0.2.2");
+        localNetworkApi = baseUrl.startsWith("http://10.")
+                || baseUrl.startsWith("http://192.168.")
+                || baseUrl.startsWith("http://172.");
         loginRepository = LoginRepository.getInstance(this, new ApiLoginDataSource(baseUrl));
         locationApi = new ApiLocationDataSource(baseUrl);
         localReports = new LocalReportRepository(this);
@@ -132,7 +132,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (debugLocalApi && Build.VERSION.SDK_INT >= 37
+        if (localNetworkApi && Build.VERSION.SDK_INT >= 37
                 && checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK)
                         != PackageManager.PERMISSION_GRANTED) {
             requestLocalNetworkPermission.launch(Manifest.permission.ACCESS_LOCAL_NETWORK);

@@ -45,21 +45,9 @@ public final class LoginRepository {
         return user != null && user.getAccessExpiresAtMillis() > System.currentTimeMillis();
     }
 
-    /** Call on a worker thread before protected API requests. */
+    /** Return only a session whose access token is still valid. */
     public synchronized LoggedInUser getFreshUser() {
-        if (isLoggedIn()) return user;
-        if (user == null) return null;
-        Result<LoggedInUser> result = dataSource.refresh(user.getRefreshToken());
-        if (!(result instanceof Result.Success)) return null;
-        LoggedInUser refreshed = (LoggedInUser) ((Result.Success<?>) result).getData();
-        if (refreshed.getAccessExpiresAtMillis() <= System.currentTimeMillis()) return null;
-        try {
-            sessionStore.save(refreshed);
-            user = refreshed;
-            return user;
-        } catch (Exception ignored) {
-            return null;
-        }
+        return isLoggedIn() ? user : null;
     }
 
     public Result<LoggedInUser> login(String workerId, String password) {
@@ -83,17 +71,12 @@ public final class LoginRepository {
         return result;
     }
 
-    /** Clear local credentials immediately, then revoke the refresh token if reachable. */
+    /** The API has no logout endpoint; discard the local token. */
     public synchronized boolean logout() {
-        String refreshToken = user == null ? null : user.getRefreshToken();
         if (!sessionStore.clear()) {
             return false;
         }
         user = null;
-        if (refreshToken != null) {
-            Thread revoke = new Thread(() -> dataSource.logout(refreshToken), "session-logout");
-            revoke.start();
-        }
         return true;
     }
 }

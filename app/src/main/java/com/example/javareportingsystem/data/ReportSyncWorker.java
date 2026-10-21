@@ -30,7 +30,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /** Durable local-first upload and status refresh, resumed when Android sees a network. */
@@ -77,19 +79,17 @@ public final class ReportSyncWorker extends Worker {
         LocalReportRepository reports = new LocalReportRepository(context);
         try {
             DeviceConfigEntity device = reports.getOrCreateDeviceConfig();
-            String deviceId = api.registerDevice(device.installationUuid);
-            if (!deviceId.equals(device.serverDeviceId)) reports.setServerDeviceId(deviceId);
             boolean retry = false;
             for (OfflineReportEntity report : reports.listReportsForSync()) {
                 if (isStopped()) return Result.retry();
                 try {
-                    uploadReport(api, reports, report, deviceId, user);
+                    uploadReport(api, reports, report, device.installationUuid);
                 } catch (IOException | JSONException | RuntimeException error) {
                     retry |= reports.recordReportUploadFailure(report.localId,
                             error.getMessage() == null ? "Upload interrupted" : error.getMessage());
                 }
             }
-            refreshStatuses(api, reports, deviceId);
+            refreshStatuses(api, reports);
             return retry ? Result.retry() : Result.success();
         } catch (IOException | JSONException | RuntimeException error) {
             return Result.retry();
@@ -97,11 +97,18 @@ public final class ReportSyncWorker extends Worker {
     }
 
     private void uploadReport(ApiReportingDataSource api, LocalReportRepository reports,
-            OfflineReportEntity report, String deviceId, LoggedInUser user)
+            OfflineReportEntity report, String installationId)
             throws IOException, JSONException {
         LocationEntity location = report.locationLocalId == null ? null
                 : reports.getLocation(report.locationLocalId);
         if (location == null) throw new IOException("Report location is missing.");
+        int locationId;
+        try {
+            locationId = Integer.parseInt(location.serverLocationId);
+            if (locationId <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException error) {
+            throw new IOException("The report location is not linked to a server location.", error);
+        }
         List<OfflineAttachmentEntity> attachments = reports.getOfflineAttachments(report.localId);
         int voiceCount = 0;
         for (OfflineAttachmentEntity attachment : attachments) {
@@ -112,26 +119,29 @@ public final class ReportSyncWorker extends Worker {
             List<ImageDatabaseHelper.ImageRecord> photos = images.getAllImages();
             String reportId = report.serverReportId;
             if (reportId == null) {
+                String description = report.description == null ? "" : report.description.trim();
+                if (description.length() < 3 && voiceCount > 0) {
+                    description = "Voice note attached.";
+                }
+                if (description.length() < 3) {
+                    throw new IOException("Add a description of at least 3 characters or a voice note.");
+                }
                 JSONObject body = new JSONObject()
-                        .put("deviceId", deviceId)
-                        .put("localReportId", report.localId)
+                        .put("clientReportId", UUID.nameUUIDFromBytes(
+                                (installationId + ":" + report.localId)
+                                        .getBytes(StandardCharsets.UTF_8)).toString())
                         .put("typeCode", report.typeCode)
-                        .put("locationCode", location.code)
-                        .put("locationId", location.serverLocationId == null
-                                ? JSONObject.NULL : location.serverLocationId)
-                        .put("occurredAtEpochMillis", report.occurredAtEpochMillis)
-                        .put("createdAtEpochMillis", report.createdAtEpochMillis)
-                        .put("submittedAtEpochMillis", report.submittedAtEpochMillis)
-                        .put("description", report.description == null ? "" : report.description)
+                        .put("locationId", locationId)
+                        .put("occurredAt", ApiDates.toIso(report.occurredAtEpochMillis))
+                        .put("description", description)
                         .put("expectedImageCount", photos.size())
-                        .put("expectedVoiceNoteCount", voiceCount)
-                        .put("anonymous", report.anonymous);
-                if (!report.anonymous) body.put("reporterWorkerId", user.getWorkerId());
+                        .put("expectedVoiceNoteCount", voiceCount);
                 JSONObject accepted = api.submitReport(body);
-                reportId = accepted.getString("reportId");
+                JSONObject serverReport = accepted.getJSONObject("report");
+                reportId = serverReport.getString("reportId");
                 reports.markReportAccepted(report.localId, reportId,
-                        accepted.optString("referenceNumber", reportId),
-                        accepted.optLong("receivedAtEpochMillis", System.currentTimeMillis()));
+                        serverReport.optString("reportNumber", reportId),
+                        ApiDates.parseIsoToMillis(serverReport.optString("submittedAt")));
             }
             for (OfflineAttachmentEntity attachment : attachments) {
                 if (attachment.serverAttachmentId != null) continue;
@@ -142,16 +152,17 @@ public final class ReportSyncWorker extends Worker {
                 }
                 JSONObject accepted = api.uploadAttachment(reportId,
                         "voice-" + attachment.localId, attachment.attachmentType,
-                        attachment.captureSource, attachment.capturedAtEpochMillis,
+                        attachment.capturedAtEpochMillis,
                         attachment.mimeType, new FileInputStream(file), file.length());
                 reports.markAttachmentAccepted(attachment.localId,
-                        accepted.getString("attachmentId"), System.currentTimeMillis());
+                        accepted.getJSONObject("attachment").getString("attachmentId"),
+                        System.currentTimeMillis());
             }
             // The legacy image database has no upload receipt column. Retrying these stable
             // image IDs is safe because the server returns the original attachment ID.
             for (ImageDatabaseHelper.ImageRecord photo : photos) {
                 api.uploadAttachment(reportId, "image-" + photo.id, ReportValues.PHOTO,
-                        ReportValues.GALLERY, photo.createdAt, "image/jpeg",
+                        photo.createdAt, "image/jpeg",
                         new ByteArrayInputStream(photo.data), photo.data.length);
             }
             // The authoritative status timestamp comes from the API refresh below.
@@ -170,24 +181,21 @@ public final class ReportSyncWorker extends Worker {
         LocalReportRepository reports = new LocalReportRepository(context);
         ApiReportingDataSource api = new ApiReportingDataSource(baseUrl, user.getAccessToken());
         try {
-            DeviceConfigEntity device = reports.getOrCreateDeviceConfig();
-            String deviceId = api.registerDevice(device.installationUuid);
-            if (!deviceId.equals(device.serverDeviceId)) reports.setServerDeviceId(deviceId);
-            refreshStatuses(api, reports, deviceId);
+            refreshStatuses(api, reports);
         } catch (IOException | JSONException | RuntimeException ignored) {
             // Keep the last known statuses available while offline or on API failure.
         }
     }
 
-    private static void refreshStatuses(ApiReportingDataSource api, LocalReportRepository reports,
-            String deviceId) throws IOException, JSONException {
-        JSONArray items = api.getMyReports(deviceId);
+    private static void refreshStatuses(ApiReportingDataSource api, LocalReportRepository reports)
+            throws IOException, JSONException {
+        JSONArray items = api.getMyReports();
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.getJSONObject(i);
             try {
                 reports.updateWorkflowStatus(item.getString("reportId"),
-                        item.getString("status"),
-                        item.optLong("statusUpdatedAtEpochMillis", System.currentTimeMillis()),
+                        item.getString("statusCode"),
+                        ApiDates.parseIsoToMillis(item.optString("statusUpdatedAt")),
                         item.isNull("reviewReason") ? null
                                 : item.optString("reviewReason", null));
             } catch (IllegalArgumentException ignored) {

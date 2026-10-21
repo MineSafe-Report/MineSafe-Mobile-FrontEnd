@@ -14,7 +14,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-/** Transport for device registration, idempotent report/media upload and status refresh. */
+/** Transport for idempotent report/media upload and status refresh. */
 public final class ApiReportingDataSource {
     private final String baseUrl;
     private final String token;
@@ -24,29 +24,16 @@ public final class ApiReportingDataSource {
         this.token = token == null ? "" : token;
     }
 
-    public String registerDevice(String installationId) throws IOException {
-        try {
-            JSONObject response = jsonRequest("POST", "/api/devices",
-                    new JSONObject().put("installationId", installationId)
-                            .put("platform", "ANDROID"));
-            String id = response.getString("deviceId");
-            if (id.isEmpty()) throw new IOException("Device registration returned no ID.");
-            return id;
-        } catch (JSONException error) {
-            throw new IOException("Invalid device registration response.", error);
-        }
-    }
-
     public JSONObject submitReport(JSONObject report) throws IOException {
         return jsonRequest("POST", "/api/reports", report);
     }
 
-    public JSONArray getMyReports(String deviceId) throws IOException {
+    public JSONArray getMyReports() throws IOException {
         try {
             JSONArray all = new JSONArray();
             for (int page = 1; page <= 100; page++) {
-                JSONObject response = jsonRequest("GET", "/api/reports?view=my&deviceId="
-                        + encode(deviceId) + "&page=" + page + "&pageSize=100", null);
+                JSONObject response = jsonRequest("GET", "/api/reports/mine?page="
+                        + page + "&pageSize=100", null);
                 JSONArray items = response.getJSONArray("items");
                 for (int index = 0; index < items.length(); index++) {
                     all.put(items.getJSONObject(index));
@@ -61,17 +48,16 @@ public final class ApiReportingDataSource {
     }
 
     public JSONObject uploadAttachment(String reportId, String localAttachmentId,
-            String type, String source, long capturedAt, String mimeType,
+            String type, long capturedAt, String mimeType,
             InputStream input, long fileSize) throws IOException {
         if (fileSize <= 0 || fileSize > 25L * 1024 * 1024) {
             throw new IOException("Attachment size is invalid.");
         }
         String boundary = "mine-" + UUID.randomUUID();
         ByteArrayOutputStream header = new ByteArrayOutputStream();
-        writeField(header, boundary, "localAttachmentId", localAttachmentId);
+        writeField(header, boundary, "clientAttachmentId", localAttachmentId);
         writeField(header, boundary, "attachmentType", type);
-        writeField(header, boundary, "captureSource", source);
-        writeField(header, boundary, "capturedAtEpochMillis", Long.toString(capturedAt));
+        writeField(header, boundary, "capturedAt", ApiDates.toIso(capturedAt));
         String fileHeader = "--" + boundary + "\r\n"
                 + "Content-Disposition: form-data; name=\"file\"; filename=\"evidence\"\r\n"
                 + "Content-Type: " + mimeType + "\r\n\r\n";
