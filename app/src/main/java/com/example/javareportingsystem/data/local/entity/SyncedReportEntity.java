@@ -6,9 +6,10 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-        tableName = "synced_reports",
-        indices = @Index(value = "sourceLocalReportId", unique = true))
-public class SyncedReportEntity {
+    tableName = "synced_reports",
+    indices = @Index(value = "sourceLocalReportId", unique = true))
+public class SyncedReportEntity
+{
     @PrimaryKey
     @NonNull
     public String serverReportId = "";

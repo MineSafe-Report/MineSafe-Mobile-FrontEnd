@@ -37,7 +37,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.Collections;
 
 @RunWith(AndroidJUnit4.class)
-public class LocalReportRepositoryTest {
+public class LocalReportRepositoryTest
+{
     private Context context;
     private String databaseName;
     private AppDatabase database;
@@ -45,7 +46,8 @@ public class LocalReportRepositoryTest {
     private File testMedia;
 
     @Before
-    public void setUp() {
+    public void setUp()
+    {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         databaseName = "reports-test-" + UUID.randomUUID() + ".db";
         database = Room.databaseBuilder(context, AppDatabase.class, databaseName).build();
@@ -53,21 +55,24 @@ public class LocalReportRepositoryTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown()
+    {
         database.close();
         context.deleteDatabase(databaseName);
-        if (testMedia != null) {
+        if (testMedia != null)
+        {
             testMedia.delete();
         }
     }
 
     @Test
-    public void offlineReportWaitsForEveryAttachmentThenSurvivesRestart() throws Exception {
+    public void offlineReportWaitsForEveryAttachmentThenSurvivesRestart() throws Exception
+    {
         DeviceConfigEntity config = repository.getOrCreateDeviceConfig();
         assertNotNull(config.installationUuid);
         assertNull(config.serverDeviceId);
         long locationId = repository.configureLocation(
-                "SHAFT-A", "Shaft A", null, true);
+            "SHAFT-A", "Shaft A", null, true);
 
         repository.setServerDeviceId("dev-101");
         DeviceConfigEntity registered = repository.getOrCreateDeviceConfig();
@@ -77,21 +82,22 @@ public class LocalReportRepositoryTest {
 
         long reportId = repository.createDraft(ReportValues.HAZARD);
         repository.saveDraftDetails(reportId, locationId, "Loose rock above walkway",
-                1791622800000L);
+            1791622800000L);
         testMedia = new File(repository.getMediaDirectory(),
-                "test-" + UUID.randomUUID() + ".jpg");
-        try (FileOutputStream output = new FileOutputStream(testMedia)) {
-            output.write(new byte[] {1, 2, 3});
+            "test-" + UUID.randomUUID() + ".jpg");
+        try (FileOutputStream output = new FileOutputStream(testMedia))
+        {
+            output.write(new byte[]{1, 2, 3});
         }
         long attachmentId = repository.addPrivateAttachment(reportId, ReportValues.PHOTO,
-                ReportValues.CAMERA, testMedia, "image/jpeg");
+            ReportValues.CAMERA, testMedia, "image/jpeg");
         repository.submitDraft(reportId);
         assertEquals(ReportValues.PENDING_UPLOAD,
-                repository.getOfflineReport(reportId).syncState);
+            repository.getOfflineReport(reportId).syncState);
 
         repository.markReportAccepted(reportId, "rpt-101", "MS-101", 1791623100000L);
         assertThrows(IllegalStateException.class,
-                () -> repository.finishSync(reportId, "PENDING_REVIEW", 1791623100000L));
+            () -> repository.finishSync(reportId, "PENDING_REVIEW", 1791623100000L));
         assertNotNull(repository.getOfflineReport(reportId));
         assertNull(repository.getSyncedReport("rpt-101"));
 
@@ -113,7 +119,8 @@ public class LocalReportRepositoryTest {
     }
 
     @Test
-    public void draftNeedsLocationAndDescriptionOrVoiceNote() throws Exception {
+    public void draftNeedsLocationAndDescriptionOrVoiceNote() throws Exception
+    {
         long reportId = repository.createDraft(ReportValues.NEAR_MISS);
         assertThrows(IllegalStateException.class, () -> repository.submitDraft(reportId));
         assertEquals(ReportValues.DRAFT, repository.getOfflineReport(reportId).syncState);
@@ -123,12 +130,13 @@ public class LocalReportRepositoryTest {
         assertThrows(IllegalStateException.class, () -> repository.submitDraft(reportId));
 
         testMedia = new File(repository.getMediaDirectory(),
-                "test-" + UUID.randomUUID() + ".m4a");
-        try (FileOutputStream output = new FileOutputStream(testMedia)) {
-            output.write(new byte[] {4, 5, 6});
+            "test-" + UUID.randomUUID() + ".m4a");
+        try (FileOutputStream output = new FileOutputStream(testMedia))
+        {
+            output.write(new byte[]{4, 5, 6});
         }
         repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
-                ReportValues.MICROPHONE, testMedia, "audio/mp4");
+            ReportValues.MICROPHONE, testMedia, "audio/mp4");
         repository.submitDraft(reportId);
         OfflineReportEntity submitted = repository.getOfflineReport(reportId);
         assertEquals(ReportValues.PENDING_UPLOAD, submitted.syncState);
@@ -136,11 +144,12 @@ public class LocalReportRepositoryTest {
     }
 
     @Test
-    public void failedIncidentUploadCanBeRetriedWithoutLosingLocalReport() {
+    public void failedIncidentUploadCanBeRetriedWithoutLosingLocalReport()
+    {
         long locationId = repository.configureLocation("PIT-1", "Pit 1", null, true);
         long reportId = repository.createDraft(ReportValues.INCIDENT);
         repository.saveDraftDetails(reportId, locationId, "Worker slipped",
-                System.currentTimeMillis());
+            System.currentTimeMillis());
         repository.identifyIncident(reportId, "WORKER001", null);
         repository.submitDraft(reportId);
 
@@ -151,15 +160,16 @@ public class LocalReportRepositoryTest {
         assertFalse(pending.anonymous);
 
         repository.markReportAccepted(reportId, "rpt-202", "MS-202",
-                System.currentTimeMillis());
+            System.currentTimeMillis());
         repository.finishSync(reportId, "PENDING_REVIEW", System.currentTimeMillis());
         assertNull(repository.getOfflineReport(reportId));
         assertEquals("WORKER001",
-                repository.getSyncedReport("rpt-202").reporterWorkerId);
+            repository.getSyncedReport("rpt-202").reporterWorkerId);
     }
 
     @Test
-    public void draftStepUpdatesSurviveRestartAndTypeChangeClearsIdentity() {
+    public void draftStepUpdatesSurviveRestartAndTypeChangeClearsIdentity()
+    {
         long locationId = repository.configureLocation("SHAFT-B", "Shaft B", null, true);
         long reportId = repository.createDraft(ReportValues.INCIDENT);
         repository.saveDraftDescription(reportId, "A worker slipped");
@@ -185,14 +195,17 @@ public class LocalReportRepositoryTest {
     }
 
     @Test
-    public void remoteLocationRefreshKeepsDraftReferenceAndStepAfterRestart() {
+    public void remoteLocationRefreshKeepsDraftReferenceAndStepAfterRestart()
+    {
         repository.replaceRemoteLocations(Arrays.asList(
-                new RemoteLocation("loc-1", "LOC-1", "Shaft A"),
-                new RemoteLocation("loc-2", "LOC-2", "Processing Plant")));
+            new RemoteLocation("loc-1", "LOC-1", "Shaft A"),
+            new RemoteLocation("loc-2", "LOC-2", "Processing Plant")));
         long locationId = -1L;
         for (com.example.javareportingsystem.data.local.entity.LocationEntity location
-                : repository.listActiveLocations()) {
-            if ("loc-1".equals(location.serverLocationId)) {
+            : repository.listActiveLocations())
+        {
+            if ("loc-1".equals(location.serverLocationId))
+            {
                 locationId = location.localId;
             }
         }
@@ -202,7 +215,7 @@ public class LocalReportRepositoryTest {
         repository.setDraftStep(reportId, ReportValues.STEP_DESCRIPTION);
 
         repository.replaceRemoteLocations(Collections.singletonList(
-                new RemoteLocation("loc-1", "LOC-1", "Shaft A Updated")));
+            new RemoteLocation("loc-1", "LOC-1", "Shaft A Updated")));
         assertEquals(1, repository.listActiveLocations().size());
         assertEquals(locationId, repository.listActiveLocations().get(0).localId);
         assertEquals("Shaft A Updated", repository.listActiveLocations().get(0).name);
@@ -218,7 +231,8 @@ public class LocalReportRepositoryTest {
     }
 
     @Test
-    public void multipleDraftsCanBeListedAndChosenByTheirOwnId() {
+    public void multipleDraftsCanBeListedAndChosenByTheirOwnId()
+    {
         long first = repository.createDraft(ReportValues.HAZARD);
         long second = repository.createDraft(ReportValues.INCIDENT);
         long third = repository.createDraft(ReportValues.NEAR_MISS);
@@ -232,23 +246,27 @@ public class LocalReportRepositoryTest {
     }
 
     @Test
-    public void addingVoiceNotesKeepsEarlierRecordingsUntilIndividuallyDeleted() throws Exception {
+    public void addingVoiceNotesKeepsEarlierRecordingsUntilIndividuallyDeleted() throws Exception
+    {
         long reportId = repository.createDraft(ReportValues.HAZARD);
         File first = new File(repository.getMediaDirectory(),
-                "first-" + UUID.randomUUID() + ".m4a");
+            "first-" + UUID.randomUUID() + ".m4a");
         File second = new File(repository.getMediaDirectory(),
-                "second-" + UUID.randomUUID() + ".m4a");
-        try {
-            try (FileOutputStream output = new FileOutputStream(first)) {
-                output.write(new byte[] {1, 2, 3});
+            "second-" + UUID.randomUUID() + ".m4a");
+        try
+        {
+            try (FileOutputStream output = new FileOutputStream(first))
+            {
+                output.write(new byte[]{1, 2, 3});
             }
-            try (FileOutputStream output = new FileOutputStream(second)) {
-                output.write(new byte[] {4, 5, 6});
+            try (FileOutputStream output = new FileOutputStream(second))
+            {
+                output.write(new byte[]{4, 5, 6});
             }
             long oldId = repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
-                    ReportValues.MICROPHONE, first, "audio/mp4");
+                ReportValues.MICROPHONE, first, "audio/mp4");
             long newId = repository.addPrivateAttachment(reportId, ReportValues.VOICE_NOTE,
-                    ReportValues.MICROPHONE, second, "audio/mp4");
+                ReportValues.MICROPHONE, second, "audio/mp4");
 
             assertTrue(newId > oldId);
             assertTrue(first.exists());
@@ -262,13 +280,17 @@ public class LocalReportRepositoryTest {
             assertTrue(second.exists());
             assertEquals(1, repository.getOfflineAttachments(reportId).size());
             assertEquals(newId, repository.getOfflineAttachments(reportId).get(0).localId);
-        } finally {
+        }
+        finally
+        {
             first.delete();
             second.delete();
         }
     }
+
     @Test
-    public void myReportsListsSubmittedAndSyncedReportsButNotDrafts() throws Exception {
+    public void myReportsListsSubmittedAndSyncedReportsButNotDrafts() throws Exception
+    {
         repository.createDraft(ReportValues.NEAR_MISS);
         long location = repository.configureLocation("TEST", "Test location", null, true);
 
@@ -280,30 +302,34 @@ public class LocalReportRepositoryTest {
         repository.saveDraftDetails(syncedId, location, "Minor injury", System.currentTimeMillis());
         repository.submitDraft(syncedId);
         repository.markReportAccepted(syncedId, "server-test", "TEST-1",
-                System.currentTimeMillis());
+            System.currentTimeMillis());
         repository.finishSync(syncedId, "APPROVED", System.currentTimeMillis());
 
         LiveData<List<ReportListItem>> reports = database.reportListDao().observeAll();
         AtomicReference<List<ReportListItem>> result = new AtomicReference<>();
         CountDownLatch loaded = new CountDownLatch(1);
-        Observer<List<ReportListItem>> observer = value -> {
+        Observer<List<ReportListItem>> observer = value ->
+        {
             result.set(value);
             loaded.countDown();
         };
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> reports.observeForever(observer));
-        try {
+            () -> reports.observeForever(observer));
+        try
+        {
             assertTrue("Report list never loaded", loaded.await(5, TimeUnit.SECONDS));
             assertNotNull(result.get());
             assertEquals(2, result.get().size());
             assertTrue(result.get().stream().anyMatch(item ->
-                    item.localReportId == pendingId
-                            && ReportValues.PENDING_UPLOAD.equals(item.statusCode)));
+                item.localReportId == pendingId
+                    && ReportValues.PENDING_UPLOAD.equals(item.statusCode)));
             assertTrue(result.get().stream().anyMatch(item ->
-                    item.localReportId == syncedId && "APPROVED".equals(item.statusCode)));
-        } finally {
+                item.localReportId == syncedId && "APPROVED".equals(item.statusCode)));
+        }
+        finally
+        {
             InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    () -> reports.removeObserver(observer));
+                () -> reports.removeObserver(observer));
         }
     }
 

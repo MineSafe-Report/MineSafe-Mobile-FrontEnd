@@ -13,7 +13,8 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.List;
 
 @Dao
-public interface OfflineReportDao {
+public interface OfflineReportDao
+{
     @Insert
     long insertReport(OfflineReportEntity report);
 
@@ -27,19 +28,19 @@ public interface OfflineReportDao {
     OfflineReportEntity getReport(long localId);
 
     @Query("SELECT * FROM offline_reports WHERE syncState = 'DRAFT' "
-            + "ORDER BY createdAtEpochMillis DESC, localId DESC LIMIT 1")
+        + "ORDER BY createdAtEpochMillis DESC, localId DESC LIMIT 1")
     OfflineReportEntity getLatestDraft();
 
     @Query("SELECT * FROM offline_reports WHERE syncState = 'DRAFT' "
-            + "ORDER BY createdAtEpochMillis DESC, localId DESC")
+        + "ORDER BY createdAtEpochMillis DESC, localId DESC")
     List<OfflineReportEntity> listDrafts();
 
     @Query("SELECT * FROM offline_reports ORDER BY createdAtEpochMillis DESC")
     LiveData<List<OfflineReportEntity>> observeReports();
 
     @Query("SELECT * FROM offline_reports WHERE syncState != 'DRAFT' "
-            + "AND syncState != 'UPLOAD_PAUSED' "
-            + "ORDER BY createdAtEpochMillis ASC")
+        + "AND syncState != 'UPLOAD_PAUSED' "
+        + "ORDER BY createdAtEpochMillis ASC")
     List<OfflineReportEntity> listSubmittedReports();
 
     @Insert
@@ -55,14 +56,14 @@ public interface OfflineReportDao {
     OfflineAttachmentEntity getAttachment(long localId);
 
     @Query("SELECT * FROM offline_attachments WHERE reportLocalId = :reportLocalId "
-            + "ORDER BY localId")
+        + "ORDER BY localId")
     List<OfflineAttachmentEntity> listAttachments(long reportLocalId);
 
     @Query("SELECT COUNT(*) FROM offline_attachments WHERE reportLocalId = :reportLocalId "
-            + "AND attachmentType = 'VOICE_NOTE'")
+        + "AND attachmentType = 'VOICE_NOTE'")
     int countVoiceNotes(long reportLocalId);
 
     @Query("SELECT COUNT(*) FROM offline_attachments WHERE reportLocalId = :reportLocalId "
-            + "AND serverAttachmentId IS NULL")
+        + "AND serverAttachmentId IS NULL")
     int countUnuploadedAttachments(long reportLocalId);
 }

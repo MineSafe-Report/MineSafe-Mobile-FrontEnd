@@ -23,84 +23,105 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RunWith(AndroidJUnit4.class)
-public class AppDatabaseMigrationTest {
+public class AppDatabaseMigrationTest
+{
     @Test
-    public void versionOneDraftSurvivesUpgradeToVersionTwo() throws Exception {
+    public void versionOneDraftSurvivesUpgradeToVersionTwo() throws Exception
+    {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         String databaseName = "migration-test-" + UUID.randomUUID() + ".db";
-        try {
+        try
+        {
             JSONObject schema = loadVersionOneSchema();
             SQLiteDatabase oldDatabase = context.openOrCreateDatabase(
-                    databaseName, Context.MODE_PRIVATE, null);
-            try {
+                databaseName, Context.MODE_PRIVATE, null);
+            try
+            {
                 oldDatabase.beginTransaction();
-                try {
+                try
+                {
                     JSONArray entities = schema.getJSONArray("entities");
-                    for (int index = 0; index < entities.length(); index++) {
+                    for (int index = 0; index < entities.length(); index++)
+                    {
                         JSONObject entity = entities.getJSONObject(index);
                         String name = entity.getString("tableName");
                         oldDatabase.execSQL(entity.getString("createSql")
-                                .replace("${TABLE_NAME}", name));
+                            .replace("${TABLE_NAME}", name));
                         JSONArray indices = entity.optJSONArray("indices");
-                        if (indices != null) {
-                            for (int item = 0; item < indices.length(); item++) {
+                        if (indices != null)
+                        {
+                            for (int item = 0; item < indices.length(); item++)
+                            {
                                 oldDatabase.execSQL(indices.getJSONObject(item)
-                                        .getString("createSql")
-                                        .replace("${TABLE_NAME}", name));
+                                    .getString("createSql")
+                                    .replace("${TABLE_NAME}", name));
                             }
                         }
                     }
                     JSONArray setup = schema.getJSONArray("setupQueries");
-                    for (int index = 0; index < setup.length(); index++) {
+                    for (int index = 0; index < setup.length(); index++)
+                    {
                         oldDatabase.execSQL(setup.getString(index));
                     }
                     oldDatabase.execSQL("INSERT INTO local_locations "
-                            + "(localId, code, name, active, configuredAtEpochMillis) "
-                            + "VALUES (1, 'LOC-1', 'Shaft A', 1, 100)");
+                        + "(localId, code, name, active, configuredAtEpochMillis) "
+                        + "VALUES (1, 'LOC-1', 'Shaft A', 1, 100)");
                     oldDatabase.execSQL("INSERT INTO offline_reports "
-                            + "(localId, typeCode, locationLocalId, description, "
-                            + "occurredAtEpochMillis, createdAtEpochMillis, anonymous, "
-                            + "syncState, uploadAttemptCount) VALUES "
-                            + "(7, 'HAZARD', 1, 'Loose rock', 100, 100, 1, 'DRAFT', 0)");
+                        + "(localId, typeCode, locationLocalId, description, "
+                        + "occurredAtEpochMillis, createdAtEpochMillis, anonymous, "
+                        + "syncState, uploadAttemptCount) VALUES "
+                        + "(7, 'HAZARD', 1, 'Loose rock', 100, 100, 1, 'DRAFT', 0)");
                     oldDatabase.setVersion(1);
                     oldDatabase.setTransactionSuccessful();
-                } finally {
+                }
+                finally
+                {
                     oldDatabase.endTransaction();
                 }
-            } finally {
+            }
+            finally
+            {
                 oldDatabase.close();
             }
 
             AppDatabase upgraded = Room.databaseBuilder(
                     context, AppDatabase.class, databaseName)
-                    .addMigrations(AppDatabase.MIGRATION_1_2)
-                    .build();
-            try {
+                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .build();
+            try
+            {
                 OfflineReportEntity draft = upgraded.offlineReportDao().getReport(7);
                 assertNotNull(draft);
                 assertEquals("Loose rock", draft.description);
                 assertEquals(1L, draft.locationLocalId.longValue());
                 assertEquals(ReportValues.STEP_LOCATION, draft.currentStep);
-            } finally {
+            }
+            finally
+            {
                 upgraded.close();
             }
-        } finally {
+        }
+        finally
+        {
             context.deleteDatabase(databaseName);
         }
     }
 
-    private static JSONObject loadVersionOneSchema() throws Exception {
+    private static JSONObject loadVersionOneSchema() throws Exception
+    {
         String path = "com.example.javareportingsystem.data.local.AppDatabase/1.json";
         try (InputStream input = InstrumentationRegistry.getInstrumentation()
-                .getContext().getAssets().open(path);
-             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            .getContext().getAssets().open(path);
+             ByteArrayOutputStream output = new ByteArrayOutputStream())
+        {
             byte[] buffer = new byte[4096];
             int count;
-            while ((count = input.read(buffer)) != -1) {
+            while ((count = input.read(buffer)) != -1)
+            {
                 output.write(buffer, 0, count);
             }
             return new JSONObject(new String(output.toByteArray(), StandardCharsets.UTF_8))
-                    .getJSONObject("database");
+                .getJSONObject("database");
         }
     }
 }

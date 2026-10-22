@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class LocationSelectionActivity extends AppCompatActivity {
+/** Chooses the report location from the locally available location catalogue. */
+public class LocationSelectionActivity extends AppCompatActivity
+{
     static final String EXTRA_FROM_OVERVIEW = "com.example.javareportingsystem.FROM_OVERVIEW";
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
@@ -47,13 +49,15 @@ public class LocationSelectionActivity extends AppCompatActivity {
     private boolean fromOverview;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_location_selection);
         fromOverview = getIntent().getBooleanExtra(EXTRA_FROM_OVERVIEW, false);
         draftId = ReportDraftNavigation.readId(this);
-        if (draftId <= 0) {
+        if (draftId <= 0)
+        {
             return;
         }
         reports = new LocalReportRepository(this);
@@ -67,14 +71,18 @@ public class LocationSelectionActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> returnFromLocation());
         btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true)
+        {
             @Override
-            public void handleOnBackPressed() {
+            public void handleOnBackPressed()
+            {
                 returnFromLocation();
             }
         });
-        btnLocationDropdown.setOnClickListener(v -> {
-            if (busy) {
+        btnLocationDropdown.setOnClickListener(v ->
+        {
+            if (busy)
+            {
                 return;
             }
             expanded = !expanded;
@@ -83,57 +91,74 @@ public class LocationSelectionActivity extends AppCompatActivity {
         btnNext.setOnClickListener(v -> move(true));
         btnNext.setVisibility(View.INVISIBLE);
         setBusy(true);
-        reports.observeActiveLocations().observe(this, locations -> {
-            if (draftLoaded) {
+        reports.observeActiveLocations().observe(this, locations ->
+        {
+            if (draftLoaded)
+            {
                 populateLocationTable(locations, selectedLocationId);
             }
         });
         loadLocations();
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
     }
 
-    private void loadLocations() {
-        databaseExecutor.execute(() -> {
-            try {
+    // LOCATION CATALOGUE
+    private void loadLocations()
+    {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
-                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState)) {
+                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState))
+                {
                     throw new IllegalStateException("Report draft is missing");
                 }
                 List<LocationEntity> locations = reports.listActiveLocations();
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     populateLocationTable(locations, draft.locationLocalId);
                     draftLoaded = true;
                     setBusy(false);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     Toast.makeText(this, R.string.report_draft_load_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                     finish();
                 });
             }
         });
     }
 
-    private void populateLocationTable(List<LocationEntity> locations, Long savedLocationId) {
-        while (locationTable.getChildCount() > 1) {
+    private void populateLocationTable(List<LocationEntity> locations, Long savedLocationId)
+    {
+        while (locationTable.getChildCount() > 1)
+        {
             locationTable.removeViewAt(1);
         }
         selectedLocationId = null;
         btnLocationDropdown.setText(R.string.select_location);
 
-        if (locations.isEmpty()) {
+        if (locations.isEmpty())
+        {
             TableRow row = new TableRow(this);
             TextView message = cell(getString(R.string.no_configured_locations));
             TableRow.LayoutParams params = new TableRow.LayoutParams();
@@ -143,7 +168,8 @@ public class LocationSelectionActivity extends AppCompatActivity {
             locationTable.addView(row);
         }
 
-        for (LocationEntity location : locations) {
+        for (LocationEntity location : locations)
+        {
             TableRow row = new TableRow(this);
             row.setGravity(Gravity.CENTER_VERTICAL);
             row.setMinimumHeight(dp(56));
@@ -159,16 +185,18 @@ public class LocationSelectionActivity extends AppCompatActivity {
             row.setOnClickListener(v -> selectLocation(location));
             locationTable.addView(row);
 
-            if (savedLocationId != null && savedLocationId == location.localId) {
+            if (savedLocationId != null && savedLocationId == location.localId)
+            {
                 selectedLocationId = location.localId;
                 btnLocationDropdown.setText(location.name);
             }
         }
         btnNext.setVisibility(fromOverview || selectedLocationId == null
-                ? View.INVISIBLE : View.VISIBLE);
+            ? View.INVISIBLE : View.VISIBLE);
     }
 
-    private TextView cell(String value) {
+    private TextView cell(String value)
+    {
         TextView cell = new TextView(this);
         cell.setText(value);
         cell.setTextColor(Color.BLACK);
@@ -177,25 +205,33 @@ public class LocationSelectionActivity extends AppCompatActivity {
         return cell;
     }
 
-    private int dp(int value) {
+    private int dp(int value)
+    {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private void selectLocation(LocationEntity location) {
-        if (busy) {
+    private void selectLocation(LocationEntity location)
+    {
+        if (busy)
+        {
             return;
         }
-        if (selectedLocationId != null && selectedLocationId == location.localId) {
+        if (selectedLocationId != null && selectedLocationId == location.localId)
+        {
             expanded = false;
             locationTableContainer.setVisibility(View.GONE);
             return;
         }
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.saveDraftLocation(draftId, location.localId);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     selectedLocationId = location.localId;
@@ -205,75 +241,101 @@ public class LocationSelectionActivity extends AppCompatActivity {
                     btnNext.setVisibility(fromOverview ? View.INVISIBLE : View.VISIBLE);
                     setBusy(false);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
                     Toast.makeText(this, R.string.report_draft_save_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void saveDraftAndExit() {
-        if (busy) {
+    // DRAFT NAVIGATION
+    private void saveDraftAndExit()
+    {
+        if (busy)
+        {
             return;
         }
         setBusy(true);
         ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
-                () -> reports.setDraftStep(draftId, ReportValues.STEP_LOCATION),
-                () -> setBusy(false));
+            () -> reports.setDraftStep(draftId, ReportValues.STEP_LOCATION),
+            () -> setBusy(false));
     }
 
-    private void returnFromLocation() {
-        if (busy) {
+    private void returnFromLocation()
+    {
+        if (busy)
+        {
             return;
         }
-        if (fromOverview) {
+        if (fromOverview)
+        {
             finish();
-        } else {
+        }
+        else
+        {
             move(false);
         }
     }
 
-    private void move(boolean forward) {
-        if (busy || (forward && selectedLocationId == null)) {
+    private void move(boolean forward)
+    {
+        if (busy || (forward && selectedLocationId == null))
+        {
             return;
         }
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.setDraftStep(draftId, forward
-                        ? ReportValues.STEP_DESCRIPTION : ReportValues.STEP_TYPE);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                    ? ReportValues.STEP_DESCRIPTION : ReportValues.STEP_TYPE);
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
-                    if (forward) {
+                    if (forward)
+                    {
                         startActivity(ReportDraftNavigation.to(
-                                this, ReportDescriptionActivity.class, draftId));
-                    } else {
+                            this, ReportDescriptionActivity.class, draftId));
+                    }
+                    else
+                    {
                         finish();
                     }
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
                     Toast.makeText(this, R.string.report_draft_save_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void setBusy(boolean busy) {
+    private void setBusy(boolean busy)
+    {
         this.busy = busy;
         btnBack.setEnabled(!busy);
         btnSaveDraft.setEnabled(!busy);
@@ -282,7 +344,8 @@ public class LocationSelectionActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         databaseExecutor.shutdown();
         super.onDestroy();
     }

@@ -12,7 +12,8 @@ import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 import java.util.List;
 
 @Dao
-public interface SyncedReportDao {
+public interface SyncedReportDao
+{
     @Insert
     void insertReport(SyncedReportEntity report);
 
@@ -29,6 +30,6 @@ public interface SyncedReportDao {
     LiveData<List<SyncedReportEntity>> observeReports();
 
     @Query("SELECT * FROM synced_attachments WHERE serverReportId = :serverReportId "
-            + "ORDER BY sourceLocalAttachmentId")
+        + "ORDER BY sourceLocalAttachmentId")
     List<SyncedAttachmentEntity> listAttachments(String serverReportId);
 }

@@ -11,7 +11,8 @@ import com.example.javareportingsystem.data.local.entity.LocationEntity;
 import java.util.List;
 
 @Dao
-public interface LocationDao {
+public interface LocationDao
+{
     @Insert
     long insert(LocationEntity location);
 

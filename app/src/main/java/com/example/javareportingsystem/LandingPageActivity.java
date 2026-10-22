@@ -34,12 +34,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LandingPageActivity extends AppCompatActivity {
+public class LandingPageActivity extends AppCompatActivity
+{
     private final ExecutorService locationExecutor = Executors.newSingleThreadExecutor();
     private final AtomicBoolean locationRefreshQueued = new AtomicBoolean();
     private final Handler syncHandler = new Handler(Looper.getMainLooper());
-    private final Runnable syncTick = new Runnable() {
-        @Override public void run() {
+    private final Runnable syncTick = new Runnable()
+    {
+        @Override
+        public void run()
+        {
             ReportSyncWorker.enqueue(LandingPageActivity.this);
             refreshSessionIfNeeded();
             syncHandler.postDelayed(this, 60_000L);
@@ -49,16 +53,18 @@ public class LandingPageActivity extends AppCompatActivity {
     private LocalReportRepository reports;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         LoginRepository existingRepository = LoginRepository.getExistingInstance();
         repository = existingRepository != null
-                ? existingRepository
-                : LoginRepository.getInstance(this,
-                        new ApiLoginDataSource(getString(R.string.api_base_url)));
+            ? existingRepository
+            : LoginRepository.getInstance(this,
+            new ApiLoginDataSource(getString(R.string.api_base_url)));
 
         LoggedInUser account = repository.getCachedUser();
-        if (account != null && "SAFETY_OFFICER".equalsIgnoreCase(account.getRole())) {
+        if (account != null && "SAFETY_OFFICER".equalsIgnoreCase(account.getRole()))
+        {
             startActivity(new Intent(this, ReportsWaitingActivity.class));
             finish();
             return;
@@ -67,20 +73,23 @@ public class LandingPageActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_landing_page);
         reports = new LocalReportRepository(this);
-        findViewById(R.id.btnLogout).setOnClickListener(v -> {
-            if (!repository.isLoggedIn()) {
+        findViewById(R.id.btnLogout).setOnClickListener(v ->
+        {
+            if (!repository.isLoggedIn())
+            {
                 openLogin();
                 return;
             }
             confirmLogout();
         });
         findViewById(R.id.btnCreateReport).setOnClickListener(v -> startActivity(
-                new Intent(this, ReportStartActivity.class)));
+            new Intent(this, ReportStartActivity.class)));
         findViewById(R.id.btnMyReports).setOnClickListener(v -> startActivity(
-                new Intent(this, MyReportsActivity.class)));
+            new Intent(this, MyReportsActivity.class)));
         findViewById(R.id.btnReviewReports).setOnClickListener(v -> startActivity(
-                new Intent(this, ReportsWaitingActivity.class)));
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            new Intent(this, ReportsWaitingActivity.class)));
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -88,60 +97,76 @@ public class LandingPageActivity extends AppCompatActivity {
         refreshSessionUi();
     }
 
-    private void confirmLogout() {
+    private void confirmLogout()
+    {
         new AlertDialog.Builder(this)
-                .setTitle(R.string.logout_confirm_title)
-                .setMessage(R.string.logout_confirm_message)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.logout, (dialog, which) -> {
-                    if (!repository.logout()) {
-                        android.widget.Toast.makeText(this, R.string.logout_failed,
-                                android.widget.Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    openLogin();
-                })
-                .show();
+            .setTitle(R.string.logout_confirm_title)
+            .setMessage(R.string.logout_confirm_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.logout, (dialog, which) ->
+            {
+                if (!repository.logout())
+                {
+                    android.widget.Toast.makeText(this, R.string.logout_failed,
+                        android.widget.Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                openLogin();
+            })
+            .show();
     }
 
-    private void refreshLocationsIfNeeded() {
+    private void refreshLocationsIfNeeded()
+    {
         LoggedInUser user = repository.getUser();
-        if (user == null || !locationRefreshQueued.compareAndSet(false, true)) {
+        if (user == null || !locationRefreshQueued.compareAndSet(false, true))
+        {
             return;
         }
-        locationExecutor.execute(() -> {
-            try {
+        locationExecutor.execute(() ->
+        {
+            try
+            {
                 DeviceConfigEntity config = reports.getOrCreateDeviceConfig();
                 long lastRefresh = config.lastLocationConfigAtEpochMillis == null
-                        ? 0L : config.lastLocationConfigAtEpochMillis;
+                    ? 0L : config.lastLocationConfigAtEpochMillis;
                 boolean hasRemoteLocations = false;
-                for (LocationEntity location : reports.listActiveLocations()) {
-                    if (location.serverLocationId != null) {
+                for (LocationEntity location : reports.listActiveLocations())
+                {
+                    if (location.serverLocationId != null)
+                    {
                         hasRemoteLocations = true;
                         break;
                     }
                 }
                 if (hasRemoteLocations
-                        && System.currentTimeMillis() - lastRefresh < 30 * 60 * 1000L) {
+                    && System.currentTimeMillis() - lastRefresh < 30 * 60 * 1000L)
+                {
                     return;
                 }
                 ApiLocationDataSource api = new ApiLocationDataSource(
-                        getString(R.string.api_base_url));
+                    getString(R.string.api_base_url));
                 List<RemoteLocation> remote =
-                        api.fetchActiveLocations(user.getAccessToken());
-                if (repository.getUser() != null) {
+                    api.fetchActiveLocations(user.getAccessToken());
+                if (repository.getUser() != null)
+                {
                     reports.replaceRemoteLocations(remote);
                 }
-            } catch (IOException | RuntimeException ignored) {
+            }
+            catch (IOException | RuntimeException ignored)
+            {
                 // Offline use continues with the previously cached catalogue.
-            } finally {
+            }
+            finally
+            {
                 locationRefreshQueued.set(false);
             }
         });
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         refreshSessionUi();
         refreshSessionIfNeeded();
@@ -149,11 +174,14 @@ public class LandingPageActivity extends AppCompatActivity {
         syncHandler.post(syncTick);
     }
 
-    private void refreshSessionIfNeeded() {
+    private void refreshSessionIfNeeded()
+    {
         if (repository.getUser() != null || repository.getCachedUser() == null) return;
-        locationExecutor.execute(() -> {
+        locationExecutor.execute(() ->
+        {
             LoggedInUser restored = repository.getFreshUser();
-            if (restored != null) runOnUiThread(() -> {
+            if (restored != null) runOnUiThread(() ->
+            {
                 if (isFinishing() || isDestroyed()) return;
                 refreshSessionUi();
                 refreshLocationsIfNeeded();
@@ -162,32 +190,38 @@ public class LandingPageActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         syncHandler.removeCallbacks(syncTick);
         super.onPause();
     }
 
-    private void refreshSessionUi() {
+    private void refreshSessionUi()
+    {
         LoggedInUser user = repository.getUser();
         TextView welcome = findViewById(R.id.tvWelcome);
         Button sessionAction = findViewById(R.id.btnLogout);
         Button reviewReports = findViewById(R.id.btnReviewReports);
         TextView offlineNotice = findViewById(R.id.tvOfflineNotice);
-        if (user == null) {
+        if (user == null)
+        {
             welcome.setText(R.string.offline_welcome);
             sessionAction.setText(R.string.sign_in);
             reviewReports.setVisibility(View.GONE);
             offlineNotice.setVisibility(View.VISIBLE);
-        } else {
+        }
+        else
+        {
             welcome.setText(getString(R.string.landing_welcome, user.getDisplayName()));
             sessionAction.setText(R.string.logout);
             reviewReports.setVisibility("SUPERVISOR".equalsIgnoreCase(user.getRole())
-                    ? View.VISIBLE : View.GONE);
+                ? View.VISIBLE : View.GONE);
             offlineNotice.setVisibility(View.GONE);
         }
     }
 
-    private void openLogin() {
+    private void openLogin()
+    {
         Intent login = new Intent(this, LoginActivity.class);
         login.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(login);
@@ -195,7 +229,8 @@ public class LandingPageActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         locationExecutor.shutdown();
         super.onDestroy();
     }

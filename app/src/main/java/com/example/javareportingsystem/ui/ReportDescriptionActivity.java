@@ -24,7 +24,8 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ReportDescriptionActivity extends AppCompatActivity {
+public class ReportDescriptionActivity extends AppCompatActivity
+{
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private final Handler autosaveHandler = new Handler(Looper.getMainLooper());
     private Runnable pendingAutosave;
@@ -37,12 +38,14 @@ public class ReportDescriptionActivity extends AppCompatActivity {
     private boolean busy = true;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_report_description);
         draftId = ReportDraftNavigation.readId(this);
-        if (draftId <= 0) {
+        if (draftId <= 0)
+        {
             return;
         }
         reports = new LocalReportRepository(this);
@@ -54,147 +57,196 @@ public class ReportDescriptionActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> saveAndMove(false));
         btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
         btnNext.setOnClickListener(v -> saveAndMove(true));
-        txtDescription.addTextChangedListener(new TextWatcher() {
+        txtDescription.addTextChangedListener(new TextWatcher()
+        {
             @Override
-            public void beforeTextChanged(CharSequence text, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence text, int start, int count, int after)
+            {
+            }
 
             @Override
-            public void onTextChanged(CharSequence text, int start, int before, int count) { }
+            public void onTextChanged(CharSequence text, int start, int before, int count)
+            {
+            }
 
             @Override
-            public void afterTextChanged(Editable text) {
-                if (!busy) {
+            public void afterTextChanged(Editable text)
+            {
+                if (!busy)
+                {
                     scheduleAutosave();
                 }
             }
         });
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true)
+        {
             @Override
-            public void handleOnBackPressed() {
+            public void handleOnBackPressed()
+            {
                 saveAndMove(false);
             }
         });
         setBusy(true);
         loadDraft(savedInstanceState == null);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
     }
 
-    private void loadDraft(boolean restoreDescription) {
-        databaseExecutor.execute(() -> {
-            try {
+    private void loadDraft(boolean restoreDescription)
+    {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
-                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState)) {
+                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState))
+                {
                     throw new IllegalStateException("Report draft is missing");
                 }
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
-                    if (restoreDescription) {
+                    if (restoreDescription)
+                    {
                         txtDescription.setText(draft.description == null ? "" : draft.description);
                     }
                     setBusy(false);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     Toast.makeText(this, R.string.report_draft_load_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                     finish();
                 });
             }
         });
     }
 
-    private void saveDraftAndExit() {
-        if (busy) {
+    private void saveDraftAndExit()
+    {
+        if (busy)
+        {
             return;
         }
         String description = txtDescription.getText().toString().trim();
         cancelPendingAutosave();
         setBusy(true);
-        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () -> {
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () ->
+        {
             reports.saveDraftDescription(draftId, description);
             reports.setDraftStep(draftId, ReportValues.STEP_DESCRIPTION);
         }, () -> setBusy(false));
     }
 
-    private void saveAndMove(boolean forward) {
-        if (busy) {
+    private void saveAndMove(boolean forward)
+    {
+        if (busy)
+        {
             return;
         }
         String description = txtDescription.getText().toString().trim();
         cancelPendingAutosave();
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.saveDraftDescription(draftId, description);
                 reports.setDraftStep(draftId, forward
-                        ? ReportValues.STEP_VOICE : ReportValues.STEP_LOCATION);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                    ? ReportValues.STEP_VOICE : ReportValues.STEP_LOCATION);
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
-                    if (forward) {
+                    if (forward)
+                    {
                         startActivity(ReportDraftNavigation.to(
-                                this, ReportVoiceActivity.class, draftId));
-                    } else {
+                            this, ReportVoiceActivity.class, draftId));
+                    }
+                    else
+                    {
                         finish();
                     }
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
                     Toast.makeText(this, R.string.report_draft_save_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void scheduleAutosave() {
+    private void scheduleAutosave()
+    {
         cancelPendingAutosave();
         String description = txtDescription.getText().toString().trim();
         pendingAutosave = () -> enqueueAutosave(description);
         autosaveHandler.postDelayed(pendingAutosave, 400);
     }
 
-    private void enqueueAutosave(String description) {
-        databaseExecutor.execute(() -> {
-            try {
+    private void enqueueAutosave(String description)
+    {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.saveDraftDescription(draftId, description);
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         Toast.makeText(this, R.string.report_draft_save_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
     }
 
-    private void cancelPendingAutosave() {
-        if (pendingAutosave != null) {
+    private void cancelPendingAutosave()
+    {
+        if (pendingAutosave != null)
+        {
             autosaveHandler.removeCallbacks(pendingAutosave);
             pendingAutosave = null;
         }
     }
 
     @Override
-    protected void onPause() {
-        if (draftId > 0 && reports != null && txtDescription != null && !busy) {
+    protected void onPause()
+    {
+        if (draftId > 0 && reports != null && txtDescription != null && !busy)
+        {
             cancelPendingAutosave();
             String description = txtDescription.getText().toString().trim();
             enqueueAutosave(description);
@@ -202,7 +254,8 @@ public class ReportDescriptionActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    private void setBusy(boolean busy) {
+    private void setBusy(boolean busy)
+    {
         this.busy = busy;
         btnBack.setEnabled(!busy);
         btnSaveDraft.setEnabled(!busy);
@@ -211,7 +264,8 @@ public class ReportDescriptionActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         cancelPendingAutosave();
         databaseExecutor.shutdown();
         super.onDestroy();

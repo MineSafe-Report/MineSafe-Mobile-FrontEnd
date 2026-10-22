@@ -1,6 +1,7 @@
 package com.example.javareportingsystem.data.local;
 
-public final class ReportValues {
+public final class ReportValues
+{
     public static final String HAZARD = "HAZARD";
     public static final String INCIDENT = "INCIDENT";
     public static final String NEAR_MISS = "NEAR_MISS";
@@ -26,19 +27,24 @@ public final class ReportValues {
     public static final String GALLERY = "GALLERY";
     public static final String MICROPHONE = "MICROPHONE";
 
-    private ReportValues() { }
+    private ReportValues()
+    {
+    }
 
-    public static boolean isReportType(String code) {
+    public static boolean isReportType(String code)
+    {
         return HAZARD.equals(code) || INCIDENT.equals(code) || NEAR_MISS.equals(code);
     }
 
-    public static boolean isAnonymousType(String code) {
+    public static boolean isAnonymousType(String code)
+    {
         return HAZARD.equals(code) || NEAR_MISS.equals(code);
     }
 
-    public static boolean isDraftStep(String step) {
+    public static boolean isDraftStep(String step)
+    {
         return STEP_TYPE.equals(step) || STEP_LOCATION.equals(step)
-                || STEP_DESCRIPTION.equals(step) || STEP_VOICE.equals(step)
-                || STEP_IMAGES.equals(step) || STEP_OVERVIEW.equals(step);
+            || STEP_DESCRIPTION.equals(step) || STEP_VOICE.equals(step)
+            || STEP_IMAGES.equals(step) || STEP_OVERVIEW.equals(step);
     }
 }

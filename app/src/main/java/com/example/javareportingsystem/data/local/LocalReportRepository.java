@@ -30,7 +30,8 @@ import java.util.UUID;
  * Local source of truth for report capture. Call write and direct read methods from a worker
  * thread. No network request is made by this class.
  */
-public final class LocalReportRepository {
+public final class LocalReportRepository
+{
     private final AppDatabase database;
     private final DeviceConfigDao deviceDao;
     private final LocationDao locationDao;
@@ -38,11 +39,13 @@ public final class LocalReportRepository {
     private final SyncedReportDao syncedDao;
     private final ReportMediaStore mediaStore;
 
-    public LocalReportRepository(Context context) {
+    public LocalReportRepository(Context context)
+    {
         this(context, AppDatabase.getInstance(context));
     }
 
-    public LocalReportRepository(Context context, AppDatabase database) {
+    public LocalReportRepository(Context context, AppDatabase database)
+    {
         this.database = database;
         this.deviceDao = database.deviceConfigDao();
         this.locationDao = database.locationDao();
@@ -52,9 +55,11 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public DeviceConfigEntity getOrCreateDeviceConfig() {
+    public DeviceConfigEntity getOrCreateDeviceConfig()
+    {
         DeviceConfigEntity existing = deviceDao.get();
-        if (existing != null) {
+        if (existing != null)
+        {
             return existing;
         }
         DeviceConfigEntity config = new DeviceConfigEntity();
@@ -65,24 +70,30 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void setServerDeviceId(@NonNull String serverDeviceId) {
-        if (serverDeviceId.trim().isEmpty()) {
+    public void setServerDeviceId(@NonNull String serverDeviceId)
+    {
+        if (serverDeviceId.trim().isEmpty())
+        {
             throw new IllegalArgumentException("Server device ID is required");
         }
         getOrCreateDeviceConfig();
         deviceDao.setServerDeviceId(serverDeviceId.trim());
     }
 
+    // LOCATION CATALOGUE
     @WorkerThread
     public long configureLocation(@NonNull String code, @NonNull String name,
-            String serverLocationId, boolean active) {
+                                  String serverLocationId, boolean active)
+    {
         String cleanCode = code.trim();
         String cleanName = name.trim();
-        if (cleanCode.isEmpty() || cleanName.isEmpty()) {
+        if (cleanCode.isEmpty() || cleanName.isEmpty())
+        {
             throw new IllegalArgumentException("Location code and name are required");
         }
         LocationEntity location = locationDao.getByCode(cleanCode);
-        if (location == null) {
+        if (location == null)
+        {
             location = new LocationEntity();
             location.code = cleanCode;
         }
@@ -91,9 +102,12 @@ public final class LocalReportRepository {
         location.active = active;
         location.configuredAtEpochMillis = System.currentTimeMillis();
         long id;
-        if (location.localId == 0) {
+        if (location.localId == 0)
+        {
             id = locationDao.insert(location);
-        } else {
+        }
+        else
+        {
             locationDao.update(location);
             id = location.localId;
         }
@@ -103,41 +117,53 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public List<LocationEntity> listActiveLocations() {
+    public List<LocationEntity> listActiveLocations()
+    {
         return locationDao.listActive();
     }
 
-    public LiveData<List<LocationEntity>> observeActiveLocations() {
+    public LiveData<List<LocationEntity>> observeActiveLocations()
+    {
         return locationDao.observeActive();
     }
 
-    /** Replaces the active server catalogue without changing local IDs used by drafts. */
+    /**
+     * Replaces the active server catalogue without changing local IDs used by drafts.
+     */
     @WorkerThread
-    public void replaceRemoteLocations(@NonNull List<RemoteLocation> remoteLocations) {
+    public void replaceRemoteLocations(@NonNull List<RemoteLocation> remoteLocations)
+    {
         Set<String> ids = new HashSet<>();
         Set<String> codes = new HashSet<>();
-        for (RemoteLocation remote : remoteLocations) {
+        for (RemoteLocation remote : remoteLocations)
+        {
             if (remote == null || remote.id == null || remote.code == null
-                    || remote.name == null || remote.id.trim().isEmpty()
-                    || remote.code.trim().isEmpty() || remote.name.trim().isEmpty()
-                    || !ids.add(remote.id.trim()) || !codes.add(remote.code.trim())) {
+                || remote.name == null || remote.id.trim().isEmpty()
+                || remote.code.trim().isEmpty() || remote.name.trim().isEmpty()
+                || !ids.add(remote.id.trim()) || !codes.add(remote.code.trim()))
+            {
                 throw new IllegalArgumentException("Invalid location catalogue");
             }
         }
-        database.runInTransaction(() -> {
+        database.runInTransaction(() ->
+        {
             locationDao.deactivateRemoteLocations();
-            for (RemoteLocation remote : remoteLocations) {
+            for (RemoteLocation remote : remoteLocations)
+            {
                 String id = remote.id.trim();
                 String code = remote.code.trim();
                 LocationEntity location = locationDao.getByServerId(id);
-                if (location == null) {
+                if (location == null)
+                {
                     location = locationDao.getByCode(code);
                     if (location != null && location.serverLocationId != null
-                            && !id.equals(location.serverLocationId)) {
+                        && !id.equals(location.serverLocationId))
+                    {
                         throw new IllegalArgumentException("Location code belongs to another ID");
                     }
                 }
-                if (location == null) {
+                if (location == null)
+                {
                     location = new LocationEntity();
                 }
                 location.serverLocationId = id;
@@ -145,9 +171,12 @@ public final class LocalReportRepository {
                 location.name = remote.name.trim();
                 location.active = true;
                 location.configuredAtEpochMillis = System.currentTimeMillis();
-                if (location.localId == 0) {
+                if (location.localId == 0)
+                {
                     locationDao.insert(location);
-                } else {
+                }
+                else
+                {
                     locationDao.update(location);
                 }
             }
@@ -156,23 +185,28 @@ public final class LocalReportRepository {
         });
     }
 
+    // DRAFT CAPTURE
     @WorkerThread
-    public OfflineReportEntity getLatestDraft() {
+    public OfflineReportEntity getLatestDraft()
+    {
         return offlineDao.getLatestDraft();
     }
 
     @WorkerThread
-    public List<OfflineReportEntity> listDrafts() {
+    public List<OfflineReportEntity> listDrafts()
+    {
         return offlineDao.listDrafts();
     }
 
     @WorkerThread
-    public LocationEntity getLocation(long localId) {
+    public LocationEntity getLocation(long localId)
+    {
         return locationDao.get(localId);
     }
 
     @WorkerThread
-    public long createEmptyDraft() {
+    public long createEmptyDraft()
+    {
         OfflineReportEntity report = new OfflineReportEntity();
         report.typeCode = "";
         report.createdAtEpochMillis = System.currentTimeMillis();
@@ -183,8 +217,10 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public long createDraft(@NonNull String typeCode) {
-        if (!ReportValues.isReportType(typeCode)) {
+    public long createDraft(@NonNull String typeCode)
+    {
+        if (!ReportValues.isReportType(typeCode))
+        {
             throw new IllegalArgumentException("Unknown report type");
         }
         OfflineReportEntity report = new OfflineReportEntity();
@@ -198,12 +234,15 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void changeDraftType(long localReportId, @NonNull String typeCode) {
-        if (!ReportValues.isReportType(typeCode)) {
+    public void changeDraftType(long localReportId, @NonNull String typeCode)
+    {
+        if (!ReportValues.isReportType(typeCode))
+        {
             throw new IllegalArgumentException("Unknown report type");
         }
         OfflineReportEntity report = requireDraft(localReportId);
-        if (!typeCode.equals(report.typeCode)) {
+        if (!typeCode.equals(report.typeCode))
+        {
             report.typeCode = typeCode;
             report.anonymous = ReportValues.isAnonymousType(typeCode);
             report.reporterWorkerId = null;
@@ -214,8 +253,10 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void setDraftStep(long localReportId, @NonNull String step) {
-        if (!ReportValues.isDraftStep(step)) {
+    public void setDraftStep(long localReportId, @NonNull String step)
+    {
+        if (!ReportValues.isDraftStep(step))
+        {
             throw new IllegalArgumentException("Unknown report step");
         }
         OfflineReportEntity report = requireDraft(localReportId);
@@ -224,10 +265,12 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void saveDraftLocation(long localReportId, long locationLocalId) {
+    public void saveDraftLocation(long localReportId, long locationLocalId)
+    {
         OfflineReportEntity report = requireDraft(localReportId);
         LocationEntity location = locationDao.get(locationLocalId);
-        if (location == null || !location.active) {
+        if (location == null || !location.active)
+        {
             throw new IllegalArgumentException("Select an active configured location");
         }
         report.locationLocalId = locationLocalId;
@@ -235,7 +278,8 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void saveDraftDescription(long localReportId, String description) {
+    public void saveDraftDescription(long localReportId, String description)
+    {
         OfflineReportEntity report = requireDraft(localReportId);
         report.description = emptyToNull(description);
         offlineDao.updateReport(report);
@@ -243,9 +287,11 @@ public final class LocalReportRepository {
 
     @WorkerThread
     public void saveDraftDetails(long localReportId, Long locationLocalId,
-            String description, Long occurredAtEpochMillis) {
+                                 String description, Long occurredAtEpochMillis)
+    {
         OfflineReportEntity report = requireDraft(localReportId);
-        if (locationLocalId != null && locationDao.get(locationLocalId) == null) {
+        if (locationLocalId != null && locationDao.get(locationLocalId) == null)
+        {
             throw new IllegalArgumentException("Unknown location");
         }
         report.locationLocalId = locationLocalId;
@@ -254,16 +300,21 @@ public final class LocalReportRepository {
         offlineDao.updateReport(report);
     }
 
-    /** Identified incidents can be attributed after an offline draft is created. */
+    /**
+     * Identified incidents can be attributed after an offline draft is created.
+     */
     @WorkerThread
     public void identifyIncident(long localReportId, @NonNull String workerId,
-            Integer accountId) {
+                                 Integer accountId)
+    {
         OfflineReportEntity report = requireReport(localReportId);
         if (!ReportValues.INCIDENT.equals(report.typeCode)
-                || ReportValues.REPORT_UPLOADED.equals(report.syncState)) {
+            || ReportValues.REPORT_UPLOADED.equals(report.syncState))
+        {
             throw new IllegalStateException("Only an unuploaded incident can be identified");
         }
-        if (workerId.trim().isEmpty()) {
+        if (workerId.trim().isEmpty())
+        {
             throw new IllegalArgumentException("Worker ID is required");
         }
         report.reporterWorkerId = workerId.trim();
@@ -271,43 +322,55 @@ public final class LocalReportRepository {
         offlineDao.updateReport(report);
     }
 
+    // MEDIA ATTACHMENTS
     @WorkerThread
     public long addAttachmentFromUri(long localReportId, @NonNull String type,
-            @NonNull String source, @NonNull Uri uri, @NonNull String mimeType)
-            throws IOException {
+                                     @NonNull String source, @NonNull Uri uri, @NonNull String mimeType)
+        throws IOException
+    {
         requireDraft(localReportId);
         ReportMediaStore.StoredMedia stored = mediaStore.copyFromUri(uri, mimeType);
-        try {
+        try
+        {
             return addPrivateAttachment(localReportId, type, source, stored.file,
-                    stored.mimeType);
-        } catch (RuntimeException | IOException e) {
+                stored.mimeType);
+        }
+        catch (RuntimeException | IOException e)
+        {
             mediaStore.deleteManagedFile(stored.file);
             throw e;
         }
     }
 
-    /** Voice recorders may write directly into getMediaDirectory() and then attach the file. */
+    /**
+     * Voice recorders may write directly into getMediaDirectory() and then attach the file.
+     */
     @WorkerThread
-    public File getMediaDirectory() throws IOException {
+    public File getMediaDirectory() throws IOException
+    {
         return mediaStore.getDirectory();
     }
 
     @WorkerThread
     public long addPrivateAttachment(long localReportId, @NonNull String type,
-            @NonNull String source, @NonNull File file, @NonNull String mimeType)
-            throws IOException {
+                                     @NonNull String source, @NonNull File file, @NonNull String mimeType)
+        throws IOException
+    {
         requireDraft(localReportId);
         return offlineDao.insertAttachment(newPrivateAttachment(
-                localReportId, type, source, file, mimeType));
+            localReportId, type, source, file, mimeType));
     }
 
     private OfflineAttachmentEntity newPrivateAttachment(long localReportId,
-            String type, String source, File file, String mimeType) throws IOException {
+                                                         String type, String source, File file, String mimeType) throws IOException
+    {
         validateAttachment(type, source);
-        if (!mediaStore.isManagedFile(file) || !file.isFile() || file.length() == 0) {
+        if (!mediaStore.isManagedFile(file) || !file.isFile() || file.length() == 0)
+        {
             throw new IllegalArgumentException("Attachment must be a nonempty app-private file");
         }
-        if (mimeType.trim().isEmpty()) {
+        if (mimeType.trim().isEmpty())
+        {
             throw new IllegalArgumentException("MIME type is required");
         }
         OfflineAttachmentEntity attachment = new OfflineAttachmentEntity();
@@ -323,9 +386,11 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void removeDraftAttachment(long localAttachmentId) throws IOException {
+    public void removeDraftAttachment(long localAttachmentId) throws IOException
+    {
         OfflineAttachmentEntity attachment = offlineDao.getAttachment(localAttachmentId);
-        if (attachment == null) {
+        if (attachment == null)
+        {
             throw new IllegalArgumentException("Unknown attachment");
         }
         requireDraft(attachment.reportLocalId);
@@ -333,58 +398,72 @@ public final class LocalReportRepository {
         mediaStore.deleteManagedFile(new File(attachment.localFilePath));
     }
 
-    /** Missing fields for submitting a draft; images are optional. */
-    public static final class SubmissionStatus {
+    /**
+     * Missing fields for submitting a draft; images are optional.
+     */
+    public static final class SubmissionStatus
+    {
         public final boolean missingType;
         public final boolean missingLocation;
         public final boolean missingEventTime;
         public final boolean missingDetails;
 
         private SubmissionStatus(boolean missingType, boolean missingLocation,
-                boolean missingEventTime, boolean missingDetails) {
+                                 boolean missingEventTime, boolean missingDetails)
+        {
             this.missingType = missingType;
             this.missingLocation = missingLocation;
             this.missingEventTime = missingEventTime;
             this.missingDetails = missingDetails;
         }
 
-        public boolean isReady() {
+        public boolean isReady()
+        {
             return !missingType && !missingLocation && !missingEventTime
-                    && !missingDetails;
+                && !missingDetails;
         }
     }
 
+    // SUBMISSION CHECKS
     @WorkerThread
-    public SubmissionStatus getDraftSubmissionStatus(long localReportId) {
+    public SubmissionStatus getDraftSubmissionStatus(long localReportId)
+    {
         return checkSubmissionStatus(requireDraft(localReportId));
     }
 
-    private SubmissionStatus checkSubmissionStatus(OfflineReportEntity report) {
+    private SubmissionStatus checkSubmissionStatus(OfflineReportEntity report)
+    {
         boolean hasDescription = report.description != null
-                && !report.description.trim().isEmpty();
+            && !report.description.trim().isEmpty();
         return new SubmissionStatus(
-                !ReportValues.isReportType(report.typeCode),
-                report.locationLocalId == null
-                        || locationDao.get(report.locationLocalId) == null,
-                report.occurredAtEpochMillis == null,
-                !hasDescription && offlineDao.countVoiceNotes(report.localId) == 0);
+            !ReportValues.isReportType(report.typeCode),
+            report.locationLocalId == null
+                || locationDao.get(report.locationLocalId) == null,
+            report.occurredAtEpochMillis == null,
+            !hasDescription && offlineDao.countVoiceNotes(report.localId) == 0);
     }
 
     @WorkerThread
-    public void submitDraft(long localReportId) {
-        database.runInTransaction(() -> {
+    public void submitDraft(long localReportId)
+    {
+        database.runInTransaction(() ->
+        {
             OfflineReportEntity report = requireDraft(localReportId);
             SubmissionStatus status = checkSubmissionStatus(report);
-            if (status.missingType) {
+            if (status.missingType)
+            {
                 throw new IllegalStateException("Select a report type");
             }
-            if (status.missingLocation) {
+            if (status.missingLocation)
+            {
                 throw new IllegalStateException("Select a configured location");
             }
-            if (status.missingEventTime) {
+            if (status.missingEventTime)
+            {
                 throw new IllegalStateException("Event time is required");
             }
-            if (status.missingDetails) {
+            if (status.missingDetails)
+            {
                 throw new IllegalStateException("Add a description or voice note");
             }
             report.submittedAtEpochMillis = System.currentTimeMillis();
@@ -394,63 +473,79 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public void deleteDraft(long localReportId) throws IOException {
+    public void deleteDraft(long localReportId) throws IOException
+    {
         OfflineReportEntity report = requireDraft(localReportId);
         List<OfflineAttachmentEntity> attachments = offlineDao.listAttachments(localReportId);
         offlineDao.deleteReport(report);
-        for (OfflineAttachmentEntity attachment : attachments) {
+        for (OfflineAttachmentEntity attachment : attachments)
+        {
             mediaStore.deleteManagedFile(new File(attachment.localFilePath));
         }
     }
 
     @WorkerThread
-    public OfflineReportEntity getOfflineReport(long localReportId) {
+    public OfflineReportEntity getOfflineReport(long localReportId)
+    {
         return offlineDao.getReport(localReportId);
     }
 
     @WorkerThread
-    public List<OfflineAttachmentEntity> getOfflineAttachments(long localReportId) {
+    public List<OfflineAttachmentEntity> getOfflineAttachments(long localReportId)
+    {
         return offlineDao.listAttachments(localReportId);
     }
 
-    public LiveData<List<OfflineReportEntity>> observeOfflineReports() {
+    public LiveData<List<OfflineReportEntity>> observeOfflineReports()
+    {
         return offlineDao.observeReports();
     }
 
-    public LiveData<List<ReportListItem>> observeMyReports() {
+    public LiveData<List<ReportListItem>> observeMyReports()
+    {
         return database.reportListDao().observeAll();
     }
 
-    public LiveData<List<SyncedReportEntity>> observeSyncedReports() {
+    public LiveData<List<SyncedReportEntity>> observeSyncedReports()
+    {
         return syncedDao.observeReports();
     }
 
     @WorkerThread
-    public SyncedReportEntity getSyncedReport(String serverReportId) {
+    public SyncedReportEntity getSyncedReport(String serverReportId)
+    {
         return syncedDao.getReport(serverReportId);
     }
 
     @WorkerThread
-    public List<SyncedAttachmentEntity> getSyncedAttachments(String serverReportId) {
+    public List<SyncedAttachmentEntity> getSyncedAttachments(String serverReportId)
+    {
         return syncedDao.listAttachments(serverReportId);
     }
 
+    // REPORT SYNC STATE
     @WorkerThread
-    public List<OfflineReportEntity> listReportsForSync() {
+    public List<OfflineReportEntity> listReportsForSync()
+    {
         return offlineDao.listSubmittedReports();
     }
 
-    /** Called only after POST /api/reports has returned its stable server ID. */
+    /**
+     * Called only after POST /api/reports has returned its stable server ID.
+     */
     @WorkerThread
     public void markReportAccepted(long localReportId, @NonNull String serverReportId,
-            String referenceNumber, long receivedAtEpochMillis) {
+                                   String referenceNumber, long receivedAtEpochMillis)
+    {
         OfflineReportEntity report = requireReport(localReportId);
-        if (ReportValues.DRAFT.equals(report.syncState)) {
+        if (ReportValues.DRAFT.equals(report.syncState))
+        {
             throw new IllegalStateException("Draft has not been submitted");
         }
         if (serverReportId.trim().isEmpty()
-                || (report.serverReportId != null
-                && !report.serverReportId.equals(serverReportId))) {
+            || (report.serverReportId != null
+            && !report.serverReportId.equals(serverReportId)))
+        {
             throw new IllegalArgumentException("Conflicting server report ID");
         }
         report.serverReportId = serverReportId;
@@ -463,15 +558,18 @@ public final class LocalReportRepository {
 
     @WorkerThread
     public void markAttachmentAccepted(long localAttachmentId,
-            @NonNull String serverAttachmentId, long uploadedAtEpochMillis) {
+                                       @NonNull String serverAttachmentId, long uploadedAtEpochMillis)
+    {
         OfflineAttachmentEntity attachment = offlineDao.getAttachment(localAttachmentId);
-        if (attachment == null) {
+        if (attachment == null)
+        {
             throw new IllegalArgumentException("Unknown attachment");
         }
         OfflineReportEntity report = requireReport(attachment.reportLocalId);
         if (report.serverReportId == null || serverAttachmentId.trim().isEmpty()
-                || (attachment.serverAttachmentId != null
-                && !attachment.serverAttachmentId.equals(serverAttachmentId))) {
+            || (attachment.serverAttachmentId != null
+            && !attachment.serverAttachmentId.equals(serverAttachmentId)))
+        {
             throw new IllegalStateException("Report or attachment is not accepted");
         }
         attachment.serverAttachmentId = serverAttachmentId;
@@ -482,26 +580,32 @@ public final class LocalReportRepository {
     }
 
     @WorkerThread
-    public boolean recordReportUploadFailure(long localReportId, @NonNull String message) {
+    public boolean recordReportUploadFailure(long localReportId, @NonNull String message)
+    {
         OfflineReportEntity report = requireReport(localReportId);
-        if (ReportValues.DRAFT.equals(report.syncState)) {
+        if (ReportValues.DRAFT.equals(report.syncState))
+        {
             throw new IllegalStateException("Draft has not been submitted");
         }
         report.uploadAttemptCount++;
         report.lastUploadError = message;
         boolean retryAutomatically = report.serverReportId == null;
         report.syncState = retryAutomatically ? ReportValues.FAILED
-                : ReportValues.UPLOAD_PAUSED;
+            : ReportValues.UPLOAD_PAUSED;
         offlineDao.updateReport(report);
         return retryAutomatically;
     }
 
-    /** The user explicitly requests another attempt after an attachment failure. */
+    /**
+     * The user explicitly requests another attempt after an attachment failure.
+     */
     @WorkerThread
-    public void resumePausedUpload(long localReportId) {
+    public void resumePausedUpload(long localReportId)
+    {
         OfflineReportEntity report = requireReport(localReportId);
         if (!ReportValues.UPLOAD_PAUSED.equals(report.syncState)
-                || report.serverReportId == null) {
+            || report.serverReportId == null)
+        {
             throw new IllegalStateException("This report is not waiting for reupload");
         }
         report.syncState = ReportValues.REPORT_UPLOADED;
@@ -509,21 +613,26 @@ public final class LocalReportRepository {
         offlineDao.updateReport(report);
     }
 
-    /** Replace a voice note whose local file is no longer usable, preserving its upload ID. */
+    /**
+     * Replace a voice note whose local file is no longer usable, preserving its upload ID.
+     */
     @WorkerThread
     public void replacePendingVoiceNote(long localReportId, long attachmentId,
-            @NonNull Uri source, @NonNull String mimeType) throws IOException {
+                                        @NonNull Uri source, @NonNull String mimeType) throws IOException
+    {
         OfflineReportEntity report = requireReport(localReportId);
         OfflineAttachmentEntity attachment = offlineDao.getAttachment(attachmentId);
         if (!ReportValues.UPLOAD_PAUSED.equals(report.syncState)
-                || attachment == null || attachment.reportLocalId != localReportId
-                || attachment.serverAttachmentId != null
-                || !ReportValues.VOICE_NOTE.equals(attachment.attachmentType)
-                || !mimeType.startsWith("audio/")) {
+            || attachment == null || attachment.reportLocalId != localReportId
+            || attachment.serverAttachmentId != null
+            || !ReportValues.VOICE_NOTE.equals(attachment.attachmentType)
+            || !mimeType.startsWith("audio/"))
+        {
             throw new IllegalArgumentException("No pending voice note to replace");
         }
         ReportMediaStore.StoredMedia replacement = mediaStore.copyFromUri(source, mimeType);
-        if (replacement.sizeBytes <= 0 || replacement.sizeBytes > 25L * 1024 * 1024) {
+        if (replacement.sizeBytes <= 0 || replacement.sizeBytes > 25L * 1024 * 1024)
+        {
             mediaStore.deleteManagedFile(replacement.file);
             throw new IOException("Voice note must be between 1 byte and 25 MB.");
         }
@@ -540,12 +649,15 @@ public final class LocalReportRepository {
 
     @WorkerThread
     public void recordAttachmentUploadFailure(long localAttachmentId,
-            @NonNull String message) {
+                                              @NonNull String message)
+    {
         OfflineAttachmentEntity attachment = offlineDao.getAttachment(localAttachmentId);
-        if (attachment == null) {
+        if (attachment == null)
+        {
             throw new IllegalArgumentException("Unknown attachment");
         }
-        if (requireReport(attachment.reportLocalId).serverReportId == null) {
+        if (requireReport(attachment.reportLocalId).serverReportId == null)
+        {
             throw new IllegalStateException("Report is not uploaded yet");
         }
         attachment.uploadAttemptCount++;
@@ -553,24 +665,31 @@ public final class LocalReportRepository {
         offlineDao.updateAttachment(attachment);
     }
 
-    /** Moves a fully acknowledged report and its media metadata in one SQLite transaction. */
+    /**
+     * Moves a fully acknowledged report and its media metadata in one SQLite transaction.
+     */
     @WorkerThread
     public void finishSync(long localReportId, @NonNull String workflowStatus,
-            long statusUpdatedAtEpochMillis) {
-        if (workflowStatus.trim().isEmpty()) {
+                           long statusUpdatedAtEpochMillis)
+    {
+        if (workflowStatus.trim().isEmpty())
+        {
             throw new IllegalArgumentException("Workflow status is required");
         }
-        database.runInTransaction(() -> {
+        database.runInTransaction(() ->
+        {
             OfflineReportEntity offline = requireReport(localReportId);
             if (offline.serverReportId == null || offline.submittedAtEpochMillis == null
-                    || offline.occurredAtEpochMillis == null
-                    || offline.serverReceivedAtEpochMillis == null
-                    || offline.locationLocalId == null
-                    || offlineDao.countUnuploadedAttachments(localReportId) != 0) {
+                || offline.occurredAtEpochMillis == null
+                || offline.serverReceivedAtEpochMillis == null
+                || offline.locationLocalId == null
+                || offlineDao.countUnuploadedAttachments(localReportId) != 0)
+            {
                 throw new IllegalStateException("Report or attachments are not fully uploaded");
             }
             LocationEntity location = locationDao.get(offline.locationLocalId);
-            if (location == null) {
+            if (location == null)
+            {
                 throw new IllegalStateException("Report location is missing");
             }
             SyncedReportEntity synced = new SyncedReportEntity();
@@ -594,7 +713,8 @@ public final class LocalReportRepository {
             syncedDao.insertReport(synced);
 
             for (OfflineAttachmentEntity attachment
-                    : offlineDao.listAttachments(localReportId)) {
+                : offlineDao.listAttachments(localReportId))
+            {
                 SyncedAttachmentEntity confirmed = new SyncedAttachmentEntity();
                 confirmed.serverAttachmentId = attachment.serverAttachmentId;
                 confirmed.serverReportId = offline.serverReportId;
@@ -606,21 +726,25 @@ public final class LocalReportRepository {
                 confirmed.fileSizeBytes = attachment.fileSizeBytes;
                 confirmed.capturedAtEpochMillis = attachment.capturedAtEpochMillis;
                 confirmed.uploadedAtEpochMillis = attachment.uploadedAtEpochMillis == null
-                        ? statusUpdatedAtEpochMillis : attachment.uploadedAtEpochMillis;
+                    ? statusUpdatedAtEpochMillis : attachment.uploadedAtEpochMillis;
                 syncedDao.insertAttachment(confirmed);
             }
             offlineDao.deleteReport(offline);
         });
     }
 
+    // REVIEW STATUS
     @WorkerThread
     public void updateWorkflowStatus(@NonNull String serverReportId,
-            @NonNull String status, long updatedAtEpochMillis, String reviewReason) {
+                                     @NonNull String status, long updatedAtEpochMillis, String reviewReason)
+    {
         SyncedReportEntity report = syncedDao.getReport(serverReportId);
-        if (report == null) {
+        if (report == null)
+        {
             throw new IllegalArgumentException("Unknown synced report");
         }
-        if (updatedAtEpochMillis >= report.statusUpdatedAtEpochMillis) {
+        if (updatedAtEpochMillis >= report.statusUpdatedAtEpochMillis)
+        {
             report.workflowStatus = status;
             report.statusUpdatedAtEpochMillis = updatedAtEpochMillis;
             report.reviewReason = reviewReason;
@@ -628,34 +752,42 @@ public final class LocalReportRepository {
         }
     }
 
-    private OfflineReportEntity requireReport(long localReportId) {
+    private OfflineReportEntity requireReport(long localReportId)
+    {
         OfflineReportEntity report = offlineDao.getReport(localReportId);
-        if (report == null) {
+        if (report == null)
+        {
             throw new IllegalArgumentException("Unknown local report");
         }
         return report;
     }
 
-    private OfflineReportEntity requireDraft(long localReportId) {
+    private OfflineReportEntity requireDraft(long localReportId)
+    {
         OfflineReportEntity report = requireReport(localReportId);
-        if (!ReportValues.DRAFT.equals(report.syncState)) {
+        if (!ReportValues.DRAFT.equals(report.syncState))
+        {
             throw new IllegalStateException("Report is already submitted");
         }
         return report;
     }
 
-    private static void validateAttachment(String type, String source) {
+    private static void validateAttachment(String type, String source)
+    {
         boolean photo = ReportValues.PHOTO.equals(type)
-                && (ReportValues.CAMERA.equals(source) || ReportValues.GALLERY.equals(source));
+            && (ReportValues.CAMERA.equals(source) || ReportValues.GALLERY.equals(source));
         boolean voice = ReportValues.VOICE_NOTE.equals(type)
-                && ReportValues.MICROPHONE.equals(source);
-        if (!photo && !voice) {
+            && ReportValues.MICROPHONE.equals(source);
+        if (!photo && !voice)
+        {
             throw new IllegalArgumentException("Invalid attachment type or source");
         }
     }
 
-    private static String emptyToNull(String value) {
-        if (value == null) {
+    private static String emptyToNull(String value)
+    {
+        if (value == null)
+        {
             return null;
         }
         String trimmed = value.trim();

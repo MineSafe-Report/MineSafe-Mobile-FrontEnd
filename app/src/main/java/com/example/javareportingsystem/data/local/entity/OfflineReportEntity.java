@@ -7,18 +7,19 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-        tableName = "offline_reports",
-        foreignKeys = @ForeignKey(
-                entity = LocationEntity.class,
-                parentColumns = "localId",
-                childColumns = "locationLocalId",
-                onDelete = ForeignKey.RESTRICT),
-        indices = {
-                @Index("locationLocalId"),
-                @Index(value = "serverReportId", unique = true),
-                @Index("syncState")
-        })
-public class OfflineReportEntity {
+    tableName = "offline_reports",
+    foreignKeys = @ForeignKey(
+        entity = LocationEntity.class,
+        parentColumns = "localId",
+        childColumns = "locationLocalId",
+        onDelete = ForeignKey.RESTRICT),
+    indices = {
+        @Index("locationLocalId"),
+        @Index(value = "serverReportId", unique = true),
+        @Index("syncState")
+    })
+public class OfflineReportEntity
+{
     @PrimaryKey(autoGenerate = true)
     public long localId;
 

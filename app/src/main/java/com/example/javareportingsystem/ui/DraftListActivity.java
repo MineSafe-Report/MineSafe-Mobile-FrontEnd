@@ -5,8 +5,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
 import androidx.appcompat.app.AlertDialog;
+
 import java.io.IOException;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,14 +32,16 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class DraftListActivity extends AppCompatActivity {
+public class DraftListActivity extends AppCompatActivity
+{
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
     private LinearLayout draftContainer;
     private TextView emptyNotice;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_draft_list);
@@ -44,69 +49,84 @@ public class DraftListActivity extends AppCompatActivity {
         draftContainer = findViewById(R.id.draftContainer);
         emptyNotice = findViewById(R.id.tvNoDrafts);
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top,
-                    systemBars.right, systemBars.bottom);
+                systemBars.right, systemBars.bottom);
             return insets;
         });
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         loadDrafts();
     }
 
-    private void loadDrafts() {
-        databaseExecutor.execute(() -> {
-            try {
+    private void loadDrafts()
+    {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 List<DraftOption> options = new ArrayList<>();
-                for (OfflineReportEntity draft : reports.listDrafts()) {
+                for (OfflineReportEntity draft : reports.listDrafts())
+                {
                     String locationName = getString(R.string.draft_location_missing);
-                    if (draft.locationLocalId != null) {
+                    if (draft.locationLocalId != null)
+                    {
                         LocationEntity location = reports.getLocation(draft.locationLocalId);
-                        if (location != null) {
+                        if (location != null)
+                        {
                             locationName = location.name;
                         }
                     }
                     options.add(new DraftOption(draft.localId,
-                            formatDraftLabel(draft, locationName)));
+                        formatDraftLabel(draft, locationName)));
                 }
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         showDrafts(options);
                     }
                 });
-            } catch (RuntimeException error) {
+            }
+            catch (RuntimeException error)
+            {
                 showLoadError();
             }
         });
     }
 
-    private String formatDraftLabel(OfflineReportEntity draft, String locationName) {
+    private String formatDraftLabel(OfflineReportEntity draft, String locationName)
+    {
         String type = ReportValues.NEAR_MISS.equals(draft.typeCode)
-                ? getString(R.string.report_type_near_miss)
-                : ReportValues.INCIDENT.equals(draft.typeCode)
-                        ? getString(R.string.report_type_incident)
-                        : ReportValues.HAZARD.equals(draft.typeCode)
-                                ? getString(R.string.report_type_hazard)
-                                : getString(R.string.report_type_not_selected);
+            ? getString(R.string.report_type_near_miss)
+            : ReportValues.INCIDENT.equals(draft.typeCode)
+            ? getString(R.string.report_type_incident)
+            : ReportValues.HAZARD.equals(draft.typeCode)
+            ? getString(R.string.report_type_hazard)
+            : getString(R.string.report_type_not_selected);
         String date = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                .format(new Date(draft.createdAtEpochMillis));
+            .format(new Date(draft.createdAtEpochMillis));
         return getString(R.string.draft_option, type, draft.localId, date, locationName);
     }
 
-    private void showDrafts(List<DraftOption> options) {
+    private void showDrafts(List<DraftOption> options)
+    {
         draftContainer.removeAllViews();
         emptyNotice.setVisibility(options.isEmpty() ? View.VISIBLE : View.GONE);
-        for (DraftOption option : options) {
+        for (DraftOption option : options)
+        {
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setGravity(Gravity.CENTER_VERTICAL);
             LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
             rowParams.bottomMargin = dp(14);
             draftContainer.addView(row, rowParams);
 
@@ -121,12 +141,12 @@ public class DraftListActivity extends AppCompatActivity {
             open.setMinHeight(dp(112));
             open.setPadding(dp(16), dp(12), dp(16), dp(12));
             open.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    R.drawable.ic_ms_history, 0, 0, 0);
+                R.drawable.ic_ms_history, 0, 0, 0);
             open.setCompoundDrawableTintList(
-                    android.content.res.ColorStateList.valueOf(getColor(R.color.safety_on_action)));
+                android.content.res.ColorStateList.valueOf(getColor(R.color.safety_on_action)));
             open.setCompoundDrawablePadding(dp(12));
             row.addView(open, new LinearLayout.LayoutParams(0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1));
             open.setOnClickListener(v -> openDraft(option.id, open));
 
             Button delete = new Button(this);
@@ -138,75 +158,96 @@ public class DraftListActivity extends AppCompatActivity {
             delete.setBackgroundResource(R.drawable.outline_button);
             delete.setBackgroundTintList(null);
             delete.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    0, R.drawable.ic_ms_delete, 0, 0);
+                0, R.drawable.ic_ms_delete, 0, 0);
             delete.setCompoundDrawableTintList(
-                    android.content.res.ColorStateList.valueOf(getColor(R.color.safety_danger)));
+                android.content.res.ColorStateList.valueOf(getColor(R.color.safety_danger)));
             delete.setGravity(Gravity.CENTER);
             LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(
-                    dp(88), dp(112));
+                dp(88), dp(112));
             deleteParams.leftMargin = dp(8);
             row.addView(delete, deleteParams);
             delete.setOnClickListener(v -> confirmDelete(option, open, delete));
         }
     }
 
-    private void confirmDelete(DraftOption option, Button open, Button delete) {
+    private void confirmDelete(DraftOption option, Button open, Button delete)
+    {
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.delete_draft_title)
-                .setMessage(getString(R.string.delete_draft_message, option.label))
-                .setNegativeButton(R.string.voice_delete_cancel, null)
-                .setPositiveButton(R.string.delete_draft, (ignored, which) -> {
-                    open.setEnabled(false);
-                    delete.setEnabled(false);
-                    databaseExecutor.execute(() -> {
-                        try {
-                            reports.deleteDraft(option.id);
-                            try (ImageDatabaseHelper images = new ImageDatabaseHelper(this, option.id)) {
-                                images.deleteAllImages();
-                            }
-                            runOnUiThread(() -> {
-                                if (!isFinishing() && !isDestroyed()) {
-                                    Toast.makeText(this, R.string.draft_deleted,
-                                            Toast.LENGTH_SHORT).show();
-                                    loadDrafts();
-                                }
-                            });
-                        } catch (IOException | RuntimeException error) {
-                            runOnUiThread(() -> {
-                                if (!isFinishing() && !isDestroyed()) {
-                                    Toast.makeText(this, R.string.draft_delete_failed,
-                                            Toast.LENGTH_SHORT).show();
-                                    loadDrafts();
-                                }
-                            });
+            .setTitle(R.string.delete_draft_title)
+            .setMessage(getString(R.string.delete_draft_message, option.label))
+            .setNegativeButton(R.string.voice_delete_cancel, null)
+            .setPositiveButton(R.string.delete_draft, (ignored, which) ->
+            {
+                open.setEnabled(false);
+                delete.setEnabled(false);
+                databaseExecutor.execute(() ->
+                {
+                    try
+                    {
+                        reports.deleteDraft(option.id);
+                        try (ImageDatabaseHelper images = new ImageDatabaseHelper(this, option.id))
+                        {
+                            images.deleteAllImages();
                         }
-                    });
-                })
-                .show();
+                        runOnUiThread(() ->
+                        {
+                            if (!isFinishing() && !isDestroyed())
+                            {
+                                Toast.makeText(this, R.string.draft_deleted,
+                                    Toast.LENGTH_SHORT).show();
+                                loadDrafts();
+                            }
+                        });
+                    }
+                    catch (IOException | RuntimeException error)
+                    {
+                        runOnUiThread(() ->
+                        {
+                            if (!isFinishing() && !isDestroyed())
+                            {
+                                Toast.makeText(this, R.string.draft_delete_failed,
+                                    Toast.LENGTH_SHORT).show();
+                                loadDrafts();
+                            }
+                        });
+                    }
+                });
+            })
+            .show();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setTextColor(getColor(R.color.safety_danger));
+            .setTextColor(getColor(R.color.safety_danger));
     }
 
-    private void openDraft(long draftId, Button button) {
+    private void openDraft(long draftId, Button button)
+    {
         button.setEnabled(false);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
-                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState)) {
+                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState))
+                {
                     throw new IllegalStateException("Draft is no longer available");
                 }
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         button.setEnabled(true);
                         startActivities(ReportDraftNavigation.resumeStack(this, draft));
                     }
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         button.setEnabled(true);
                         Toast.makeText(this, R.string.report_draft_load_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                         loadDrafts();
                     }
                 });
@@ -214,30 +255,37 @@ public class DraftListActivity extends AppCompatActivity {
         });
     }
 
-    private void showLoadError() {
-        runOnUiThread(() -> {
-            if (!isFinishing() && !isDestroyed()) {
+    private void showLoadError()
+    {
+        runOnUiThread(() ->
+        {
+            if (!isFinishing() && !isDestroyed())
+            {
                 Toast.makeText(this, R.string.report_draft_load_failed,
-                        Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private int dp(int value) {
+    private int dp(int value)
+    {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         databaseExecutor.shutdown();
         super.onDestroy();
     }
 
-    private static final class DraftOption {
+    private static final class DraftOption
+    {
         final long id;
         final String label;
 
-        DraftOption(long id, String label) {
+        DraftOption(long id, String label)
+        {
             this.id = id;
             this.label = label;
         }

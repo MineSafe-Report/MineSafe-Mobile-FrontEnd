@@ -1,0 +1,19 @@
+<code_scheme name="MineSafe" version="173">
+  <codeStyleSettings language="JAVA">
+    <option name="BRACE_STYLE" value="2" />
+    <option name="CLASS_BRACE_STYLE" value="2" />
+    <option name="METHOD_BRACE_STYLE" value="2" />
+    <option name="LAMBDA_BRACE_STYLE" value="2" />
+    <option name="ELSE_ON_NEW_LINE" value="true" />
+    <option name="CATCH_ON_NEW_LINE" value="true" />
+    <option name="FINALLY_ON_NEW_LINE" value="true" />
+    <option name="WHILE_ON_NEW_LINE" value="true" />
+    <option name="ARRAY_INITIALIZER_LBRACE_ON_NEXT_LINE" value="true" />
+    <option name="KEEP_BLANK_LINES_IN_CODE" value="2" />
+    <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="2" />
+    <indentOptions>
+      <option name="INDENT_SIZE" value="4" />
+      <option name="CONTINUATION_INDENT_SIZE" value="12" />
+    </indentOptions>
+  </codeStyleSettings>
+</code_scheme>

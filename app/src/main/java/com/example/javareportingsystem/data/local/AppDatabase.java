@@ -23,48 +23,61 @@ import com.example.javareportingsystem.data.local.entity.SyncedAttachmentEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 
 @Database(
-        entities = {
-                DeviceConfigEntity.class,
-                LocationEntity.class,
-                OfflineReportEntity.class,
-                OfflineAttachmentEntity.class,
-                SyncedReportEntity.class,
-                SyncedAttachmentEntity.class
-        },
-        version = 3,
-        exportSchema = true)
-public abstract class AppDatabase extends RoomDatabase {
+    entities = {
+        DeviceConfigEntity.class,
+        LocationEntity.class,
+        OfflineReportEntity.class,
+        OfflineAttachmentEntity.class,
+        SyncedReportEntity.class,
+        SyncedAttachmentEntity.class
+    },
+    version = 3,
+    exportSchema = true)
+public abstract class AppDatabase extends RoomDatabase
+{
     private static volatile AppDatabase instance;
-    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+    static final Migration MIGRATION_1_2 = new Migration(1, 2)
+    {
         @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
+        public void migrate(@NonNull SupportSQLiteDatabase database)
+        {
             database.execSQL("ALTER TABLE offline_reports ADD COLUMN currentStep "
-                    + "TEXT NOT NULL DEFAULT 'LOCATION'");
+                + "TEXT NOT NULL DEFAULT 'LOCATION'");
         }
     };
-    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+    static final Migration MIGRATION_2_3 = new Migration(2, 3)
+    {
         @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
+        public void migrate(@NonNull SupportSQLiteDatabase database)
+        {
             database.execSQL("ALTER TABLE synced_reports ADD COLUMN reviewReason TEXT");
         }
     };
 
     public abstract DeviceConfigDao deviceConfigDao();
+
     public abstract LocationDao locationDao();
+
     public abstract OfflineReportDao offlineReportDao();
+
     public abstract SyncedReportDao syncedReportDao();
+
     public abstract ReportListDao reportListDao();
 
-    public static AppDatabase getInstance(Context context) {
-        if (instance == null) {
-            synchronized (AppDatabase.class) {
-                if (instance == null) {
+    public static AppDatabase getInstance(Context context)
+    {
+        if (instance == null)
+        {
+            synchronized (AppDatabase.class)
+            {
+                if (instance == null)
+                {
                     instance = Room.databaseBuilder(
                             context.getApplicationContext(),
                             AppDatabase.class,
                             "mine_safety_reports.db")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                            .build();
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                        .build();
                 }
             }
         }

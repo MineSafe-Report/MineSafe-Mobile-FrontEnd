@@ -26,8 +26,11 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
-/** Stores one encrypted session outside Android's automatic backup. */
-final class SessionStore {
+/**
+ * Stores one encrypted session outside Android's automatic backup.
+ */
+final class SessionStore
+{
     private static final String KEY_ALIAS = "reporting_system_session_key";
     private static final String KEYSTORE = "AndroidKeyStore";
     // Old mock-server sessions had refresh tokens and cannot authenticate with the real API.
@@ -38,15 +41,18 @@ final class SessionStore {
 
     private final AtomicFile file;
 
-    SessionStore(Context context) {
+    SessionStore(Context context)
+    {
         File base = new File(context.getApplicationContext().getNoBackupFilesDir(),
-                "login_session.bin");
+            "login_session.bin");
         file = new AtomicFile(base);
     }
 
-    synchronized void save(LoggedInUser user) throws Exception {
+    synchronized void save(LoggedInUser user) throws Exception
+    {
         JSONArray locations = new JSONArray();
-        for (String location : user.getAssignedLocations()) {
+        for (String location : user.getAssignedLocations())
+        {
             locations.put(location);
         }
         JSONObject session = new JSONObject();
@@ -61,7 +67,8 @@ final class SessionStore {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey());
         byte[] iv = cipher.getIV();
-        if (iv.length != IV_LENGTH) {
+        if (iv.length != IV_LENGTH)
+        {
             throw new GeneralSecurityException("Unexpected encryption IV length");
         }
         byte[] encrypted = cipher.doFinal(session.toString().getBytes(StandardCharsets.UTF_8));
@@ -70,86 +77,105 @@ final class SessionStore {
         record.write(iv);
         record.write(encrypted);
         byte[] bytes = record.toByteArray();
-        if (bytes.length > MAX_RECORD_BYTES) {
+        if (bytes.length > MAX_RECORD_BYTES)
+        {
             throw new IOException("Session is too large to store");
         }
 
         FileOutputStream output = file.startWrite();
-        try {
+        try
+        {
             output.write(bytes);
             file.finishWrite(output);
-        } catch (IOException | RuntimeException e) {
+        }
+        catch (IOException | RuntimeException e)
+        {
             file.failWrite(output);
             throw e;
         }
     }
 
-    synchronized LoggedInUser restore() {
+    synchronized LoggedInUser restore()
+    {
         byte[] record;
-        try {
+        try
+        {
             record = file.readFully();
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e)
+        {
             return null;
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             clear();
             return null;
         }
-        try {
+        try
+        {
             if (record.length < 1 + IV_LENGTH + TAG_BITS / 8
-                    || record.length > MAX_RECORD_BYTES || record[0] != FORMAT_VERSION) {
+                || record.length > MAX_RECORD_BYTES || record[0] != FORMAT_VERSION)
+            {
                 throw new IOException("Invalid saved session");
             }
             byte[] iv = new byte[IV_LENGTH];
             System.arraycopy(record, 1, iv, 0, IV_LENGTH);
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.DECRYPT_MODE, getOrCreateKey(),
-                    new GCMParameterSpec(TAG_BITS, iv));
+                new GCMParameterSpec(TAG_BITS, iv));
             byte[] decrypted = cipher.doFinal(record, 1 + IV_LENGTH,
-                    record.length - 1 - IV_LENGTH);
+                record.length - 1 - IV_LENGTH);
             JSONObject session = new JSONObject(new String(decrypted, StandardCharsets.UTF_8));
             JSONArray locationsJson = session.getJSONArray("assignedLocations");
             List<String> locations = new ArrayList<>();
-            for (int index = 0; index < locationsJson.length(); index++) {
+            for (int index = 0; index < locationsJson.length(); index++)
+            {
                 locations.add(locationsJson.getString(index));
             }
             LoggedInUser user = new LoggedInUser(
-                    session.getInt("accountId"),
-                    session.getString("workerId"),
-                    session.getString("displayName"),
-                    session.getString("role"),
-                    session.getString("accessToken"),
-                    session.getLong("accessExpiresAtMillis"),
-                    locations);
-            if (user.getAccessToken().isEmpty()) {
+                session.getInt("accountId"),
+                session.getString("workerId"),
+                session.getString("displayName"),
+                session.getString("role"),
+                session.getString("accessToken"),
+                session.getLong("accessExpiresAtMillis"),
+                locations);
+            if (user.getAccessToken().isEmpty())
+            {
                 throw new IOException("Saved session has no token");
             }
             return user;
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             clear();
             return null;
         }
     }
 
-    synchronized boolean clear() {
+    synchronized boolean clear()
+    {
         file.delete();
         return !file.getBaseFile().exists();
     }
 
-    private static SecretKey getOrCreateKey() throws Exception {
+    private static SecretKey getOrCreateKey() throws Exception
+    {
         KeyStore keyStore = KeyStore.getInstance(KEYSTORE);
         keyStore.load(null);
         SecretKey key = (SecretKey) keyStore.getKey(KEY_ALIAS, null);
-        if (key != null) {
+        if (key != null)
+        {
             return key;
         }
         KeyGenerator generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES,
-                KEYSTORE);
+            KEYSTORE);
         generator.init(new KeyGenParameterSpec.Builder(KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .build());
+            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build());
         return generator.generateKey();
     }
 }

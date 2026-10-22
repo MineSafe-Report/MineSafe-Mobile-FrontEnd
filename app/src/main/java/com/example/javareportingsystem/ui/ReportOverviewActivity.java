@@ -25,7 +25,8 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ReportOverviewActivity extends AppCompatActivity {
+public class ReportOverviewActivity extends AppCompatActivity
+{
 
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private LocalReportRepository reports;
@@ -43,12 +44,14 @@ public class ReportOverviewActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_report_overview);
         draftId = ReportDraftNavigation.readId(this);
-        if (draftId <= 0) {
+        if (draftId <= 0)
+        {
             return;
         }
 
@@ -66,34 +69,39 @@ public class ReportOverviewActivity extends AppCompatActivity {
         btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
 
 
-        btnReportType.setOnClickListener(v -> {
-            // Handle Report Type button click
+        btnReportType.setOnClickListener(v ->
+        {
+            // Open the report type step.
             Intent intent = ReportDraftNavigation.to(this, ReportTypeActivity.class, draftId);
             startActivity(intent);
         });
 
-        btnLocations.setOnClickListener(v -> {
-            // Handle Locations button click
+        btnLocations.setOnClickListener(v ->
+        {
+            // Open the location step.
             Intent intent = ReportDraftNavigation.to(this, LocationSelectionActivity.class, draftId);
             intent.putExtra(LocationSelectionActivity.EXTRA_FROM_OVERVIEW, true);
             startActivity(intent);
         });
 
-        btnEditDescription.setOnClickListener(v -> {
-            // Handle Edit Description button click
+        btnEditDescription.setOnClickListener(v ->
+        {
+            // Open the description step.
             Intent intent = ReportDraftNavigation.to(this, ReportDescriptionActivity.class, draftId);
             startActivity(intent);
         });
 
-        btnEditImages.setOnClickListener(v -> {
-            // Handle Edit Images button click
+        btnEditImages.setOnClickListener(v ->
+        {
+            // Open the images step.
             Intent intent = ReportDraftNavigation.to(this, ReportImagesActivity.class, draftId);
             startActivity(intent);
         });
 
         btnSubmitReport.setOnClickListener(v -> submitReport());
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -101,17 +109,23 @@ public class ReportOverviewActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
-        if (draftId <= 0 || reports == null) {
+        if (draftId <= 0 || reports == null)
+        {
             return;
         }
 
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
-                if (draft == null) {
-                    runOnUiThread(() -> {
+                if (draft == null)
+                {
+                    runOnUiThread(() ->
+                    {
                         if (isFinishing() || isDestroyed()) return;
                         Toast.makeText(this, R.string.report_draft_missing, Toast.LENGTH_SHORT).show();
                         finish();
@@ -120,77 +134,94 @@ public class ReportOverviewActivity extends AppCompatActivity {
                 }
 
                 String locationName = null;
-                if (draft.locationLocalId != null) {
+                if (draft.locationLocalId != null)
+                {
                     LocationEntity location = reports.getLocation(draft.locationLocalId);
-                    if (location != null) {
+                    if (location != null)
+                    {
                         locationName = location.name;
                     }
                 }
 
                 int imageCount;
-                try (ImageDatabaseHelper images = new ImageDatabaseHelper(this, draftId)) {
+                try (ImageDatabaseHelper images = new ImageDatabaseHelper(this, draftId))
+                {
                     imageCount = images.getImageCount();
                 }
 
                 LocalReportRepository.SubmissionStatus status =
-                        reports.getDraftSubmissionStatus(draftId);
+                    reports.getDraftSubmissionStatus(draftId);
                 String savedLocationName = locationName;
-                runOnUiThread(() -> {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     btnReportType.setText(getString(R.string.overview_report_type_value,
-                            reportTypeName(draft.typeCode)));
+                        reportTypeName(draft.typeCode)));
                     btnLocations.setText(getString(R.string.overview_location_value,
-                            savedLocationName == null
-                                    ? getString(R.string.draft_location_missing)
-                                    : savedLocationName));
+                        savedLocationName == null
+                            ? getString(R.string.draft_location_missing)
+                            : savedLocationName));
                     btnEditImages.setText(getString(R.string.overview_images_count,
-                            imageCount, ImageDatabaseHelper.MAX_IMAGES));
+                        imageCount, ImageDatabaseHelper.MAX_IMAGES));
                     updateSubmissionIndicators(status);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     Toast.makeText(this, R.string.report_draft_load_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private String reportTypeName(String typeCode) {
-        if (ReportValues.INCIDENT.equals(typeCode)) {
+    private String reportTypeName(String typeCode)
+    {
+        if (ReportValues.INCIDENT.equals(typeCode))
+        {
             return getString(R.string.report_type_incident);
         }
-        if (ReportValues.HAZARD.equals(typeCode)) {
+        if (ReportValues.HAZARD.equals(typeCode))
+        {
             return getString(R.string.report_type_hazard);
         }
-        if (ReportValues.NEAR_MISS.equals(typeCode)) {
+        if (ReportValues.NEAR_MISS.equals(typeCode))
+        {
             return getString(R.string.report_type_near_miss);
         }
         return getString(R.string.report_type_not_selected);
     }
 
-    private void submitReport() {
+    private void submitReport()
+    {
         setSavingDraft(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 LocalReportRepository.SubmissionStatus status =
-                        reports.getDraftSubmissionStatus(draftId);
-                if (!status.isReady()) {
-                    runOnUiThread(() -> {
+                    reports.getDraftSubmissionStatus(draftId);
+                if (!status.isReady())
+                {
+                    runOnUiThread(() ->
+                    {
                         if (isFinishing() || isDestroyed()) return;
                         showValidationErrors = true;
                         updateSubmissionIndicators(status);
                         setSavingDraft(false);
                         overviewScroll.smoothScrollTo(0, 0);
                         validationMessage.announceForAccessibility(
-                                validationMessage.getText());
+                            validationMessage.getText());
                     });
                     return;
                 }
 
                 reports.submitDraft(draftId);
-                runOnUiThread(() -> {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     ReportSyncWorker.enqueueNow(this);
                     Toast.makeText(this, R.string.report_submitted, Toast.LENGTH_LONG).show();
@@ -199,8 +230,11 @@ public class ReportOverviewActivity extends AppCompatActivity {
                     startActivity(home);
                     finish();
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     setSavingDraft(false);
                     Toast.makeText(this, R.string.report_submit_failed, Toast.LENGTH_LONG).show();
@@ -209,51 +243,61 @@ public class ReportOverviewActivity extends AppCompatActivity {
         });
     }
 
-    private void updateSubmissionIndicators(LocalReportRepository.SubmissionStatus status) {
+    private void updateSubmissionIndicators(LocalReportRepository.SubmissionStatus status)
+    {
         btnEditDescription.setText(status.missingDetails
-                ? R.string.overview_details_missing : R.string.overview_details_present);
+            ? R.string.overview_details_missing : R.string.overview_details_present);
         highlightIfMissing(btnReportType, showValidationErrors && status.missingType);
         highlightIfMissing(btnLocations, showValidationErrors && status.missingLocation);
         highlightIfMissing(btnEditDescription, showValidationErrors && status.missingDetails);
 
-        if (!showValidationErrors || status.isReady()) {
+        if (!showValidationErrors || status.isReady())
+        {
             validationMessage.setVisibility(android.view.View.GONE);
             return;
         }
 
         boolean hasCardError = status.missingType || status.missingLocation
-                || status.missingDetails;
-        if (hasCardError && status.missingEventTime) {
+            || status.missingDetails;
+        if (hasCardError && status.missingEventTime)
+        {
             validationMessage.setText(getString(R.string.overview_complete_highlighted)
-                    + "\n" + getString(R.string.overview_event_time_missing));
-        } else if (hasCardError) {
+                + "\n" + getString(R.string.overview_event_time_missing));
+        }
+        else if (hasCardError)
+        {
             validationMessage.setText(R.string.overview_complete_highlighted);
-        } else {
+        }
+        else
+        {
             validationMessage.setText(R.string.overview_event_time_missing);
         }
         validationMessage.setVisibility(android.view.View.VISIBLE);
     }
 
-    private void highlightIfMissing(Button button, boolean missing) {
+    private void highlightIfMissing(Button button, boolean missing)
+    {
         button.setBackgroundResource(missing
-                ? R.drawable.report_field_error : R.drawable.outline_button);
+            ? R.drawable.report_field_error : R.drawable.outline_button);
         ViewCompat.setBackgroundTintList(button, null);
         int color = getColor(missing ? R.color.safety_danger : R.color.safety_text);
         button.setTextColor(color);
         button.setCompoundDrawableTintList(ColorStateList.valueOf(color));
         button.setContentDescription(missing
-                ? getString(R.string.overview_field_required_accessibility, button.getText())
-                : button.getText());
+            ? getString(R.string.overview_field_required_accessibility, button.getText())
+            : button.getText());
     }
 
-    private void saveDraftAndExit() {
+    private void saveDraftAndExit()
+    {
         setSavingDraft(true);
         ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
-                () -> reports.setDraftStep(draftId, ReportValues.STEP_OVERVIEW),
-                () -> setSavingDraft(false));
+            () -> reports.setDraftStep(draftId, ReportValues.STEP_OVERVIEW),
+            () -> setSavingDraft(false));
     }
 
-    private void setSavingDraft(boolean saving) {
+    private void setSavingDraft(boolean saving)
+    {
         btnSaveDraft.setEnabled(!saving);
         btnBack.setEnabled(!saving);
         btnReportType.setEnabled(!saving);
@@ -264,7 +308,8 @@ public class ReportOverviewActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         databaseExecutor.shutdown();
         super.onDestroy();
     }

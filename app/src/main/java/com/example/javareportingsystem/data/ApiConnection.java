@@ -3,14 +3,21 @@ package com.example.javareportingsystem.data;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/** A short API reachability check before sending report or review data. */
-public final class ApiConnection {
-    private ApiConnection() { }
+/**
+ * A short API reachability check before sending report or review data.
+ */
+public final class ApiConnection
+{
+    private ApiConnection()
+    {
+    }
 
-    public static boolean isReachable(String baseUrl) {
+    public static boolean isReachable(String baseUrl)
+    {
         if (baseUrl == null || baseUrl.trim().isEmpty()) return false;
         HttpURLConnection connection = null;
-        try {
+        try
+        {
             connection = (HttpURLConnection) new URL(baseUrl + "/health").openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(2000);
@@ -18,10 +25,14 @@ public final class ApiConnection {
             connection.setUseCaches(false);
             long started = android.os.SystemClock.elapsedRealtime();
             return connection.getResponseCode() == 200
-                    && android.os.SystemClock.elapsedRealtime() - started <= 2000;
-        } catch (Exception ignored) {
+                && android.os.SystemClock.elapsedRealtime() - started <= 2000;
+        }
+        catch (Exception ignored)
+        {
             return false;
-        } finally {
+        }
+        finally
+        {
             if (connection != null) connection.disconnect();
         }
     }

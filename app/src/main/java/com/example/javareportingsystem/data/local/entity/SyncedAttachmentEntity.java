@@ -7,17 +7,18 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-        tableName = "synced_attachments",
-        foreignKeys = @ForeignKey(
-                entity = SyncedReportEntity.class,
-                parentColumns = "serverReportId",
-                childColumns = "serverReportId",
-                onDelete = ForeignKey.CASCADE),
-        indices = {
-                @Index("serverReportId"),
-                @Index(value = "sourceLocalAttachmentId", unique = true)
-        })
-public class SyncedAttachmentEntity {
+    tableName = "synced_attachments",
+    foreignKeys = @ForeignKey(
+        entity = SyncedReportEntity.class,
+        parentColumns = "serverReportId",
+        childColumns = "serverReportId",
+        onDelete = ForeignKey.CASCADE),
+    indices = {
+        @Index("serverReportId"),
+        @Index(value = "sourceLocalAttachmentId", unique = true)
+    })
+public class SyncedAttachmentEntity
+{
     @PrimaryKey
     @NonNull
     public String serverAttachmentId = "";

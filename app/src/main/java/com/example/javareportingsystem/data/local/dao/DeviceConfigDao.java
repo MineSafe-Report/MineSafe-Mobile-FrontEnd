@@ -8,7 +8,8 @@ import androidx.room.Query;
 import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
 
 @Dao
-public interface DeviceConfigDao {
+public interface DeviceConfigDao
+{
     @Query("SELECT * FROM device_config WHERE id = 1")
     DeviceConfigEntity get();
 

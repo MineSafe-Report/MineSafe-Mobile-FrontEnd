@@ -41,8 +41,11 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Report details for supervisors and Safety Officers; only supervisors can review. */
-public class ReviewReportActivity extends AppCompatActivity {
+/**
+ * Report details for supervisors and Safety Officers; only supervisors can review.
+ */
+public class ReviewReportActivity extends AppCompatActivity
+{
     public static final String EXTRA_SERVER_ID = "review_server_report_id";
 
     private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
@@ -68,18 +71,20 @@ public class ReviewReportActivity extends AppCompatActivity {
     private boolean safetyOfficerMode;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_review_report);
         applyWindowInsets();
 
         loginRepository = LoginRepository.getInstance(this,
-                new ApiLoginDataSource(getString(R.string.api_base_url)));
+            new ApiLoginDataSource(getString(R.string.api_base_url)));
         LoggedInUser user = loginRepository.getCachedUser();
         safetyOfficerMode = user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole());
         if (user == null || (!safetyOfficerMode
-                && !"SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
+            && !"SUPERVISOR".equalsIgnoreCase(user.getRole())))
+        {
             Toast.makeText(this, R.string.supervisor_sign_in_required, Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -90,12 +95,15 @@ public class ReviewReportActivity extends AppCompatActivity {
         denyButton = findViewById(R.id.btnDeny);
         dashboardButton = findViewById(R.id.btnOpenDashboard);
         dashboardUnavailable = findViewById(R.id.tvDashboardUnavailable);
-        if (safetyOfficerMode) {
+        if (safetyOfficerMode)
+        {
             findViewById(R.id.reviewDecisionActions).setVisibility(View.GONE);
             findViewById(R.id.soDashboardActions).setVisibility(View.VISIBLE);
             ((TextView) findViewById(R.id.tvReviewHeading)).setText(R.string.so_incident_detail_title);
             dashboardButton.setEnabled(false);
-        } else {
+        }
+        else
+        {
             setDecisionButtonsEnabled(false);
             approveButton.setOnClickListener(v -> confirmApproval());
             denyButton.setOnClickListener(v -> showDenialReason());
@@ -113,83 +121,100 @@ public class ReviewReportActivity extends AppCompatActivity {
         attachmentContainer = findViewById(R.id.reviewAttachments);
         evidencePending = findViewById(R.id.tvEvidencePending);
 
-        if (serverReportId == null || serverReportId.trim().isEmpty()) {
+        if (serverReportId == null || serverReportId.trim().isEmpty())
+        {
             showUnavailable(getString(R.string.review_report_unavailable));
             return;
         }
         apiExecutor.execute(this::loadReport);
     }
 
-    private ApiReportReviewDataSource freshApi() throws IOException {
+    private ApiReportReviewDataSource freshApi() throws IOException
+    {
         LoggedInUser user = loginRepository.getFreshUser();
         if (user == null || !(safetyOfficerMode
-                ? "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())
-                : "SUPERVISOR".equalsIgnoreCase(user.getRole()))) {
+            ? "SAFETY_OFFICER".equalsIgnoreCase(user.getRole())
+            : "SUPERVISOR".equalsIgnoreCase(user.getRole())))
+        {
             throw new IOException("Sign in again to view this report.");
         }
         return new ApiReportReviewDataSource(
-                getString(R.string.api_base_url), user.getAccessToken());
+            getString(R.string.api_base_url), user.getAccessToken());
     }
 
-    private void applyWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (view, insets) -> {
+    private void applyWindowInsets()
+    {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (view, insets) ->
+        {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             view.setPadding(dp(20) + bars.left, dp(12) + bars.top,
-                    dp(20) + bars.right, dp(12) + bars.bottom);
+                dp(20) + bars.right, dp(12) + bars.bottom);
             return insets;
         });
     }
 
-    private void loadReport() {
-        try {
+    // REPORT DETAILS
+    private void loadReport()
+    {
+        try
+        {
             ApiReportReviewDataSource api = freshApi();
             ReviewReport report = safetyOfficerMode
-                    ? api.getSafetyOfficerIncident(serverReportId)
-                    : api.getReport(serverReportId);
-            runOnUiThread(() -> {
-                if (!isFinishing() && !isDestroyed()) {
+                ? api.getSafetyOfficerIncident(serverReportId)
+                : api.getReport(serverReportId);
+            runOnUiThread(() ->
+            {
+                if (!isFinishing() && !isDestroyed())
+                {
                     render(report);
-                    if (safetyOfficerMode) {
+                    if (safetyOfficerMode)
+                    {
                         LoggedInUser user = loginRepository.getCachedUser();
-                        if (user != null) {
+                        if (user != null)
+                        {
                             SafetyOfficerIncidentState.markOpened(this,
-                                    user.getAccountId(), report.getReportId());
+                                user.getAccountId(), report.getReportId());
                         }
                     }
                 }
             });
-        } catch (IOException error) {
+        }
+        catch (IOException error)
+        {
             showUnavailable(error.getMessage());
         }
     }
 
-    private void render(ReviewReport report) {
-        if (safetyOfficerMode && !ReportValues.INCIDENT.equalsIgnoreCase(report.getType())) {
+    private void render(ReviewReport report)
+    {
+        if (safetyOfficerMode && !ReportValues.INCIDENT.equalsIgnoreCase(report.getType()))
+        {
             showUnavailable(getString(R.string.so_incident_unavailable));
             return;
         }
         String type = typeLabel(report.getType());
         reportTitle.setText(hasText(report.getReferenceNumber())
-                ? report.getReferenceNumber().trim() : report.getReportId());
+            ? report.getReferenceNumber().trim() : report.getReportId());
         reportStatus.setText(statusLabel(report.getStatus()));
         reportType.setText(type);
         reportLocation.setText(hasText(report.getLocationName())
-                ? report.getLocationName() : getString(R.string.report_value_unavailable));
+            ? report.getLocationName() : getString(R.string.report_value_unavailable));
         long timestamp = report.getSubmittedAtEpochMillis();
         reportSubmitted.setText(timestamp > 0
-                ? DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                        .format(new Date(timestamp))
-                : getString(R.string.report_value_unavailable));
+            ? DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+            .format(new Date(timestamp))
+            : getString(R.string.report_value_unavailable));
         reportDescription.setText(hasText(report.getDescription())
-                ? report.getDescription() : getString(R.string.report_description_empty));
+            ? report.getDescription() : getString(R.string.report_description_empty));
         reportImages.setText(getResources().getQuantityString(R.plurals.report_image_count,
-                report.getImageCount(), report.getImageCount()));
+            report.getImageCount(), report.getImageCount()));
         reportVoiceNotes.setText(getResources().getQuantityString(R.plurals.report_voice_count,
-                report.getVoiceNoteCount(), report.getVoiceNoteCount()));
+            report.getVoiceNoteCount(), report.getVoiceNoteCount()));
         attachmentContainer.removeAllViews();
         int imageNumber = 0;
         int voiceNumber = 0;
-        for (ReviewAttachment attachment : report.getAttachments()) {
+        for (ReviewAttachment attachment : report.getAttachments())
+        {
             boolean photo = "PHOTO".equals(attachment.getType());
             int number = photo ? ++imageNumber : ++voiceNumber;
             Button open = new Button(this);
@@ -197,10 +222,10 @@ public class ReviewReportActivity extends AppCompatActivity {
             open.setAllCaps(false);
             open.setBackgroundResource(R.drawable.outline_button);
             open.setText(photo ? getString(R.string.review_view_image, number)
-                    : getString(R.string.review_play_voice, number));
+                : getString(R.string.review_play_voice, number));
             open.setOnClickListener(view -> openAttachment(attachment, photo));
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(56));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(56));
             params.topMargin = dp(8);
             attachmentContainer.addView(open, params);
         }
@@ -208,26 +233,33 @@ public class ReviewReportActivity extends AppCompatActivity {
         currentEvidenceComplete = report.isEvidenceComplete();
         boolean hasReviewReason = hasText(report.getReviewReason());
         reportReviewReason.setText(hasReviewReason
-                ? getString(R.string.review_reason_value, report.getReviewReason()) : "");
+            ? getString(R.string.review_reason_value, report.getReviewReason()) : "");
         reportReviewReason.setVisibility(hasReviewReason ? View.VISIBLE : View.GONE);
 
-        if (safetyOfficerMode) {
+        if (safetyOfficerMode)
+        {
             String url = report.getDashboardUrl();
             Uri link = url == null ? null : Uri.parse(url.trim());
             boolean validLink = link != null && ("https".equalsIgnoreCase(link.getScheme())
-                    || "http".equalsIgnoreCase(link.getScheme()))
-                    && link.getHost() != null && !link.getHost().isEmpty();
+                || "http".equalsIgnoreCase(link.getScheme()))
+                && link.getHost() != null && !link.getHost().isEmpty();
             dashboardButton.setEnabled(validLink);
             dashboardButton.setAlpha(validLink ? 1f : 0.55f);
             dashboardUnavailable.setVisibility(validLink ? View.GONE : View.VISIBLE);
-            dashboardButton.setOnClickListener(validLink ? view -> {
-                try {
+            dashboardButton.setOnClickListener(validLink ? view ->
+            {
+                try
+                {
                     startActivity(new Intent(Intent.ACTION_VIEW, link));
-                } catch (ActivityNotFoundException error) {
+                }
+                catch (ActivityNotFoundException error)
+                {
                     Toast.makeText(this, R.string.so_browser_unavailable, Toast.LENGTH_LONG).show();
                 }
             } : null);
-        } else {
+        }
+        else
+        {
             boolean pending = isPendingReview(report.getStatus()) && report.isEvidenceComplete();
             setDecisionButtonsEnabled(pending);
         }
@@ -235,33 +267,48 @@ public class ReviewReportActivity extends AppCompatActivity {
         findViewById(R.id.reviewLoading).setVisibility(View.GONE);
     }
 
-    private void openAttachment(ReviewAttachment attachment, boolean photo) {
-        apiExecutor.execute(() -> {
-            try {
-                if (!ApiConnection.isReachable(getString(R.string.api_base_url))) {
+    // EVIDENCE VIEWING
+    private void openAttachment(ReviewAttachment attachment, boolean photo)
+    {
+        apiExecutor.execute(() ->
+        {
+            try
+            {
+                if (!ApiConnection.isReachable(getString(R.string.api_base_url)))
+                {
                     throw new IOException("Cannot reach the evidence service.");
                 }
                 File file = freshApi().downloadAttachment(
-                        attachment.getId(), attachment.getMimeType(), getCacheDir());
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                    attachment.getId(), attachment.getMimeType(), getCacheDir());
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         file.delete();
-                    } else if (photo) {
+                    }
+                    else if (photo)
+                    {
                         showImage(file);
-                    } else {
+                    }
+                    else
+                    {
                         playVoice(file);
                     }
                 });
-            } catch (IOException error) {
+            }
+            catch (IOException error)
+            {
                 runOnUiThread(() -> Toast.makeText(this,
-                        R.string.review_evidence_unavailable, Toast.LENGTH_LONG).show());
+                    R.string.review_evidence_unavailable, Toast.LENGTH_LONG).show());
             }
         });
     }
 
-    private void showImage(File file) {
+    private void showImage(File file)
+    {
         Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
-        if (bitmap == null) {
+        if (bitmap == null)
+        {
             file.delete();
             Toast.makeText(this, R.string.review_evidence_unavailable, Toast.LENGTH_LONG).show();
             return;
@@ -272,48 +319,59 @@ public class ReviewReportActivity extends AppCompatActivity {
         image.setMaxHeight(dp(520));
         image.setContentDescription(getString(R.string.report_attachments_label));
         new AlertDialog.Builder(this).setView(image).setPositiveButton(R.string.ok, null)
-                .setOnDismissListener(dialog -> {
-                    image.setImageDrawable(null);
-                    bitmap.recycle();
-                    file.delete();
-                }).show();
+            .setOnDismissListener(dialog ->
+            {
+                image.setImageDrawable(null);
+                bitmap.recycle();
+                file.delete();
+            }).show();
     }
 
-    private void playVoice(File file) {
+    private void playVoice(File file)
+    {
         releasePlayer();
         Button control = new Button(this);
         control.setMinHeight(dp(56));
         control.setText(R.string.review_play_voice_action);
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.report_attachments_label)
-                .setView(control).setPositiveButton(R.string.ok, null).create();
-        try {
+            .setTitle(R.string.report_attachments_label)
+            .setView(control).setPositiveButton(R.string.ok, null).create();
+        try
+        {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(file.getAbsolutePath());
             MediaPlayer player = mediaPlayer;
             control.setEnabled(false);
-            player.setOnPreparedListener(prepared -> {
+            player.setOnPreparedListener(prepared ->
+            {
                 control.setEnabled(true);
                 prepared.start();
                 control.setText(R.string.review_pause_voice);
             });
             player.setOnCompletionListener(completed -> control.setText(R.string.review_play_voice_action));
-            control.setOnClickListener(view -> {
-                if (player.isPlaying()) {
+            control.setOnClickListener(view ->
+            {
+                if (player.isPlaying())
+                {
                     player.pause();
                     control.setText(R.string.review_play_voice_action);
-                } else {
+                }
+                else
+                {
                     player.start();
                     control.setText(R.string.review_pause_voice);
                 }
             });
-            dialog.setOnDismissListener(ignored -> {
+            dialog.setOnDismissListener(ignored ->
+            {
                 releasePlayer();
                 file.delete();
             });
             dialog.show();
             player.prepareAsync();
-        } catch (IOException | RuntimeException error) {
+        }
+        catch (IOException | RuntimeException error)
+        {
             dialog.dismiss();
             releasePlayer();
             file.delete();
@@ -321,148 +379,180 @@ public class ReviewReportActivity extends AppCompatActivity {
         }
     }
 
-    private void releasePlayer() {
-        if (mediaPlayer != null) {
+    private void releasePlayer()
+    {
+        if (mediaPlayer != null)
+        {
             mediaPlayer.release();
             mediaPlayer = null;
         }
     }
 
-    private void confirmApproval() {
+    // REVIEW DECISION
+    private void confirmApproval()
+    {
         new AlertDialog.Builder(this)
-                .setTitle(R.string.review_approve_title)
-                .setMessage(R.string.review_approve_message)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.review_approve_confirm,
-                        (dialog, which) -> submitDecision("APPROVE", null))
-                .show();
+            .setTitle(R.string.review_approve_title)
+            .setMessage(R.string.review_approve_message)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.review_approve_confirm,
+                (dialog, which) -> submitDecision("APPROVE", null))
+            .show();
     }
 
-    private void showDenialReason() {
+    private void showDenialReason()
+    {
         EditText reasonInput = new EditText(this);
         reasonInput.setHint(R.string.review_deny_reason_hint);
         reasonInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+            | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         reasonInput.setMinLines(3);
         int horizontal = dp(24);
         reasonInput.setPadding(horizontal, dp(14), horizontal, dp(14));
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.review_deny_title)
-                .setView(reasonInput)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(R.string.continue_label, null)
-                .create();
+            .setTitle(R.string.review_deny_title)
+            .setView(reasonInput)
+            .setNegativeButton(R.string.cancel, null)
+            .setPositiveButton(R.string.continue_label, null)
+            .create();
         dialog.setOnShowListener(ignored -> dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setOnClickListener(view -> {
-                    if (reasonInput.getText().toString().trim().isEmpty()) {
-                        reasonInput.setError(getString(R.string.review_deny_reason_required));
-                        return;
-                    }
-                    dialog.dismiss();
-                    submitDecision("DENY", reasonInput.getText().toString().trim());
-                }));
+            .setOnClickListener(view ->
+            {
+                if (reasonInput.getText().toString().trim().isEmpty())
+                {
+                    reasonInput.setError(getString(R.string.review_deny_reason_required));
+                    return;
+                }
+                dialog.dismiss();
+                submitDecision("DENY", reasonInput.getText().toString().trim());
+            }));
         dialog.show();
     }
 
-    private void submitDecision(String decision, String reason) {
+    private void submitDecision(String decision, String reason)
+    {
         setDecisionButtonsEnabled(false);
-        apiExecutor.execute(() -> {
-            try {
-                if (!ApiConnection.isReachable(getString(R.string.api_base_url))) {
+        apiExecutor.execute(() ->
+        {
+            try
+            {
+                if (!ApiConnection.isReachable(getString(R.string.api_base_url)))
+                {
                     throw new IOException("Connection is too weak to send a decision. Try again when connected.");
                 }
                 ReviewReport updated = freshApi().submitDecision(serverReportId, decision, reason);
-                runOnUiThread(() -> {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     render(updated);
                     Toast.makeText(this, decision.equals("APPROVE")
                             ? R.string.review_approved_saved : R.string.review_denied_saved,
-                            Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_LONG).show();
                 });
-            } catch (IOException error) {
-                runOnUiThread(() -> {
+            }
+            catch (IOException error)
+            {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     setDecisionButtonsEnabled(currentEvidenceComplete && isPendingReviewFromCurrentView());
                     new AlertDialog.Builder(this)
-                            .setTitle(R.string.review_request_failed_title)
-                            .setMessage(error.getMessage() == null
-                                    ? getString(R.string.review_request_failed_message)
-                                    : error.getMessage())
-                            .setPositiveButton(R.string.ok, (dialog, which) -> {
-                                if (error instanceof ApiReportReviewDataSource.ApiException
-                                        && ((ApiReportReviewDataSource.ApiException) error)
-                                                .getStatusCode() == 409) {
-                                    apiExecutor.execute(this::loadReport);
-                                }
-                            })
-                            .show();
+                        .setTitle(R.string.review_request_failed_title)
+                        .setMessage(error.getMessage() == null
+                            ? getString(R.string.review_request_failed_message)
+                            : error.getMessage())
+                        .setPositiveButton(R.string.ok, (dialog, which) ->
+                        {
+                            if (error instanceof ApiReportReviewDataSource.ApiException
+                                && ((ApiReportReviewDataSource.ApiException) error)
+                                .getStatusCode() == 409)
+                            {
+                                apiExecutor.execute(this::loadReport);
+                            }
+                        })
+                        .show();
                 });
             }
         });
     }
 
-    private boolean isPendingReviewFromCurrentView() {
+    private boolean isPendingReviewFromCurrentView()
+    {
         return reportStatus.getText().toString().equals(getString(R.string.status_pending_review));
     }
 
-    private void setDecisionButtonsEnabled(boolean enabled) {
+    private void setDecisionButtonsEnabled(boolean enabled)
+    {
         approveButton.setEnabled(enabled);
         denyButton.setEnabled(enabled);
         approveButton.setAlpha(enabled ? 1f : 0.55f);
         denyButton.setAlpha(enabled ? 1f : 0.55f);
     }
 
-    private void showUnavailable(String detail) {
-        runOnUiThread(() -> {
+    private void showUnavailable(String detail)
+    {
+        runOnUiThread(() ->
+        {
             if (isFinishing() || isDestroyed()) return;
             Toast.makeText(this, hasText(detail) ? detail : getString(R.string.review_report_unavailable),
-                    Toast.LENGTH_LONG).show();
+                Toast.LENGTH_LONG).show();
             finish();
         });
     }
 
-    private boolean isPendingReview(String status) {
+    private boolean isPendingReview(String status)
+    {
         String normalized = normalizeStatus(status);
         return "PENDING_REVIEW".equals(normalized)
-                || "AWAITING_REVIEW".equals(normalized)
-                || "SUBMITTED".equals(normalized);
+            || "AWAITING_REVIEW".equals(normalized)
+            || "SUBMITTED".equals(normalized);
     }
 
-    private String statusLabel(String status) {
+    private String statusLabel(String status)
+    {
         String normalized = normalizeStatus(status);
         if ("PENDING_REVIEW".equals(normalized)
-                || "AWAITING_REVIEW".equals(normalized)
-                || "SUBMITTED".equals(normalized)) return getString(R.string.status_pending_review);
+            || "AWAITING_REVIEW".equals(normalized)
+            || "SUBMITTED".equals(normalized)) return getString(R.string.status_pending_review);
         if ("APPROVED".equals(normalized)) return getString(R.string.status_approved);
-        if ("DENIED".equals(normalized) || "REJECTED".equals(normalized)) {
+        if ("DENIED".equals(normalized) || "REJECTED".equals(normalized))
+        {
             return getString(R.string.status_denied);
         }
         return normalized.isEmpty() ? getString(R.string.status_unavailable)
-                : normalized.replace('_', ' ').toLowerCase(Locale.ROOT);
+            : normalized.replace('_', ' ').toLowerCase(Locale.ROOT);
     }
 
-    private String normalizeStatus(String status) {
+    private String normalizeStatus(String status)
+    {
         return status == null ? "" : status.trim().toUpperCase(Locale.ROOT)
-                .replace('-', '_').replace(' ', '_');
+            .replace('-', '_').replace(' ', '_');
     }
 
-    private String typeLabel(String code) {
-        if (ReportValues.HAZARD.equalsIgnoreCase(code)) return getString(R.string.report_type_hazard);
-        if (ReportValues.INCIDENT.equalsIgnoreCase(code)) return getString(R.string.report_type_incident);
-        if (ReportValues.NEAR_MISS.equalsIgnoreCase(code)) return getString(R.string.report_type_near_miss);
+    private String typeLabel(String code)
+    {
+        if (ReportValues.HAZARD.equalsIgnoreCase(code))
+            return getString(R.string.report_type_hazard);
+        if (ReportValues.INCIDENT.equalsIgnoreCase(code))
+            return getString(R.string.report_type_incident);
+        if (ReportValues.NEAR_MISS.equalsIgnoreCase(code))
+            return getString(R.string.report_type_near_miss);
         return getString(R.string.report_type_not_selected);
     }
 
-    private boolean hasText(String value) {
+    private boolean hasText(String value)
+    {
         return value != null && !value.trim().isEmpty();
     }
 
-    private int dp(int value) {
+    private int dp(int value)
+    {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         releasePlayer();
         apiExecutor.shutdown();
         super.onDestroy();

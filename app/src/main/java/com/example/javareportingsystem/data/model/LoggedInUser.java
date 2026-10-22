@@ -7,7 +7,8 @@ import java.util.List;
 /**
  * The identity and session fields expected from a successful login response.
  */
-public final class LoggedInUser {
+public final class LoggedInUser
+{
     private final int accountId;
     private final String workerId;
     private final String displayName;
@@ -17,13 +18,14 @@ public final class LoggedInUser {
     private final List<String> assignedLocations;
 
     public LoggedInUser(
-            int accountId,
-            String workerId,
-            String displayName,
-            String role,
-            String accessToken,
-            long accessExpiresAtMillis,
-            List<String> assignedLocations) {
+        int accountId,
+        String workerId,
+        String displayName,
+        String role,
+        String accessToken,
+        long accessExpiresAtMillis,
+        List<String> assignedLocations)
+    {
         this.accountId = accountId;
         this.workerId = workerId;
         this.displayName = displayName;
@@ -33,31 +35,38 @@ public final class LoggedInUser {
         this.assignedLocations = Collections.unmodifiableList(new ArrayList<>(assignedLocations));
     }
 
-    public int getAccountId() {
+    public int getAccountId()
+    {
         return accountId;
     }
 
-    public String getWorkerId() {
+    public String getWorkerId()
+    {
         return workerId;
     }
 
-    public String getDisplayName() {
+    public String getDisplayName()
+    {
         return displayName;
     }
 
-    public String getRole() {
+    public String getRole()
+    {
         return role;
     }
 
-    public String getAccessToken() {
+    public String getAccessToken()
+    {
         return accessToken;
     }
 
-    public long getAccessExpiresAtMillis() {
+    public long getAccessExpiresAtMillis()
+    {
         return accessExpiresAtMillis;
     }
 
-    public List<String> getAssignedLocations() {
+    public List<String> getAssignedLocations()
+    {
         return assignedLocations;
     }
 }

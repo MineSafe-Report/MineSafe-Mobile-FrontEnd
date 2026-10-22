@@ -47,22 +47,29 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Records app-private voice notes for the current draft and provides local playback. */
-public class ReportVoiceActivity extends AppCompatActivity {
+/**
+ * Records app-private voice notes for the current draft and provides local playback.
+ */
+public class ReportVoiceActivity extends AppCompatActivity
+{
     private static final float[] PLAYBACK_SPEEDS = {1f, 1.5f, 2f};
     private static final String[] PLAYBACK_SPEED_LABELS = {"1×", "1.5×", "2×"};
 
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
     private final ActivityResultLauncher<String> microphonePermission =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                if (granted) {
-                    startRecording();
-                } else {
-                    Toast.makeText(this, R.string.voice_permission_required,
-                            Toast.LENGTH_LONG).show();
-                }
-            });
+        registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted ->
+        {
+            if (granted)
+            {
+                startRecording();
+            }
+            else
+            {
+                Toast.makeText(this, R.string.voice_permission_required,
+                    Toast.LENGTH_LONG).show();
+            }
+        });
 
     private LocalReportRepository reports;
     private Button btnBack;
@@ -85,21 +92,28 @@ public class ReportVoiceActivity extends AppCompatActivity {
     private final List<VoiceRow> voiceRows = new ArrayList<>();
     private VoiceRow activeRow;
 
-    private final Runnable recordClock = new Runnable() {
+    private final Runnable recordClock = new Runnable()
+    {
         @Override
-        public void run() {
-            if (recorder != null) {
+        public void run()
+        {
+            if (recorder != null)
+            {
                 recordTimer.setText(formatTime(SystemClock.elapsedRealtime()
-                        - recordingStartedAt));
+                    - recordingStartedAt));
                 uiHandler.postDelayed(this, 250);
             }
         }
     };
-    private final Runnable playbackClock = new Runnable() {
+    private final Runnable playbackClock = new Runnable()
+    {
         @Override
-        public void run() {
-            if (player != null && player.isPlaying()) {
-                if (!seeking && activeRow != null) {
+        public void run()
+        {
+            if (player != null && player.isPlaying())
+            {
+                if (!seeking && activeRow != null)
+                {
                     int position = player.getCurrentPosition();
                     activeRow.seekAudio.setProgress(position);
                     activeRow.currentTime.setText(formatTime(position));
@@ -110,12 +124,14 @@ public class ReportVoiceActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_report_voice);
         draftId = ReportDraftNavigation.readId(this);
-        if (draftId <= 0) {
+        if (draftId <= 0)
+        {
             return;
         }
         reports = new LocalReportRepository(this);
@@ -130,58 +146,77 @@ public class ReportVoiceActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> returnToDescription());
         btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
-        btnRecord.setOnClickListener(v -> {
-            if (recorder == null) {
+        btnRecord.setOnClickListener(v ->
+        {
+            if (recorder == null)
+            {
                 requestRecording();
-            } else {
+            }
+            else
+            {
                 stopRecording(false);
             }
         });
-        btnNext.setOnClickListener(v -> {
-            if (draftLoaded && !busy && recorder == null) {
+        btnNext.setOnClickListener(v ->
+        {
+            if (draftLoaded && !busy && recorder == null)
+            {
                 startActivity(ReportDraftNavigation.to(
-                        this, ReportImagesActivity.class, draftId));
+                    this, ReportImagesActivity.class, draftId));
             }
         });
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true)
+        {
             @Override
-            public void handleOnBackPressed() {
+            public void handleOnBackPressed()
+            {
                 returnToDescription();
             }
         });
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top,
-                    systemBars.right, systemBars.bottom);
+                systemBars.right, systemBars.bottom);
             return insets;
         });
         updateControls();
         loadVoiceNotes();
     }
 
-    private void loadVoiceNotes() {
+    private void loadVoiceNotes()
+    {
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
-                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState)) {
+                if (draft == null || !ReportValues.DRAFT.equals(draft.syncState))
+                {
                     throw new IllegalStateException("Report draft is missing");
                 }
                 List<OfflineAttachmentEntity> attachments =
-                        reports.getOfflineAttachments(draftId);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                    reports.getOfflineAttachments(draftId);
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     draftLoaded = true;
                     showVoiceNotes(attachments);
                     setBusy(false);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         Toast.makeText(this, R.string.report_draft_load_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 });
@@ -189,53 +224,71 @@ public class ReportVoiceActivity extends AppCompatActivity {
         });
     }
 
-    private void requestRecording() {
-        if (busy || !draftLoaded) {
+    // RECORDING
+    private void requestRecording()
+    {
+        if (busy || !draftLoaded)
+        {
             return;
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED)
+        {
             microphonePermission.launch(Manifest.permission.RECORD_AUDIO);
-        } else {
+        }
+        else
+        {
             startRecording();
         }
     }
 
-    private void startRecording() {
-        if (busy || !draftLoaded || recorder != null) {
+    private void startRecording()
+    {
+        if (busy || !draftLoaded || recorder != null)
+        {
             return;
         }
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 File file = new File(reports.getMediaDirectory(),
-                        UUID.randomUUID() + ".m4a");
+                    UUID.randomUUID() + ".m4a");
                 runOnUiThread(() -> beginRecorder(file));
-            } catch (IOException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (IOException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         setBusy(false);
                         Toast.makeText(this, R.string.voice_record_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
     }
 
-    private void beginRecorder(File file) {
-        if (isFinishing() || isDestroyed()) {
+    private void beginRecorder(File file)
+    {
+        if (isFinishing() || isDestroyed())
+        {
             return;
         }
-        if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+        if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED))
+        {
             setBusy(false);
             return;
         }
         releasePlayer();
         MediaRecorder candidate = null;
-        try {
+        try
+        {
             candidate = Build.VERSION.SDK_INT >= 31
-                    ? new MediaRecorder(this) : new MediaRecorder();
+                ? new MediaRecorder(this) : new MediaRecorder();
             candidate.setAudioSource(MediaRecorder.AudioSource.MIC);
             candidate.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             candidate.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -250,8 +303,11 @@ public class ReportVoiceActivity extends AppCompatActivity {
             setBusy(false);
             status.setText(R.string.voice_recording);
             updateControls();
-        } catch (IOException | RuntimeException error) {
-            if (candidate != null) {
+        }
+        catch (IOException | RuntimeException error)
+        {
+            if (candidate != null)
+            {
                 candidate.release();
             }
             file.delete();
@@ -262,8 +318,10 @@ public class ReportVoiceActivity extends AppCompatActivity {
         }
     }
 
-    private void stopRecording(boolean returnAfterSave) {
-        if (recorder == null) {
+    private void stopRecording(boolean returnAfterSave)
+    {
+        if (recorder == null)
+        {
             return;
         }
         setBusy(true);
@@ -273,17 +331,24 @@ public class ReportVoiceActivity extends AppCompatActivity {
         File file = recordingFile;
         recordingFile = null;
         boolean recorded;
-        try {
+        try
+        {
             active.stop();
             recorded = file != null && file.isFile() && file.length() > 0;
-        } catch (RuntimeException error) {
+        }
+        catch (RuntimeException error)
+        {
             recorded = false;
-        } finally {
+        }
+        finally
+        {
             active.release();
         }
         recordTimer.setVisibility(View.GONE);
-        if (!recorded) {
-            if (file != null) {
+        if (!recorded)
+        {
+            if (file != null)
+            {
                 file.delete();
             }
             saveAfterRecording = false;
@@ -296,43 +361,56 @@ public class ReportVoiceActivity extends AppCompatActivity {
 
         status.setText(R.string.voice_saving);
         updateControls();
-        databaseExecutor.execute(() -> {
+        databaseExecutor.execute(() ->
+        {
             boolean attachmentSaved = false;
-            try {
+            try
+            {
                 reports.addPrivateAttachment(draftId, ReportValues.VOICE_NOTE,
-                        ReportValues.MICROPHONE, file, "audio/mp4");
+                    ReportValues.MICROPHONE, file, "audio/mp4");
                 attachmentSaved = true;
                 List<OfflineAttachmentEntity> attachments =
-                        reports.getOfflineAttachments(draftId);
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                    reports.getOfflineAttachments(draftId);
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     showVoiceNotes(attachments);
                     setBusy(false);
-                    if (saveAfterRecording) {
+                    if (saveAfterRecording)
+                    {
                         saveAfterRecording = false;
                         saveDraftAndExit();
-                    } else if (returnAfterSave) {
+                    }
+                    else if (returnAfterSave)
+                    {
                         returnToDescription();
                     }
                 });
-            } catch (IOException | RuntimeException error) {
-                if (!attachmentSaved) {
+            }
+            catch (IOException | RuntimeException error)
+            {
+                if (!attachmentSaved)
+                {
                     file.delete();
                 }
                 boolean saved = attachmentSaved;
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         saveAfterRecording = false;
                         setBusy(false);
-                        if (saved) {
+                        if (saved)
+                        {
                             loadVoiceNotes();
                             return;
                         }
                         restoreStatus();
                         Toast.makeText(this, R.string.voice_save_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                         updateControls();
                     }
                 });
@@ -340,92 +418,113 @@ public class ReportVoiceActivity extends AppCompatActivity {
         });
     }
 
-    private void showVoiceNotes(List<OfflineAttachmentEntity> attachments) {
+    // SAVED VOICE NOTES
+    private void showVoiceNotes(List<OfflineAttachmentEntity> attachments)
+    {
         releasePlayer();
         voiceNotes.clear();
         voiceRows.clear();
         audioPlayer.removeAllViews();
-        for (OfflineAttachmentEntity attachment : attachments) {
-            if (ReportValues.VOICE_NOTE.equals(attachment.attachmentType)) {
+        for (OfflineAttachmentEntity attachment : attachments)
+        {
+            if (ReportValues.VOICE_NOTE.equals(attachment.attachmentType))
+            {
                 voiceNotes.add(attachment);
             }
         }
-        for (int index = 0; index < voiceNotes.size(); index++) {
+        for (int index = 0; index < voiceNotes.size(); index++)
+        {
             addVoiceRow(voiceNotes.get(index), index + 1);
         }
         restoreStatus();
         updateControls();
     }
 
-    private void restoreStatus() {
-        if (voiceNotes.isEmpty()) {
+    private void restoreStatus()
+    {
+        if (voiceNotes.isEmpty())
+        {
             status.setText(R.string.voice_hint);
-        } else {
+        }
+        else
+        {
             status.setText(getResources().getQuantityString(R.plurals.voice_notes_saved,
-                    voiceNotes.size(), voiceNotes.size()));
+                voiceNotes.size(), voiceNotes.size()));
         }
     }
 
-    private void addVoiceRow(OfflineAttachmentEntity note, int number) {
+    private void addVoiceRow(OfflineAttachmentEntity note, int number)
+    {
         View item = LayoutInflater.from(this).inflate(R.layout.item_voice_note,
-                audioPlayer, false);
+            audioPlayer, false);
         VoiceRow row = new VoiceRow(note, item, number);
         row.title.setText(getString(R.string.voice_note_number, number));
         row.btnDelete.setContentDescription(getString(R.string.delete_voice_note_number,
-                number));
+            number));
         row.btnPlay.setContentDescription(getString(R.string.play_voice_note_number,
-                number));
+            number));
         row.btnSpeed.setContentDescription(getString(R.string.voice_playback_speed_number,
-                number));
+            number));
         row.seekAudio.setContentDescription(getString(R.string.voice_playback_position_number,
-                number));
+            number));
         row.btnPlay.setOnClickListener(v -> togglePlayback(row));
         row.btnSpeed.setOnClickListener(v -> changePlaybackSpeed(row));
         row.btnDelete.setOnClickListener(v -> confirmDelete(row));
-        row.seekAudio.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        row.seekAudio.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+        {
             @Override
-            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-                if (fromUser) {
+            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser)
+            {
+                if (fromUser)
+                {
                     row.currentTime.setText(formatTime(progress));
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar bar) {
+            public void onStartTrackingTouch(SeekBar bar)
+            {
                 seeking = true;
             }
 
             @Override
-            public void onStopTrackingTouch(SeekBar bar) {
-                if (player != null && activeRow == row) {
+            public void onStopTrackingTouch(SeekBar bar)
+            {
+                if (player != null && activeRow == row)
+                {
                     player.seekTo(bar.getProgress());
                 }
                 seeking = false;
             }
         });
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT);
         params.bottomMargin = dp(16);
         audioPlayer.addView(item, params);
         voiceRows.add(row);
     }
 
-    private int dp(int value) {
+    private int dp(int value)
+    {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private boolean preparePlayer(VoiceRow row) {
+    // PLAYBACK
+    private boolean preparePlayer(VoiceRow row)
+    {
         releasePlayer();
         MediaPlayer candidate = new MediaPlayer();
-        try {
+        try
+        {
             candidate.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build());
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build());
             candidate.setDataSource(row.note.localFilePath);
             candidate.prepare();
-            candidate.setOnCompletionListener(completed -> {
+            candidate.setOnCompletionListener(completed ->
+            {
                 row.seekAudio.setProgress(0);
                 row.currentTime.setText(formatTime(0));
                 updatePlayButton(row, false);
@@ -436,93 +535,123 @@ public class ReportVoiceActivity extends AppCompatActivity {
             row.seekAudio.setMax(Math.max(1, player.getDuration()));
             row.duration.setText(formatTime(player.getDuration()));
             return true;
-        } catch (IOException | RuntimeException error) {
+        }
+        catch (IOException | RuntimeException error)
+        {
             candidate.release();
             Toast.makeText(this, R.string.voice_play_failed, Toast.LENGTH_SHORT).show();
             return false;
         }
     }
 
-    private void togglePlayback(VoiceRow row) {
-        if (busy || recorder != null) {
+    private void togglePlayback(VoiceRow row)
+    {
+        if (busy || recorder != null)
+        {
             return;
         }
-        if ((player == null || activeRow != row) && !preparePlayer(row)) {
+        if ((player == null || activeRow != row) && !preparePlayer(row))
+        {
             return;
         }
-        try {
-            if (player.isPlaying()) {
+        try
+        {
+            if (player.isPlaying())
+            {
                 player.pause();
                 uiHandler.removeCallbacks(playbackClock);
                 updatePlayButton(row, false);
-            } else {
+            }
+            else
+            {
                 player.start();
-                if (row.speedIndex != 0) {
+                if (row.speedIndex != 0)
+                {
                     player.setPlaybackParams(new PlaybackParams()
-                            .setSpeed(PLAYBACK_SPEEDS[row.speedIndex]));
+                        .setSpeed(PLAYBACK_SPEEDS[row.speedIndex]));
                 }
                 updatePlayButton(row, true);
                 uiHandler.removeCallbacks(playbackClock);
                 uiHandler.post(playbackClock);
             }
-        } catch (RuntimeException error) {
+        }
+        catch (RuntimeException error)
+        {
             releasePlayer();
             Toast.makeText(this, R.string.voice_play_failed, Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void changePlaybackSpeed(VoiceRow row) {
-        if (busy || recorder != null) {
+    private void changePlaybackSpeed(VoiceRow row)
+    {
+        if (busy || recorder != null)
+        {
             return;
         }
         row.speedIndex = (row.speedIndex + 1) % PLAYBACK_SPEEDS.length;
         row.btnSpeed.setText(PLAYBACK_SPEED_LABELS[row.speedIndex]);
-        if (player != null && activeRow == row && player.isPlaying()) {
-            try {
+        if (player != null && activeRow == row && player.isPlaying())
+        {
+            try
+            {
                 player.setPlaybackParams(new PlaybackParams()
-                        .setSpeed(PLAYBACK_SPEEDS[row.speedIndex]));
-            } catch (RuntimeException error) {
+                    .setSpeed(PLAYBACK_SPEEDS[row.speedIndex]));
+            }
+            catch (RuntimeException error)
+            {
                 Toast.makeText(this, R.string.voice_play_failed, Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void confirmDelete(VoiceRow row) {
-        if (busy || recorder != null) {
+    private void confirmDelete(VoiceRow row)
+    {
+        if (busy || recorder != null)
+        {
             return;
         }
         new AlertDialog.Builder(this)
-                .setTitle(R.string.voice_delete_title)
-                .setMessage(R.string.voice_delete_message)
-                .setNegativeButton(R.string.voice_delete_cancel, null)
-                .setPositiveButton(R.string.voice_delete_confirm,
-                        (dialog, which) -> deleteVoiceNote(row.note.localId))
-                .show();
+            .setTitle(R.string.voice_delete_title)
+            .setMessage(R.string.voice_delete_message)
+            .setNegativeButton(R.string.voice_delete_cancel, null)
+            .setPositiveButton(R.string.voice_delete_confirm,
+                (dialog, which) -> deleteVoiceNote(row.note.localId))
+            .show();
     }
 
-    private void deleteVoiceNote(long noteId) {
-        if (busy || recorder != null) {
+    private void deleteVoiceNote(long noteId)
+    {
+        if (busy || recorder != null)
+        {
             return;
         }
         setBusy(true);
         releasePlayer();
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.removeDraftAttachment(noteId);
                 List<OfflineAttachmentEntity> attachments =
-                        reports.getOfflineAttachments(draftId);
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                    reports.getOfflineAttachments(draftId);
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         showVoiceNotes(attachments);
                         setBusy(false);
                     }
                 });
-            } catch (IOException | RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (IOException | RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         setBusy(false);
                         Toast.makeText(this, R.string.voice_delete_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                         loadVoiceNotes();
                     }
                 });
@@ -530,11 +659,15 @@ public class ReportVoiceActivity extends AppCompatActivity {
         });
     }
 
-    private void saveDraftAndExit() {
-        if (busy || !draftLoaded) {
+    // DRAFT NAVIGATION
+    private void saveDraftAndExit()
+    {
+        if (busy || !draftLoaded)
+        {
             return;
         }
-        if (recorder != null) {
+        if (recorder != null)
+        {
             saveAfterRecording = true;
             stopRecording(false);
             return;
@@ -542,42 +675,55 @@ public class ReportVoiceActivity extends AppCompatActivity {
         setBusy(true);
         releasePlayer();
         ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor,
-                () -> reports.setDraftStep(draftId, ReportValues.STEP_VOICE),
-                () -> setBusy(false));
+            () -> reports.setDraftStep(draftId, ReportValues.STEP_VOICE),
+            () -> setBusy(false));
     }
 
-    private void returnToDescription() {
-        if (busy) {
+    private void returnToDescription()
+    {
+        if (busy)
+        {
             return;
         }
-        if (recorder != null) {
+        if (recorder != null)
+        {
             stopRecording(true);
             return;
         }
         setBusy(true);
         releasePlayer();
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 reports.setDraftStep(draftId, ReportValues.STEP_DESCRIPTION);
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         finish();
                     }
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (!isFinishing() && !isDestroyed())
+                    {
                         setBusy(false);
                         Toast.makeText(this, R.string.report_draft_save_failed,
-                                Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
     }
 
-    private void updateControls() {
-        if (btnRecord == null) {
+    private void updateControls()
+    {
+        if (btnRecord == null)
+        {
             return;
         }
         boolean recording = recorder != null;
@@ -587,11 +733,12 @@ public class ReportVoiceActivity extends AppCompatActivity {
         btnNext.setEnabled(draftLoaded && !busy && !recording);
         btnRecord.setEnabled(draftLoaded && !busy);
         btnRecord.setText(recording
-                ? R.string.stop_voice_recording
-                : hasNote ? R.string.record_another_voice_note : R.string.record_voice_note);
+            ? R.string.stop_voice_recording
+            : hasNote ? R.string.record_another_voice_note : R.string.record_voice_note);
         recordTimer.setVisibility(recording ? View.VISIBLE : View.GONE);
         audioPlayer.setVisibility(hasNote ? View.VISIBLE : View.GONE);
-        for (VoiceRow row : voiceRows) {
+        for (VoiceRow row : voiceRows)
+        {
             row.btnDelete.setEnabled(!busy && !recording);
             row.btnPlay.setEnabled(!busy && !recording);
             row.btnSpeed.setEnabled(!busy && !recording);
@@ -599,32 +746,38 @@ public class ReportVoiceActivity extends AppCompatActivity {
         }
     }
 
-    private void setBusy(boolean value) {
+    private void setBusy(boolean value)
+    {
         busy = value;
         updateControls();
     }
 
-    private void updatePlayButton(VoiceRow row, boolean playing) {
+    private void updatePlayButton(VoiceRow row, boolean playing)
+    {
         row.btnPlay.setImageResource(playing
-                ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+            ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         row.btnPlay.setContentDescription(getString(playing
                 ? R.string.pause_voice_note_number : R.string.play_voice_note_number,
-                row.number));
+            row.number));
     }
 
-    private void releasePlayer() {
+    private void releasePlayer()
+    {
         uiHandler.removeCallbacks(playbackClock);
-        if (player != null) {
+        if (player != null)
+        {
             player.release();
             player = null;
         }
-        if (activeRow != null) {
+        if (activeRow != null)
+        {
             updatePlayButton(activeRow, false);
             activeRow = null;
         }
     }
 
-    private static final class VoiceRow {
+    private static final class VoiceRow
+    {
         final OfflineAttachmentEntity note;
         final int number;
         final TextView title;
@@ -636,7 +789,8 @@ public class ReportVoiceActivity extends AppCompatActivity {
         final SeekBar seekAudio;
         int speedIndex;
 
-        VoiceRow(OfflineAttachmentEntity note, View item, int number) {
+        VoiceRow(OfflineAttachmentEntity note, View item, int number)
+        {
             this.note = note;
             this.number = number;
             title = item.findViewById(R.id.tvVoiceNoteTitle);
@@ -649,14 +803,17 @@ public class ReportVoiceActivity extends AppCompatActivity {
         }
     }
 
-    private static String formatTime(long millis) {
+    private static String formatTime(long millis)
+    {
         long seconds = Math.max(0, millis) / 1000;
         return String.format(Locale.getDefault(), "%d:%02d", seconds / 60, seconds % 60);
     }
 
     @Override
-    protected void onPause() {
-        if (recorder != null) {
+    protected void onPause()
+    {
+        if (recorder != null)
+        {
             stopRecording(false);
         }
         releasePlayer();
@@ -664,7 +821,8 @@ public class ReportVoiceActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         uiHandler.removeCallbacks(recordClock);
         uiHandler.removeCallbacks(playbackClock);
         releasePlayer();

@@ -18,7 +18,8 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ReportTypeActivity extends AppCompatActivity {
+public class ReportTypeActivity extends AppCompatActivity
+{
     private static final String STATE_DRAFT_ID = "draft_id";
 
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
@@ -31,13 +32,15 @@ public class ReportTypeActivity extends AppCompatActivity {
     private long draftId = -1L;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_report_type);
         reports = new LocalReportRepository(this);
         draftId = ReportDraftNavigation.optionalId(this);
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null)
+        {
             draftId = savedInstanceState.getLong(STATE_DRAFT_ID, -1L);
         }
 
@@ -53,7 +56,8 @@ public class ReportTypeActivity extends AppCompatActivity {
         btnIncident.setOnClickListener(v -> selectType(ReportValues.INCIDENT));
         btnNearMiss.setOnClickListener(v -> selectType(ReportValues.NEAR_MISS));
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
+        {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -61,99 +65,127 @@ public class ReportTypeActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
-        if (draftId <= 0) {
+        if (draftId <= 0)
+        {
             showSelectedType(null);
             return;
         }
 
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 OfflineReportEntity draft = reports.getOfflineReport(draftId);
                 String selectedType = draft == null ? null : draft.typeCode;
-                runOnUiThread(() -> {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     showSelectedType(selectedType);
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
                     if (isFinishing() || isDestroyed()) return;
                     Toast.makeText(this, R.string.report_draft_load_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void showSelectedType(String typeCode) {
+    private void showSelectedType(String typeCode)
+    {
         styleTypeButton(btnIncident, R.drawable.ic_ms_personal_injury,
-                ReportValues.INCIDENT.equals(typeCode));
+            ReportValues.INCIDENT.equals(typeCode));
         styleTypeButton(btnHazard, R.drawable.ic_ms_warning,
-                ReportValues.HAZARD.equals(typeCode));
+            ReportValues.HAZARD.equals(typeCode));
         styleTypeButton(btnNearMiss, R.drawable.ic_ms_visibility,
-                ReportValues.NEAR_MISS.equals(typeCode));
+            ReportValues.NEAR_MISS.equals(typeCode));
     }
 
-    private void styleTypeButton(Button button, int icon, boolean selected) {
+    private void styleTypeButton(Button button, int icon, boolean selected)
+    {
         button.setSelected(selected);
         button.setBackgroundResource(selected
-                ? R.drawable.report_type_selected : R.drawable.outline_button);
+            ? R.drawable.report_type_selected : R.drawable.outline_button);
         ViewCompat.setBackgroundTintList(button, null);
         button.setTextColor(getColor(selected ? R.color.safety_action : R.color.safety_text));
         button.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0,
-                selected ? R.drawable.ic_ms_check_circle : 0, 0);
+            selected ? R.drawable.ic_ms_check_circle : 0, 0);
         button.setContentDescription(selected
-                ? getString(R.string.report_type_selected_accessibility, button.getText())
-                : button.getText());
+            ? getString(R.string.report_type_selected_accessibility, button.getText())
+            : button.getText());
     }
 
-    private void saveDraftAndExit() {
+    private void saveDraftAndExit()
+    {
         setBusy(true);
-        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () -> {
-            if (draftId > 0) {
+        ReportDraftNavigation.saveAndReturnHome(this, databaseExecutor, () ->
+        {
+            if (draftId > 0)
+            {
                 reports.setDraftStep(draftId, ReportValues.STEP_TYPE);
-            } else {
+            }
+            else
+            {
                 draftId = reports.createEmptyDraft();
             }
         }, () -> setBusy(false));
     }
 
-    private void selectType(String typeCode) {
+    private void selectType(String typeCode)
+    {
         setBusy(true);
-        databaseExecutor.execute(() -> {
-            try {
+        databaseExecutor.execute(() ->
+        {
+            try
+            {
                 long id = draftId;
-                if (id > 0) {
+                if (id > 0)
+                {
                     reports.changeDraftType(id, typeCode);
-                } else {
+                }
+                else
+                {
                     id = reports.createDraft(typeCode);
                 }
                 long savedId = id;
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     draftId = savedId;
                     showSelectedType(typeCode);
                     setBusy(false);
                     startActivity(ReportDraftNavigation.to(
-                            this, LocationSelectionActivity.class, draftId));
+                        this, LocationSelectionActivity.class, draftId));
                 });
-            } catch (RuntimeException error) {
-                runOnUiThread(() -> {
-                    if (isFinishing() || isDestroyed()) {
+            }
+            catch (RuntimeException error)
+            {
+                runOnUiThread(() ->
+                {
+                    if (isFinishing() || isDestroyed())
+                    {
                         return;
                     }
                     setBusy(false);
                     Toast.makeText(this, R.string.report_draft_save_failed,
-                            Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
                 });
             }
         });
     }
 
-    private void setBusy(boolean busy) {
+    private void setBusy(boolean busy)
+    {
         btnBack.setEnabled(!busy);
         btnSaveDraft.setEnabled(!busy);
         btnHazard.setEnabled(!busy);
@@ -162,13 +194,15 @@ public class ReportTypeActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(Bundle outState)
+    {
         outState.putLong(STATE_DRAFT_ID, draftId);
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onDestroy()
+    {
         databaseExecutor.shutdown();
         super.onDestroy();
     }

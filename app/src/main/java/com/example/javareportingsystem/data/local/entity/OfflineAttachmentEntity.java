@@ -7,17 +7,18 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-        tableName = "offline_attachments",
-        foreignKeys = @ForeignKey(
-                entity = OfflineReportEntity.class,
-                parentColumns = "localId",
-                childColumns = "reportLocalId",
-                onDelete = ForeignKey.CASCADE),
-        indices = {
-                @Index("reportLocalId"),
-                @Index(value = "serverAttachmentId", unique = true)
-        })
-public class OfflineAttachmentEntity {
+    tableName = "offline_attachments",
+    foreignKeys = @ForeignKey(
+        entity = OfflineReportEntity.class,
+        parentColumns = "localId",
+        childColumns = "reportLocalId",
+        onDelete = ForeignKey.CASCADE),
+    indices = {
+        @Index("reportLocalId"),
+        @Index(value = "serverAttachmentId", unique = true)
+    })
+public class OfflineAttachmentEntity
+{
     @PrimaryKey(autoGenerate = true)
     public long localId;
 

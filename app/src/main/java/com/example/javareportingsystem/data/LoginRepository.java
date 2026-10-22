@@ -6,64 +6,86 @@ import com.example.javareportingsystem.data.model.LoggedInUser;
 
 import java.io.IOException;
 
-/** Holds the current session and restores it while its access token is valid. */
-public final class LoginRepository {
+/**
+ * Holds the current session and restores it while its access token is valid.
+ */
+public final class LoginRepository
+{
     private static LoginRepository instance;
 
     private final LoginDataSource dataSource;
     private final SessionStore sessionStore;
     private LoggedInUser user;
 
-    private LoginRepository(Context context, LoginDataSource dataSource) {
+    private LoginRepository(Context context, LoginDataSource dataSource)
+    {
         this.dataSource = dataSource;
         this.sessionStore = new SessionStore(context);
         this.user = sessionStore.restore();
     }
 
     public static synchronized LoginRepository getInstance(
-            Context context, LoginDataSource dataSource) {
-        if (instance == null) {
+        Context context, LoginDataSource dataSource)
+    {
+        if (instance == null)
+        {
             instance = new LoginRepository(context, dataSource);
         }
         return instance;
     }
 
-    public static synchronized LoginRepository getExistingInstance() {
+    public static synchronized LoginRepository getExistingInstance()
+    {
         return instance;
     }
 
-    public synchronized LoggedInUser getUser() {
+    public synchronized LoggedInUser getUser()
+    {
         return isLoggedIn() ? user : null;
     }
 
-    /** Restored identity for routing; never use its possibly expired token for an API call. */
-    public synchronized LoggedInUser getCachedUser() {
+    /**
+     * Restored identity for routing; never use its possibly expired token for an API call.
+     */
+    public synchronized LoggedInUser getCachedUser()
+    {
         return user;
     }
 
-    public synchronized boolean isLoggedIn() {
+    public synchronized boolean isLoggedIn()
+    {
         return user != null && user.getAccessExpiresAtMillis() > System.currentTimeMillis();
     }
 
-    /** Return only a session whose access token is still valid. */
-    public synchronized LoggedInUser getFreshUser() {
+    /**
+     * Return only a session whose access token is still valid.
+     */
+    public synchronized LoggedInUser getFreshUser()
+    {
         return isLoggedIn() ? user : null;
     }
 
-    public Result<LoggedInUser> login(String workerId, String password) {
+    public Result<LoggedInUser> login(String workerId, String password)
+    {
         Result<LoggedInUser> result = dataSource.login(workerId, password);
-        if (result instanceof Result.Success) {
+        if (result instanceof Result.Success)
+        {
             LoggedInUser authenticated =
-                    (LoggedInUser) ((Result.Success<?>) result).getData();
-            if (authenticated.getAccessExpiresAtMillis() <= System.currentTimeMillis()) {
+                (LoggedInUser) ((Result.Success<?>) result).getData();
+            if (authenticated.getAccessExpiresAtMillis() <= System.currentTimeMillis())
+            {
                 return new Result.Error(new IOException("Sign-in session has already expired."));
             }
-            synchronized (this) {
-                try {
+            synchronized (this)
+            {
+                try
+                {
                     sessionStore.save(authenticated);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     return new Result.Error(new IOException(
-                            "Could not save sign-in on this device.", e));
+                        "Could not save sign-in on this device.", e));
                 }
                 user = authenticated;
             }
@@ -71,9 +93,13 @@ public final class LoginRepository {
         return result;
     }
 
-    /** The API has no logout endpoint; discard the local token. */
-    public synchronized boolean logout() {
-        if (!sessionStore.clear()) {
+    /**
+     * The API has no logout endpoint; discard the local token.
+     */
+    public synchronized boolean logout()
+    {
+        if (!sessionStore.clear())
+        {
             return false;
         }
         user = null;

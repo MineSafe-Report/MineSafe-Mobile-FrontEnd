@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Report fields returned by the supervisor review API. */
-public final class ReviewReport {
+/**
+ * Report fields returned by the supervisor review API.
+ */
+public final class ReviewReport
+{
     private final String reportId;
     private final String referenceNumber;
     private final String type;
@@ -24,10 +27,11 @@ public final class ReviewReport {
     private final String dashboardUrl;
 
     public ReviewReport(String reportId, String referenceNumber, String type,
-            String locationCode, String locationName, String description,
-            long submittedAtEpochMillis, long occurredAtEpochMillis, String status, boolean anonymous,
-            int imageCount, int voiceNoteCount, String reviewReason,
-            boolean evidenceComplete, List<ReviewAttachment> attachments, String dashboardUrl) {
+                        String locationCode, String locationName, String description,
+                        long submittedAtEpochMillis, long occurredAtEpochMillis, String status, boolean anonymous,
+                        int imageCount, int voiceNoteCount, String reviewReason,
+                        boolean evidenceComplete, List<ReviewAttachment> attachments, String dashboardUrl)
+    {
         this.reportId = reportId;
         this.referenceNumber = referenceNumber;
         this.type = type;
@@ -46,20 +50,83 @@ public final class ReviewReport {
         this.dashboardUrl = dashboardUrl;
     }
 
-    public String getReportId() { return reportId; }
-    public String getReferenceNumber() { return referenceNumber; }
-    public String getType() { return type; }
-    public String getLocationCode() { return locationCode; }
-    public String getLocationName() { return locationName; }
-    public String getDescription() { return description; }
-    public long getSubmittedAtEpochMillis() { return submittedAtEpochMillis; }
-    public long getOccurredAtEpochMillis() { return occurredAtEpochMillis; }
-    public String getStatus() { return status; }
-    public boolean isAnonymous() { return anonymous; }
-    public int getImageCount() { return imageCount; }
-    public int getVoiceNoteCount() { return voiceNoteCount; }
-    public String getReviewReason() { return reviewReason; }
-    public boolean isEvidenceComplete() { return evidenceComplete; }
-    public List<ReviewAttachment> getAttachments() { return attachments; }
-    public String getDashboardUrl() { return dashboardUrl; }
+    public String getReportId()
+    {
+        return reportId;
+    }
+
+    public String getReferenceNumber()
+    {
+        return referenceNumber;
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public String getLocationCode()
+    {
+        return locationCode;
+    }
+
+    public String getLocationName()
+    {
+        return locationName;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public long getSubmittedAtEpochMillis()
+    {
+        return submittedAtEpochMillis;
+    }
+
+    public long getOccurredAtEpochMillis()
+    {
+        return occurredAtEpochMillis;
+    }
+
+    public String getStatus()
+    {
+        return status;
+    }
+
+    public boolean isAnonymous()
+    {
+        return anonymous;
+    }
+
+    public int getImageCount()
+    {
+        return imageCount;
+    }
+
+    public int getVoiceNoteCount()
+    {
+        return voiceNoteCount;
+    }
+
+    public String getReviewReason()
+    {
+        return reviewReason;
+    }
+
+    public boolean isEvidenceComplete()
+    {
+        return evidenceComplete;
+    }
+
+    public List<ReviewAttachment> getAttachments()
+    {
+        return attachments;
+    }
+
+    public String getDashboardUrl()
+    {
+        return dashboardUrl;
+    }
 }

@@ -5,7 +5,8 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "device_config")
-public class DeviceConfigEntity {
+public class DeviceConfigEntity
+{
     @PrimaryKey
     public int id = 1;
 
