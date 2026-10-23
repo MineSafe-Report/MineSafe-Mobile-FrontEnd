@@ -77,7 +77,7 @@ public final class ReportSyncWorker extends Worker
     public Result doWork()
     {
         Context context = getApplicationContext();
-        String baseUrl = context.getString(R.string.api_base_url);
+        String baseUrl = ApiServerConfig.getBaseUrl(context);
         if (!ApiConnection.isReachable(baseUrl)) return Result.retry();
         LoginRepository login = LoginRepository.getInstance(context,
             new ApiLoginDataSource(baseUrl));
@@ -204,7 +204,7 @@ public final class ReportSyncWorker extends Worker
     //Updates My Reports status on a background thread
     public static void refreshStatusesNow(Context context)
     {
-        String baseUrl = context.getString(R.string.api_base_url);
+        String baseUrl = ApiServerConfig.getBaseUrl(context);
         if (!ApiConnection.isReachable(baseUrl)) return;
         LoginRepository login = LoginRepository.getInstance(context,
             new ApiLoginDataSource(baseUrl));

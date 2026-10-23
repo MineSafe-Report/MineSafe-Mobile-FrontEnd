@@ -27,6 +27,7 @@ import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiConnection;
 import com.example.javareportingsystem.data.ApiReportReviewDataSource;
+import com.example.javareportingsystem.data.ApiServerConfig;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.local.ReportValues;
 import com.example.javareportingsystem.data.model.LoggedInUser;
@@ -79,7 +80,7 @@ public class ReviewReportActivity extends AppCompatActivity
         applyWindowInsets();
 
         loginRepository = LoginRepository.getInstance(this,
-            new ApiLoginDataSource(getString(R.string.api_base_url)));
+            new ApiLoginDataSource(ApiServerConfig.getBaseUrl(this)));
         LoggedInUser user = loginRepository.getCachedUser();
         safetyOfficerMode = user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole());
         if (user == null || (!safetyOfficerMode
@@ -139,7 +140,7 @@ public class ReviewReportActivity extends AppCompatActivity
             throw new IOException("Sign in again to view this report.");
         }
         return new ApiReportReviewDataSource(
-            getString(R.string.api_base_url), user.getAccessToken());
+            ApiServerConfig.getBaseUrl(this), user.getAccessToken());
     }
 
     private void applyWindowInsets()
@@ -278,7 +279,7 @@ public class ReviewReportActivity extends AppCompatActivity
         {
             try
             {
-                if (!ApiConnection.isReachable(getString(R.string.api_base_url)))
+                if (!ApiConnection.isReachable(ApiServerConfig.getBaseUrl(this)))
                 {
                     throw new IOException("Cannot reach the evidence service.");
                 }
@@ -442,7 +443,7 @@ public class ReviewReportActivity extends AppCompatActivity
         {
             try
             {
-                if (!ApiConnection.isReachable(getString(R.string.api_base_url)))
+                if (!ApiConnection.isReachable(ApiServerConfig.getBaseUrl(this)))
                 {
                     throw new IOException("Connection is too weak to send a decision. Try again when connected.");
                 }

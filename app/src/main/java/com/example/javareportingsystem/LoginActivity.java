@@ -23,6 +23,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiLocationDataSource;
+import com.example.javareportingsystem.data.ApiServerConfig;
 import com.example.javareportingsystem.data.ReportSyncWorker;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.Result;
@@ -62,7 +63,7 @@ public class LoginActivity extends AppCompatActivity
 
     // SCREEN CONTROLS
 
-    private EditText workerIdInput, passwordInput;
+    private EditText workerIdInput, passwordInput, serverAddressInput;
     private Button loginButton, continueOfflineButton;
     private ProgressBar loginProgress;
     private TextView loginError;
@@ -107,12 +108,14 @@ public class LoginActivity extends AppCompatActivity
 
         workerIdInput = findViewById(R.id.workerIdInput);
         passwordInput = findViewById(R.id.passwordInput);
+        serverAddressInput = findViewById(R.id.serverAddressInput);
         loginButton = findViewById(R.id.loginButton);
         continueOfflineButton = findViewById(R.id.continueOfflineButton);
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
 
-        String baseUrl = getString(R.string.api_base_url);
+        String baseUrl = ApiServerConfig.getBaseUrl(this);
+        serverAddressInput.setText(baseUrl);
 
         localNetworkApi = baseUrl.startsWith("http://10.")
             || baseUrl.startsWith("http://192.168.")
@@ -126,7 +129,7 @@ public class LoginActivity extends AppCompatActivity
         loginButton.setOnClickListener(view -> attemptLogin());
         continueOfflineButton.setOnClickListener(view -> openLandingPage());
 
-        passwordInput.setOnEditorActionListener((view, actionId, event) ->
+        serverAddressInput.setOnEditorActionListener((view, actionId, event) ->
         {
             if (actionId == EditorInfo.IME_ACTION_DONE)
             {
@@ -179,10 +182,23 @@ public class LoginActivity extends AppCompatActivity
 
         workerIdInput.setError(null);
         passwordInput.setError(null);
+        serverAddressInput.setError(null);
         loginError.setVisibility(View.GONE);
 
         String workerId = workerIdInput.getText().toString().trim();
         String password = passwordInput.getText().toString();
+        String baseUrl;
+
+        try
+        {
+            baseUrl = ApiServerConfig.normalize(serverAddressInput.getText().toString());
+        }
+        catch (IllegalArgumentException error)
+        {
+            serverAddressInput.setError(error.getMessage());
+            serverAddressInput.requestFocus();
+            return;
+        }
 
         if (workerId.isEmpty())
         {
@@ -196,6 +212,27 @@ public class LoginActivity extends AppCompatActivity
             passwordInput.setError(getString(R.string.password_required));
             passwordInput.requestFocus();
             return;
+        }
+
+        if (!baseUrl.equals(ApiServerConfig.getBaseUrl(this)))
+        {
+            if (!loginRepository.logout())
+            {
+                showLoginError("Could not change the server address. Try again.");
+                return;
+            }
+
+            if (!ApiServerConfig.saveBaseUrl(this, baseUrl))
+            {
+                showLoginError("Could not save the server address. Try again.");
+                return;
+            }
+
+            loginRepository = LoginRepository.getInstance(this, new ApiLoginDataSource(baseUrl));
+            locationApi = new ApiLocationDataSource(baseUrl);
+            localNetworkApi = baseUrl.startsWith("http://10.")
+                || baseUrl.startsWith("http://192.168.")
+                || baseUrl.startsWith("http://172.");
         }
 
         // Ask before contacting a server on the local network.
@@ -314,6 +351,7 @@ public class LoginActivity extends AppCompatActivity
     {
         workerIdInput.setEnabled(!loading);
         passwordInput.setEnabled(!loading);
+        serverAddressInput.setEnabled(!loading);
         loginButton.setEnabled(!loading);
         continueOfflineButton.setEnabled(!loading);
 

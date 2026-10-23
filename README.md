@@ -30,6 +30,7 @@ Open http://127.0.0.1:5500. The dashboard expects the API at http://localhost:50
 4. Run the Android app
 
 Open JavaReportingSystem in Android Studio and run it on an emulator. The debug build already connects to the API at http://10.0.2.2:5080.
+The sign-in screen has a server address field. On a phone connected to the same Wi-Fi as the API computer, enter that computer's local IP address, for example http://192.168.1.23:5080.
 
 To stop everything, press Ctrl + C in the API and web dashboard windows.
 

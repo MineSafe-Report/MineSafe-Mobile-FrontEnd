@@ -22,6 +22,7 @@ import com.example.javareportingsystem.R;
 import com.example.javareportingsystem.LoginActivity;
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiReportReviewDataSource;
+import com.example.javareportingsystem.data.ApiServerConfig;
 import com.example.javareportingsystem.data.ApiConnection;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.model.LoggedInUser;
@@ -86,7 +87,7 @@ public class ReportsWaitingActivity extends AppCompatActivity
         applyWindowInsets();
 
         loginRepository = LoginRepository.getInstance(this,
-            new ApiLoginDataSource(getString(R.string.api_base_url)));
+            new ApiLoginDataSource(ApiServerConfig.getBaseUrl(this)));
         LoggedInUser user = loginRepository.getCachedUser();
         safetyOfficerMode = user != null && "SAFETY_OFFICER".equalsIgnoreCase(user.getRole());
         if (safetyOfficerMode) safetyOfficerAccountId = user.getAccountId();
@@ -189,7 +190,7 @@ public class ReportsWaitingActivity extends AppCompatActivity
         {
             try
             {
-                if (!ApiConnection.isReachable(getString(R.string.api_base_url)))
+                if (!ApiConnection.isReachable(ApiServerConfig.getBaseUrl(this)))
                 {
                     throw new IOException("Cannot reach the review service. Try Refresh when connected.");
                 }
@@ -201,7 +202,7 @@ public class ReportsWaitingActivity extends AppCompatActivity
                     throw new IOException("Sign in again to refresh reports.");
                 }
                 ApiReportReviewDataSource reviewApi = new ApiReportReviewDataSource(
-                    getString(R.string.api_base_url), user.getAccessToken());
+                    ApiServerConfig.getBaseUrl(this), user.getAccessToken());
                 List<ReviewReport> reports = safetyOfficerMode
                     ? reviewApi.getSafetyOfficerIncidents()
                     : reviewApi.getReports("PENDING_REVIEW");

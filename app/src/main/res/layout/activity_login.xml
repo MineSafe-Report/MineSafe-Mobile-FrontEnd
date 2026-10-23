@@ -68,9 +68,28 @@
                 android:layout_height="wrap_content"
                 android:minHeight="56dp"
                 android:autofillHints="password"
-                android:imeOptions="actionDone"
+                android:imeOptions="actionNext"
                 android:inputType="textPassword"
                 android:hint="Enter your password. "
+                android:textSize="@dimen/login_input_size" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:labelFor="@id/serverAddressInput"
+                android:text="API server address"
+                android:textSize="@dimen/login_label_size" />
+
+            <EditText
+                android:id="@+id/serverAddressInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:hint="http://192.168.1.23:5080"
+                android:inputType="textUri"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
                 android:textSize="@dimen/login_input_size" />
 
             <Button

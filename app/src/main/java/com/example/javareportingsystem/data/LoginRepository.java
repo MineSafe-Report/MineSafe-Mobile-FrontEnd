@@ -13,7 +13,7 @@ public final class LoginRepository
 {
     private static LoginRepository instance;
 
-    private final LoginDataSource dataSource;
+    private volatile LoginDataSource dataSource;
     private final SessionStore sessionStore;
     private LoggedInUser user;
 
@@ -30,6 +30,10 @@ public final class LoginRepository
         if (instance == null)
         {
             instance = new LoginRepository(context, dataSource);
+        }
+        else
+        {
+            instance.dataSource = dataSource;
         }
         return instance;
     }

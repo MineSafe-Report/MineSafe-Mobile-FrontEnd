@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.javareportingsystem.data.ApiLoginDataSource;
 import com.example.javareportingsystem.data.ApiLocationDataSource;
+import com.example.javareportingsystem.data.ApiServerConfig;
 import com.example.javareportingsystem.data.LoginRepository;
 import com.example.javareportingsystem.data.ReportSyncWorker;
 import com.example.javareportingsystem.data.model.LoggedInUser;
@@ -63,7 +64,7 @@ public class LandingPageActivity extends AppCompatActivity
         repository = existingRepository != null
             ? existingRepository
             : LoginRepository.getInstance(this,
-            new ApiLoginDataSource(getString(R.string.api_base_url)));
+            new ApiLoginDataSource(ApiServerConfig.getBaseUrl(this)));
 
         LoggedInUser account = repository.getCachedUser();
         if (account != null && "SAFETY_OFFICER".equalsIgnoreCase(account.getRole()))
@@ -148,7 +149,7 @@ public class LandingPageActivity extends AppCompatActivity
                     return;
                 }
                 ApiLocationDataSource api = new ApiLocationDataSource(
-                    getString(R.string.api_base_url));
+                    ApiServerConfig.getBaseUrl(this));
                 List<RemoteLocation> remote =
                     api.fetchActiveLocations(user.getAccessToken());
                 if (repository.getUser() != null)
