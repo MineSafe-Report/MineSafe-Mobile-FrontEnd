@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Checks the real API's wire shapes without depending on a running development database.
- */
+// API LOGIN LOCATION CONTRACT TEST
+// Checks the login and location API responses.
+
 @RunWith(AndroidJUnit4.class)
 public class ApiLoginLocationContractTest
 {

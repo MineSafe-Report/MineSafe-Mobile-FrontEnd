@@ -14,9 +14,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-/**
- * Transport for idempotent report/media upload and status refresh.
- */
+//API REPORTING DATA SOURCE
+//uplads reports and atatchements to API
+
 public final class ApiReportingDataSource
 {
     private final String baseUrl;
@@ -28,7 +28,8 @@ public final class ApiReportingDataSource
         this.token = token == null ? "" : token;
     }
 
-    // REPORT TRANSPORT
+    //REPORT TRANSPORT
+    //Send report and keeps server respons
     public JSONObject submitReport(JSONObject report) throws IOException
     {
         return jsonRequest("POST", "/api/reports", report);
@@ -59,7 +60,8 @@ public final class ApiReportingDataSource
         }
     }
 
-    // MEDIA TRANSPORT
+    //MEDIA TRANSPORT
+    //Uplad each attatchemnts of a report under the reports own ID
     public JSONObject uploadAttachment(String reportId, String localAttachmentId,
                                        String type, long capturedAt, String mimeType,
                                        InputStream input, long fileSize) throws IOException

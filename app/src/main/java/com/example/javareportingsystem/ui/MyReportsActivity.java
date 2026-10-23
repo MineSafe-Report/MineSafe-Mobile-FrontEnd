@@ -36,7 +36,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Shows the signed-in user's local reports and refreshes their server status. */
+//MY REPORTS ACTIVITY
+//Shows the user's reports and their latest status.
+
 public class MyReportsActivity extends AppCompatActivity
 {
     private LinearLayout reportsContainer;
@@ -75,8 +77,9 @@ public class MyReportsActivity extends AppCompatActivity
         super.onPause();
     }
 
-    // STATUS REFRESH
-    // Sync pending uploads and ask the server for newer review decisions.
+    //STATUS REFRESH
+    //Uploads pending reports and gets new review decisions.
+
     private void refreshStatuses()
     {
         ReportSyncWorker.enqueue(this);
@@ -185,8 +188,9 @@ public class MyReportsActivity extends AppCompatActivity
             .show();
     }
 
-    // REPORT GROUPING
-    // With no search, reports needing attention stay above older decisions.
+    //REPORT GROUPING
+    //Without a search, reports needing attention appear first.
+
     private void renderReports()
     {
         reportsContainer.removeAllViews();

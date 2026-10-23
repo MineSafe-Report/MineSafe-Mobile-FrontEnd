@@ -11,7 +11,11 @@ import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 
 import java.util.List;
 
+//SYNCED REPORT DAO
+//Saves the reports that are eccepetd by the serve, it also saves the reports
+
 @Dao
+
 public interface SyncedReportDao
 {
     @Insert

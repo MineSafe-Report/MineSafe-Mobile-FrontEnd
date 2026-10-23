@@ -21,6 +21,9 @@ import com.example.javareportingsystem.R;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+// LAYOUT SIZING TEST
+// Checks that screen controls remain usable at different sizes.
+
 @RunWith(AndroidJUnit4.class)
 public class LayoutSizingTest
 {

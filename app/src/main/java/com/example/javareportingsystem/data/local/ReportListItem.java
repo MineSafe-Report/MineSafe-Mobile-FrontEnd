@@ -1,8 +1,8 @@
 package com.example.javareportingsystem.data.local;
 
-/**
- * One row for My Reports, sourced from either local pending or server-confirmed records.
- */
+//REPORT LIST ITEM
+//helper, Holds a singel row shown in my reports section
+
 public class ReportListItem
 {
     public String source;

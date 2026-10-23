@@ -13,6 +13,9 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 
 import java.util.concurrent.ExecutorService;
 
+//REPORT DRAFT NAVIGATION
+//Moves between draft screens while keeping the draft ID.
+
 public final class ReportDraftNavigation
 {
     private static final String EXTRA_LOCAL_REPORT_ID =

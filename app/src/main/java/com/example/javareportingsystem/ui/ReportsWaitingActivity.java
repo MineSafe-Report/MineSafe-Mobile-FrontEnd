@@ -38,9 +38,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Supervisor review queue or Safety Officer incident list, according to the signed-in role.
- */
+//REPORTS WAITING ACTIVITY
+//Shows supervisor reviews or Safety Officer incidents.
+
 public class ReportsWaitingActivity extends AppCompatActivity
 {
     private static final long TWO_DAYS_MILLIS = 2L * 24 * 60 * 60 * 1000;
@@ -173,7 +173,9 @@ public class ReportsWaitingActivity extends AppCompatActivity
         super.onPause();
     }
 
-    // SERVER REPORT QUEUE
+    //SERVER REPORT QUEUE
+    //Supervisors get pending reviews; Safety Officers get incidents.
+
     private void loadReviewQueue()
     {
         if (loading || loginRepository == null) return;
@@ -261,8 +263,9 @@ public class ReportsWaitingActivity extends AppCompatActivity
         updateRows();
     }
 
-    // VISIBLE REPORT GROUPS
-    // Safety Officer sections use device time and whether this device opened an incident.
+    //VISIBLE REPORT GROUPS
+    //Use device time and opened state to group incidents.
+
     private void updateRows()
     {
         List<ReviewReport> visible = new ArrayList<>();

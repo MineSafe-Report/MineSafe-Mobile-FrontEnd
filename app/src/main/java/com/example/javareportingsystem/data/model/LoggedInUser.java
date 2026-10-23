@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * The identity and session fields expected from a successful login response.
- */
+//LOGGED IN USER
+//Holdes liged in users detail (auth Token and user specifics name ect)
+
 public final class LoggedInUser
 {
     private final int accountId;

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Report fields returned by the supervisor review API.
- */
+//REVIEW REPORT
+//Report details that are returd form the PAI are held here
+
 public final class ReviewReport
 {
     private final String reportId;

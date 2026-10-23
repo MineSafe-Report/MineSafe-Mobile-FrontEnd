@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.Collections;
 
+// LOCAL REPORT REPOSITORY TEST
+// Checks local report saving and upload states.
+
 @RunWith(AndroidJUnit4.class)
 public class LocalReportRepositoryTest
 {

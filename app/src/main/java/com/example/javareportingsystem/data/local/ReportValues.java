@@ -1,5 +1,8 @@
 package com.example.javareportingsystem.data.local;
 
+//REPORT VALUES
+//Stores the shared report types and status names
+
 public final class ReportValues
 {
     public static final String HAZARD = "HAZARD";

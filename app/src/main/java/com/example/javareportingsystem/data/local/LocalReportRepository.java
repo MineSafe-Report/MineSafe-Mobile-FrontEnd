@@ -26,10 +26,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Local source of truth for report capture. Call write and direct read methods from a worker
- * thread. No network request is made by this class.
- */
+//LOCAL REPORT REPOSITORY
+//Saves drafts and reports local befor upload and after uplaod.
+
 public final class LocalReportRepository
 {
     private final AppDatabase database;
@@ -80,7 +79,8 @@ public final class LocalReportRepository
         deviceDao.setServerDeviceId(serverDeviceId.trim());
     }
 
-    // LOCATION CATALOGUE
+    //LOCATION CATALOGUE
+    //Saving of the locations that can be used by the drafts and reports to creat a report
     @WorkerThread
     public long configureLocation(@NonNull String code, @NonNull String name,
                                   String serverLocationId, boolean active)
@@ -127,9 +127,7 @@ public final class LocalReportRepository
         return locationDao.observeActive();
     }
 
-    /**
-     * Replaces the active server catalogue without changing local IDs used by drafts.
-     */
+    //Location catalog update (Storse new location while ceeping old location codes)
     @WorkerThread
     public void replaceRemoteLocations(@NonNull List<RemoteLocation> remoteLocations)
     {
@@ -185,7 +183,9 @@ public final class LocalReportRepository
         });
     }
 
-    // DRAFT CAPTURE
+    //DRAFT CAPTURE
+    //Report step saving, This stores ech step takin in a report that saves it,
+    //it alwed a draft to start up wher you left of
     @WorkerThread
     public OfflineReportEntity getLatestDraft()
     {
@@ -300,9 +300,7 @@ public final class LocalReportRepository
         offlineDao.updateReport(report);
     }
 
-    /**
-     * Identified incidents can be attributed after an offline draft is created.
-     */
+    //Adding a report to an ofline incedint drafrt
     @WorkerThread
     public void identifyIncident(long localReportId, @NonNull String workerId,
                                  Integer accountId)
@@ -322,7 +320,8 @@ public final class LocalReportRepository
         offlineDao.updateReport(report);
     }
 
-    // MEDIA ATTACHMENTS
+    //MEDIA ATTACHMENTS
+    //Stores the files in aplicaitons local stoarge until upliad in finished
     @WorkerThread
     public long addAttachmentFromUri(long localReportId, @NonNull String type,
                                      @NonNull String source, @NonNull Uri uri, @NonNull String mimeType)
@@ -342,9 +341,7 @@ public final class LocalReportRepository
         }
     }
 
-    /**
-     * Voice recorders may write directly into getMediaDirectory() and then attach the file.
-     */
+    //File location of voice notes used by report
     @WorkerThread
     public File getMediaDirectory() throws IOException
     {
@@ -398,9 +395,8 @@ public final class LocalReportRepository
         mediaStore.deleteManagedFile(new File(attachment.localFilePath));
     }
 
-    /**
-     * Missing fields for submitting a draft; images are optional.
-     */
+
+    //holing field storage,(it stors the fieds that requer user atention on the report overview)
     public static final class SubmissionStatus
     {
         public final boolean missingType;
@@ -424,7 +420,9 @@ public final class LocalReportRepository
         }
     }
 
-    // SUBMISSION CHECKS
+    //SUBMISSION CHECKS
+    //Helper that checks for mising detail befor a draft is submited for review
+    // (it checks the vields for empty or missing report information)
     @WorkerThread
     public SubmissionStatus getDraftSubmissionStatus(long localReportId)
     {
@@ -523,16 +521,15 @@ public final class LocalReportRepository
         return syncedDao.listAttachments(serverReportId);
     }
 
-    // REPORT SYNC STATE
+    //REPORT SYNC STATE
+    //Report and atatchemnt traking sent to server
     @WorkerThread
     public List<OfflineReportEntity> listReportsForSync()
     {
         return offlineDao.listSubmittedReports();
     }
 
-    /**
-     * Called only after POST /api/reports has returned its stable server ID.
-     */
+    //Saving of server ID after sucsesfull report upload
     @WorkerThread
     public void markReportAccepted(long localReportId, @NonNull String serverReportId,
                                    String referenceNumber, long receivedAtEpochMillis)
@@ -596,9 +593,8 @@ public final class LocalReportRepository
         return retryAutomatically;
     }
 
-    /**
-     * The user explicitly requests another attempt after an attachment failure.
-     */
+
+    //Retries attachments on user request
     @WorkerThread
     public void resumePausedUpload(long localReportId)
     {
@@ -613,9 +609,7 @@ public final class LocalReportRepository
         offlineDao.updateReport(report);
     }
 
-    /**
-     * Replace a voice note whose local file is no longer usable, preserving its upload ID.
-     */
+    //mising voice file replacment (It checks for mising voice file then atempst to replace it with a new one)
     @WorkerThread
     public void replacePendingVoiceNote(long localReportId, long attachmentId,
                                         @NonNull Uri source, @NonNull String mimeType) throws IOException
@@ -665,9 +659,8 @@ public final class LocalReportRepository
         offlineDao.updateAttachment(attachment);
     }
 
-    /**
-     * Moves a fully acknowledged report and its media metadata in one SQLite transaction.
-     */
+
+    //moves the atatchments and the report thoug the reporting workflow togeter
     @WorkerThread
     public void finishSync(long localReportId, @NonNull String workflowStatus,
                            long statusUpdatedAtEpochMillis)
@@ -733,7 +726,8 @@ public final class LocalReportRepository
         });
     }
 
-    // REVIEW STATUS
+    //REVIEW STATUS
+    //Saves server review decisions for the my report section
     @WorkerThread
     public void updateWorkflowStatus(@NonNull String serverReportId,
                                      @NonNull String status, long updatedAtEpochMillis, String reviewReason)

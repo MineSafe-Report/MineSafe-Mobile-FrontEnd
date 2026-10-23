@@ -6,9 +6,9 @@ import com.example.javareportingsystem.data.model.LoggedInUser;
 
 import java.io.IOException;
 
-/**
- * Holds the current session and restores it while its access token is valid.
- */
+//LOGIN REPOSITORY
+//Stores the login and checks wether the auth token is valid.
+
 public final class LoginRepository
 {
     private static LoginRepository instance;
@@ -44,9 +44,7 @@ public final class LoginRepository
         return isLoggedIn() ? user : null;
     }
 
-    /**
-     * Restored identity for routing; never use its possibly expired token for an API call.
-     */
+    //Use of saved information for navigaiton (API calls do not use this)
     public synchronized LoggedInUser getCachedUser()
     {
         return user;
@@ -57,9 +55,8 @@ public final class LoginRepository
         return user != null && user.getAccessExpiresAtMillis() > System.currentTimeMillis();
     }
 
-    /**
-     * Return only a session whose access token is still valid.
-     */
+
+    //Retur a sestion when token is valid
     public synchronized LoggedInUser getFreshUser()
     {
         return isLoggedIn() ? user : null;
@@ -93,9 +90,7 @@ public final class LoginRepository
         return result;
     }
 
-    /**
-     * The API has no logout endpoint; discard the local token.
-     */
+    //Logout, Removal of token
     public synchronized boolean logout()
     {
         if (!sessionStore.clear())

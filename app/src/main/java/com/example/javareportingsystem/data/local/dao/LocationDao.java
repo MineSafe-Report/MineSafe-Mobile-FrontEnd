@@ -10,7 +10,11 @@ import com.example.javareportingsystem.data.local.entity.LocationEntity;
 
 import java.util.List;
 
+//LOCATION DAO
+//Locations are saved and read here
+
 @Dao
+
 public interface LocationDao
 {
     @Insert

@@ -15,9 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Reads the signed-in user's active locations from the API.
- */
+//API LOCATION DATA SOURCE
+//Loads avalibal loacations to a signed in user
+
 public final class ApiLocationDataSource
 {
     private static final int MAX_RESPONSE_BYTES = 1024 * 1024;

@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//IMAGE THUMBNAIL ADAPTER
+//Shows smaller images in the list without loading the full image
+
 public class ImageThumbnailAdapter
     extends RecyclerView.Adapter<ImageThumbnailAdapter.ImageViewHolder>
 {
@@ -145,7 +148,7 @@ public class ImageThumbnailAdapter
             }
         });
 
-        // Decode thumbnails in the background.
+        //Load thumbnails in the background.
         thumbnailExecutor.execute(() ->
         {
             if (closed)
@@ -162,7 +165,7 @@ public class ImageThumbnailAdapter
 
             mainHandler.post(() ->
             {
-                // Compatible with older RecyclerView versions.
+                //Keep older RecyclerView versions working.
                 int adapterPosition = holder.getAdapterPosition();
 
                 if (closed
@@ -188,10 +191,7 @@ public class ImageThumbnailAdapter
         return images.size();
     }
 
-    /**
-     * Replaces the displayed images.
-     * Must be called on the main thread.
-     */
+    //Updates the image list on the main thread.
     public void replaceImages(
         @NonNull List<ImageDatabaseHelper.ImageRecord> newImages)
     {
@@ -208,9 +208,7 @@ public class ImageThumbnailAdapter
         notifyDataSetChanged();
     }
 
-    /**
-     * Decodes a reduced-size thumbnail on the background thread.
-     */
+    //Loads a small thumbnail in the background.
     private Bitmap decodeThumbnail(byte[] data)
     {
         if (data == null || data.length == 0)
@@ -276,9 +274,7 @@ public class ImageThumbnailAdapter
         super.onViewRecycled(holder);
     }
 
-    /**
-     * Stops thumbnail work when the activity is destroyed.
-     */
+    //Stops image work when this screen closes.
     public void close()
     {
         closed = true;

@@ -6,6 +6,10 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+//OFFLINE REPORT ENTITY
+// Stores a draft or report waiting to upload.
+
+
 @Entity(
     tableName = "offline_reports",
     foreignKeys = @ForeignKey(
@@ -18,6 +22,7 @@ import androidx.room.PrimaryKey;
         @Index(value = "serverReportId", unique = true),
         @Index("syncState")
     })
+
 public class OfflineReportEntity
 {
     @PrimaryKey(autoGenerate = true)
@@ -34,7 +39,7 @@ public class OfflineReportEntity
     public long createdAtEpochMillis;
     public Long submittedAtEpochMillis;
 
-    // Hazard and near-miss reports do not store a reporter identity locally.
+    //Incedents keep reporter names here (hazereds and near misis do not keep the name)
     public boolean anonymous;
     public String reporterWorkerId;
     public Integer reporterAccountId;
@@ -42,7 +47,7 @@ public class OfflineReportEntity
     @NonNull
     public String syncState = "DRAFT";
 
-    // Set only after the server accepts the report; attachments may still be pending.
+    //Vars are set when server accepts the report
     public String serverReportId;
     public String referenceNumber;
     public Long serverReceivedAtEpochMillis;

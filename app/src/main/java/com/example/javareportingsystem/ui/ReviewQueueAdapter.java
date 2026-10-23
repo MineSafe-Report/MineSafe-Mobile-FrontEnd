@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+//REVIEW QUEUE ADAPTER
+//Shows the report rows in the review list.
+
 final class ReviewQueueAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
     private static final int REPORT_ROW = 0;

@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//DRAFT LIST ACTIVITY
+//Shows saved report drafts so they can be continued
+
 public class DraftListActivity extends AppCompatActivity
 {
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();

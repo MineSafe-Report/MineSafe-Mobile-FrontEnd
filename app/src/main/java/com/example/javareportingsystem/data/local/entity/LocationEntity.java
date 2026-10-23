@@ -5,12 +5,16 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+//LOCATION ENTITY
+//singel location storage on device
+
 @Entity(
     tableName = "local_locations",
     indices = {
         @Index(value = "code", unique = true),
         @Index(value = "serverLocationId", unique = true)
     })
+
 public class LocationEntity
 {
     @PrimaryKey(autoGenerate = true)

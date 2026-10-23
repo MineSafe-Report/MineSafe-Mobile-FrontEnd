@@ -3,9 +3,9 @@ package com.example.javareportingsystem.data;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * A short API reachability check before sending report or review data.
- */
+//API CONNECTION
+//API reachability check, (the code checks wether the API gatway could be reached)
+
 public final class ApiConnection
 {
     private ApiConnection()

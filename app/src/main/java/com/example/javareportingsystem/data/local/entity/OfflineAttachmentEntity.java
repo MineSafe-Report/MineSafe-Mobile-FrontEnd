@@ -6,6 +6,9 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+//OFFLINE ATTACHMENT ENTITY
+//Offline attachments are stored that are wating to be uploaded
+
 @Entity(
     tableName = "offline_attachments",
     foreignKeys = @ForeignKey(
@@ -17,6 +20,7 @@ import androidx.room.PrimaryKey;
         @Index("reportLocalId"),
         @Index(value = "serverAttachmentId", unique = true)
     })
+
 public class OfflineAttachmentEntity
 {
     @PrimaryKey(autoGenerate = true)

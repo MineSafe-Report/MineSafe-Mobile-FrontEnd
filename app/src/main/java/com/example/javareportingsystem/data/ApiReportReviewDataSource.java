@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * HTTP client for supervisor report queue, detail, and decision requests.
- */
+//API REPORT REVIEW DATA SOURCE
+//Loads reports thens ends it to the supervisor for denyal or aproval
+
 public final class ApiReportReviewDataSource
 {
     private final String baseUrl;
@@ -41,9 +41,7 @@ public final class ApiReportReviewDataSource
         return getPagedReports("/api/supervisor/reports?status=" + query + "&", "review queue");
     }
 
-    /**
-     * Safety Officers can read incident notifications, but cannot make review decisions.
-     */
+    // Safety Officers can view incidents but cannot review them.
     public List<ReviewReport> getSafetyOfficerIncidents() throws IOException
     {
         return getPagedReports("/api/safety-officer/incidents?", "incident list");
@@ -126,9 +124,7 @@ public final class ApiReportReviewDataSource
         }
     }
 
-    /**
-     * Download protected evidence to a temporary file for image viewing or audio playback.
-     */
+    //Atatchement download for viewing and playback
     public File downloadAttachment(String attachmentId, String mimeType, File cacheDir)
         throws IOException
     {

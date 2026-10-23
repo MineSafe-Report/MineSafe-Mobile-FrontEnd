@@ -1,11 +1,10 @@
 package com.example.javareportingsystem.data;
 
-/**
- * A generic class that holds a result success w/ data or an error exception.
- */
+//RESULT
+//Holds data or an error
+
 public class Result<T>
 {
-    // Keep the constructor private so only the defined result types can extend this class.
     private Result()
     {
     }
@@ -26,7 +25,7 @@ public class Result<T>
         return "";
     }
 
-    // SUCCESS RESULT
+    // SUCCESS RESULT    //Sucssesfull result
     public final static class Success<T> extends Result
     {
         private T data;
@@ -42,7 +41,8 @@ public class Result<T>
         }
     }
 
-    // ERROR RESULT
+
+    //Error result
     public final static class Error extends Result
     {
         private Exception error;

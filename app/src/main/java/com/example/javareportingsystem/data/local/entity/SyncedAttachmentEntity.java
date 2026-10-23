@@ -6,6 +6,9 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+//SYNCED ATTACHMENT ENTITY
+//Stores the atatchement that was acceped by the server
+
 @Entity(
     tableName = "synced_attachments",
     foreignKeys = @ForeignKey(
@@ -17,6 +20,7 @@ import androidx.room.PrimaryKey;
         @Index("serverReportId"),
         @Index(value = "sourceLocalAttachmentId", unique = true)
     })
+
 public class SyncedAttachmentEntity
 {
     @PrimaryKey

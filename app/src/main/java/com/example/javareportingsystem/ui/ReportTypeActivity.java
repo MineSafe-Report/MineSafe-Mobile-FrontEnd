@@ -18,6 +18,9 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//REPORT TYPE ACTIVITY
+//Lets the user choose a report type.
+
 public class ReportTypeActivity extends AppCompatActivity
 {
     private static final String STATE_DRAFT_ID = "draft_id";

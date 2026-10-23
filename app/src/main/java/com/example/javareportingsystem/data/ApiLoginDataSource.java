@@ -16,9 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Login transport for the configured API endpoint.
- */
+//API LOGIN DATA SOURCE
+//Login request (does a login API call to log in a user)
+
 public final class ApiLoginDataSource implements LoginDataSource
 {
     private final String baseUrl;

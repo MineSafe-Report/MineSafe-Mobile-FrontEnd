@@ -7,7 +7,11 @@ import androidx.room.Query;
 
 import com.example.javareportingsystem.data.local.entity.DeviceConfigEntity;
 
+//DEVICE CONFIG DAO
+//Device seting configeration (Save and set preferinces)
+
 @Dao
+
 public interface DeviceConfigDao
 {
     @Query("SELECT * FROM device_config WHERE id = 1")

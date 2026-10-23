@@ -24,6 +24,9 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//REPORT DESCRIPTION ACTIVITY
+//Lets the user describe what happened.
+
 public class ReportDescriptionActivity extends AppCompatActivity
 {
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();

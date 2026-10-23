@@ -41,9 +41,9 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Report details for supervisors and Safety Officers; only supervisors can review.
- */
+//REVIEW REPORT ACTIVITY
+//Shows report details and supervisor review actions.
+
 public class ReviewReportActivity extends AppCompatActivity
 {
     public static final String EXTRA_SERVER_ID = "review_server_report_id";
@@ -153,7 +153,9 @@ public class ReviewReportActivity extends AppCompatActivity
         });
     }
 
-    // REPORT DETAILS
+    //REPORT DETAILS
+    //Load the selected report from the server.
+
     private void loadReport()
     {
         try
@@ -267,7 +269,9 @@ public class ReviewReportActivity extends AppCompatActivity
         findViewById(R.id.reviewLoading).setVisibility(View.GONE);
     }
 
-    // EVIDENCE VIEWING
+    //EVIDENCE VIEWING
+    //Open images and voice notes from protected attachments.
+
     private void openAttachment(ReviewAttachment attachment, boolean photo)
     {
         apiExecutor.execute(() ->
@@ -388,7 +392,9 @@ public class ReviewReportActivity extends AppCompatActivity
         }
     }
 
-    // REVIEW DECISION
+    //REVIEW DECISION
+    //Only a supervisor can approve or deny a report.
+
     private void confirmApproval()
     {
         new AlertDialog.Builder(this)

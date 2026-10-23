@@ -42,9 +42,9 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Read-only summary for a report selected in My Reports.
- */
+//SUBMITTED REPORT OVERVIEW ACTIVITY
+//Shows a submitted report and its attachments.
+
 public class SubmittedReportOverviewActivity extends AppCompatActivity
 {
     public static final String EXTRA_SOURCE = "report_source";
@@ -85,7 +85,9 @@ public class SubmittedReportOverviewActivity extends AppCompatActivity
         });
     }
 
-    // REPORT SOURCE
+    //REPORT SOURCE
+    //Read from the local report until upload is complete.
+
     private void loadReport(String source, long localId, String serverId)
     {
         try
@@ -241,7 +243,9 @@ public class SubmittedReportOverviewActivity extends AppCompatActivity
         findViewById(R.id.reportLoading).setVisibility(View.GONE);
     }
 
-    // ATTACHMENT ACTIONS
+    //ATTACHMENT ACTIONS
+    //Let the user open each image or voice note.
+
     private void renderAttachmentActions(ReportSnapshot report)
     {
         LinearLayout actions = findViewById(R.id.reportAttachmentActions);
@@ -316,7 +320,7 @@ public class SubmittedReportOverviewActivity extends AppCompatActivity
             }
             catch (RuntimeException ignored)
             {
-                // The local image may have been removed or become unreadable.
+                //The saved image may be missing.
             }
             Bitmap result = bitmap;
             runOnUiThread(() ->
@@ -462,7 +466,9 @@ public class SubmittedReportOverviewActivity extends AppCompatActivity
         return value != null && !value.trim().isEmpty();
     }
 
-    // UPLOAD RECOVERY
+    //UPLOAD RECOVERY
+    //Restart a paused upload after the user retries or replaces a file.
+
     private void retryUpload(long localId)
     {
         findViewById(R.id.btnRetryUpload).setEnabled(false);

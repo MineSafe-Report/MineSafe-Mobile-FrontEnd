@@ -22,6 +22,9 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedAttachmentEntity;
 import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
 
+//APP DATABASE
+//Defines the local db and its upgrades.
+
 @Database(
     entities = {
         DeviceConfigEntity.class,
@@ -33,6 +36,7 @@ import com.example.javareportingsystem.data.local.entity.SyncedReportEntity;
     },
     version = 3,
     exportSchema = true)
+
 public abstract class AppDatabase extends RoomDatabase
 {
     private static volatile AppDatabase instance;

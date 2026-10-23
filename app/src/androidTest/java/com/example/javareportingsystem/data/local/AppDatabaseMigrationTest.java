@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+// APP DATABASE MIGRATION TEST
+// Checks that saved drafts survive a database upgrade.
+
 @RunWith(AndroidJUnit4.class)
 public class AppDatabaseMigrationTest
 {

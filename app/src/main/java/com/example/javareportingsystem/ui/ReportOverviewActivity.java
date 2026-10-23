@@ -25,6 +25,9 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//REPORT OVERVIEW ACTIVITY
+//Shows the draft before submission.
+
 public class ReportOverviewActivity extends AppCompatActivity
 {
 
@@ -41,7 +44,6 @@ public class ReportOverviewActivity extends AppCompatActivity
     private ScrollView overviewScroll;
     private boolean showValidationErrors;
     private long draftId;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -68,17 +70,14 @@ public class ReportOverviewActivity extends AppCompatActivity
         overviewScroll = findViewById(R.id.overviewScroll);
         btnSaveDraft.setOnClickListener(v -> saveDraftAndExit());
 
-
         btnReportType.setOnClickListener(v ->
         {
-            // Open the report type step.
             Intent intent = ReportDraftNavigation.to(this, ReportTypeActivity.class, draftId);
             startActivity(intent);
         });
 
         btnLocations.setOnClickListener(v ->
         {
-            // Open the location step.
             Intent intent = ReportDraftNavigation.to(this, LocationSelectionActivity.class, draftId);
             intent.putExtra(LocationSelectionActivity.EXTRA_FROM_OVERVIEW, true);
             startActivity(intent);
@@ -86,14 +85,12 @@ public class ReportOverviewActivity extends AppCompatActivity
 
         btnEditDescription.setOnClickListener(v ->
         {
-            // Open the description step.
             Intent intent = ReportDraftNavigation.to(this, ReportDescriptionActivity.class, draftId);
             startActivity(intent);
         });
 
         btnEditImages.setOnClickListener(v ->
         {
-            // Open the images step.
             Intent intent = ReportDraftNavigation.to(this, ReportImagesActivity.class, draftId);
             startActivity(intent);
         });

@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//REPORT START ACTIVITY
+//Starts a new report or opens a saved draft.
+
 public class ReportStartActivity extends AppCompatActivity
 {
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();

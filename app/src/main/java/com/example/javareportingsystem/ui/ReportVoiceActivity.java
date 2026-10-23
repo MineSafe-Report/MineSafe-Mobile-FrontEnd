@@ -47,9 +47,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Records app-private voice notes for the current draft and provides local playback.
- */
+//REPORT VOICE ACTIVITY
+//Records and plays voice notes for a draft.
+
 public class ReportVoiceActivity extends AppCompatActivity
 {
     private static final float[] PLAYBACK_SPEEDS = {1f, 1.5f, 2f};
@@ -224,7 +224,9 @@ public class ReportVoiceActivity extends AppCompatActivity
         });
     }
 
-    // RECORDING
+    //RECORDING
+    //Ask for microphone access, then save the recording to this draft.
+
     private void requestRecording()
     {
         if (busy || !draftLoaded)
@@ -418,7 +420,9 @@ public class ReportVoiceActivity extends AppCompatActivity
         });
     }
 
-    // SAVED VOICE NOTES
+    //SAVED VOICE NOTES
+    //Show the recordings already attached to this draft.
+
     private void showVoiceNotes(List<OfflineAttachmentEntity> attachments)
     {
         releasePlayer();
@@ -510,7 +514,9 @@ public class ReportVoiceActivity extends AppCompatActivity
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    // PLAYBACK
+    //PLAYBACK
+    //Play a saved note without changing the recording.
+
     private boolean preparePlayer(VoiceRow row)
     {
         releasePlayer();
@@ -659,7 +665,9 @@ public class ReportVoiceActivity extends AppCompatActivity
         });
     }
 
-    // DRAFT NAVIGATION
+    //DRAFT NAVIGATION
+    //Keep the draft when the user leaves this screen.
+
     private void saveDraftAndExit()
     {
         if (busy || !draftLoaded)

@@ -1,8 +1,8 @@
 package com.example.javareportingsystem.data.model;
 
-/**
- * Metadata for evidence available through the authenticated attachment API.
- */
+//REVIEW ATTACHMENT
+//Holds atatchments detail that was returned from the PAI
+
 public final class ReviewAttachment
 {
     private final String id;

@@ -34,6 +34,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+// LANDING PAGE ACTIVITY
+// Shows the home screen for the signed-in user.
+
 public class LandingPageActivity extends AppCompatActivity
 {
     private final ExecutorService locationExecutor = Executors.newSingleThreadExecutor();
@@ -155,7 +158,7 @@ public class LandingPageActivity extends AppCompatActivity
             }
             catch (IOException | RuntimeException ignored)
             {
-                // Offline use continues with the previously cached catalogue.
+                // Offline mode uses saved locations.
             }
             finally
             {

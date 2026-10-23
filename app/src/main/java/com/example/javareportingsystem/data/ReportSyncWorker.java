@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Durable local-first upload and status refresh, resumed when Android sees a network.
- */
+//REPORT SYNC WORKER
+//Uploads reports and updates their status when online
+
 public final class ReportSyncWorker extends Worker
 {
     private static final String UNIQUE_NAME = "report-upload-and-status";
@@ -47,15 +47,14 @@ public final class ReportSyncWorker extends Worker
         super(context, params);
     }
 
-    // WORK SCHEDULING
+    //WORK SCHEDULING
+    //Retry when online, or start now after a new report
     public static void enqueue(Context context)
     {
         enqueue(context, ExistingWorkPolicy.KEEP);
     }
 
-    /**
-     * A new submission or sign-in should start now, even if an older retry is delayed.
-     */
+    //Starts upload now, even if a retrry is scheduled
     public static void enqueueNow(Context context)
     {
         enqueue(context, ExistingWorkPolicy.REPLACE);
@@ -83,9 +82,10 @@ public final class ReportSyncWorker extends Worker
         LoginRepository login = LoginRepository.getInstance(context,
             new ApiLoginDataSource(baseUrl));
         LoggedInUser user = login.getFreshUser();
+        // Only signed-in reporting users can upload reports.
         if (user == null || "SAFETY_OFFICER".equalsIgnoreCase(user.getRole()))
         {
-            return Result.success(); // Sign-in with a reporting role will enqueue again.
+            return Result.success();
         }
         ApiReportingDataSource api = new ApiReportingDataSource(baseUrl, user.getAccessToken());
         LocalReportRepository reports = new LocalReportRepository(context);
@@ -115,7 +115,8 @@ public final class ReportSyncWorker extends Worker
         }
     }
 
-    // REPORT AND MEDIA UPLOAD
+    //REPORT AND MEDIA UPLOAD
+    //Send the report first, then its attachments
     private void uploadReport(ApiReportingDataSource api, LocalReportRepository reports,
                               OfflineReportEntity report, String installationId)
         throws IOException, JSONException
@@ -189,22 +190,18 @@ public final class ReportSyncWorker extends Worker
                     accepted.getJSONObject("attachment").getString("attachmentId"),
                     System.currentTimeMillis());
             }
-            // The legacy image database has no upload receipt column. Retrying these stable
-            // image IDs is safe because the server returns the original attachment ID.
+            //Reuse image IDs so retries do not make duplicates
             for (ImageDatabaseHelper.ImageRecord photo : photos)
             {
                 api.uploadAttachment(reportId, "image-" + photo.id, ReportValues.PHOTO,
                     photo.createdAt, "image/jpeg",
                     new ByteArrayInputStream(photo.data), photo.data.length);
             }
-            // The authoritative status timestamp comes from the API refresh below.
             reports.finishSync(report.localId, "PENDING_REVIEW", 0L);
         }
     }
 
-    /**
-     * Immediate status fetch for My Reports; call only from a background thread.
-     */
+    //Updates My Reports status on a background thread
     public static void refreshStatusesNow(Context context)
     {
         String baseUrl = context.getString(R.string.api_base_url);
@@ -221,7 +218,7 @@ public final class ReportSyncWorker extends Worker
         }
         catch (IOException | JSONException | RuntimeException ignored)
         {
-            // Keep the last known statuses available while offline or on API failure.
+            //Keep saved statuses when the API is unavailable
         }
     }
 
@@ -242,7 +239,7 @@ public final class ReportSyncWorker extends Worker
             }
             catch (IllegalArgumentException ignored)
             {
-                // The device may have an accepted report whose media has not finished syncing.
+                //Some attachments may still need to upload
             }
         }
     }

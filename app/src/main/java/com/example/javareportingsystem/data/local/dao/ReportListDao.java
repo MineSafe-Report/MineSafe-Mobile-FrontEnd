@@ -8,7 +8,11 @@ import com.example.javareportingsystem.data.local.ReportListItem;
 
 import java.util.List;
 
+//REPORT LIST DAO
+//Helpper, It builds the local My Reports lsit
+
 @Dao
+
 public interface ReportListDao
 {
     @Query("SELECT 'OFFLINE' AS source, o.localId AS localReportId, "

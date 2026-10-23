@@ -12,7 +12,11 @@ import com.example.javareportingsystem.data.local.entity.OfflineReportEntity;
 
 import java.util.List;
 
+//OFLINE REPORT DAO
+//Read and save the reports drafts and the pending drafts
+
 @Dao
+
 public interface OfflineReportDao
 {
     @Insert

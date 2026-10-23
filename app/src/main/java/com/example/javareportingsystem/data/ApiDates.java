@@ -6,9 +6,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * ISO 8601 UTC dates exchanged with the API, without requiring java.time on minSdk 25.
- */
+//API DATES
+//Read and write of dates used by API
+
 public final class ApiDates
 {
     private static final String PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";

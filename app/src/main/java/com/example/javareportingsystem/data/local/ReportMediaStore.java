@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-/**
- * Keeps selected media in app-private storage so temporary gallery grants can expire.
- */
+//REPORT MEDIA STORE
+//keeps report files in app store
+
 public final class ReportMediaStore
 {
     private static final long MAX_FILE_BYTES = 100L * 1024L * 1024L;

@@ -3,9 +3,9 @@ package com.example.javareportingsystem.ui;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/**
- * Whether this Safety Officer has successfully viewed an incident on this device.
- */
+//SAFETY OFFICER INCIDENT STATE
+//Remembers which incidents were opened on this device.
+
 final class SafetyOfficerIncidentState
 {
     private static final String PREFERENCES = "safety_officer_opened_incidents";

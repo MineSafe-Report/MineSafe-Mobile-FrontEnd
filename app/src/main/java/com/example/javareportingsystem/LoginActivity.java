@@ -34,12 +34,19 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+// LOGIN ACTIVITY
+// Handles sign in and opens the correct home screen.
+
 public class LoginActivity extends AppCompatActivity
 {
     // BACKGROUND WORK
+    // Keeps login requests off the screen thread.
+
     private final ExecutorService loginExecutor = Executors.newSingleThreadExecutor();
 
     // LOCAL NETWORK PERMISSION
+    // Continues login after Android grants access to a local server.
+
     private final ActivityResultLauncher<String> requestLocalNetworkPermission =
         registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted ->
         {
@@ -53,33 +60,35 @@ public class LoginActivity extends AppCompatActivity
             }
         });
 
-
     // SCREEN CONTROLS
+
     private EditText workerIdInput, passwordInput;
     private Button loginButton, continueOfflineButton;
     private ProgressBar loginProgress;
     private TextView loginError;
 
     // DATA ACCESS
-    private LoginRepository loginRepository; //Authentication
-    private ApiLocationDataSource locationApi; //API locations
-    private LocalReportRepository localReports; //Local data storage
+
+    private LoginRepository loginRepository;
+    private ApiLocationDataSource locationApi;
+    private LocalReportRepository localReports;
 
     // NETWORK SETTINGS
+
     private boolean localNetworkApi;
 
     // SCREEN SETUP AND SESSION RESTORE
+    // Restores a saved login when its token is still valid.
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         setTheme(R.style.Theme_JavaReportingSystem);
         super.onCreate(savedInstanceState);
 
-        // Load the screen and allow it to use the full display area.
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        // Add space around the screen content for the system bars.
         ViewCompat.setOnApplyWindowInsetsListener(
             findViewById(R.id.main),
             (view, insets) ->
@@ -96,7 +105,6 @@ public class LoginActivity extends AppCompatActivity
                 return insets;
             });
 
-        // Connect the Java fields to controls in the screen layout.
         workerIdInput = findViewById(R.id.workerIdInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
@@ -104,10 +112,8 @@ public class LoginActivity extends AppCompatActivity
         loginProgress = findViewById(R.id.loginProgress);
         loginError = findViewById(R.id.loginError);
 
-        // Read the configured API address.
         String baseUrl = getString(R.string.api_base_url);
 
-        // Detect whether the API uses a local network address.
         localNetworkApi = baseUrl.startsWith("http://10.")
             || baseUrl.startsWith("http://192.168.")
             || baseUrl.startsWith("http://172.");
@@ -117,7 +123,6 @@ public class LoginActivity extends AppCompatActivity
         locationApi = new ApiLocationDataSource(baseUrl);
         localReports = new LocalReportRepository(this);
 
-        // Set the actions for the buttons and the keyboard.
         loginButton.setOnClickListener(view -> attemptLogin());
         continueOfflineButton.setOnClickListener(view -> openLandingPage());
 
@@ -132,21 +137,18 @@ public class LoginActivity extends AppCompatActivity
             return false;
         });
 
-        // Open the home screen if a login session already exists.
         if (loginRepository.isLoggedIn())
         {
             openHomeForUser(loginRepository.getUser());
         }
         else if (loginRepository.getCachedUser() != null)
         {
-            // Refresh the saved user on the background worker.
             setLoading(true);
 
             loginExecutor.execute(() ->
             {
                 LoggedInUser restoredUser = loginRepository.getFreshUser();
 
-                // Return to the main thread before changing the screen.
                 runOnUiThread(() ->
                 {
                     if (isFinishing() || isDestroyed())
@@ -165,25 +167,23 @@ public class LoginActivity extends AppCompatActivity
         }
     }
 
-    // Checks the form, requests permission if needed, and attempts login.
+    // SIGN IN
+    // Checks the form, then logs in on the background worker.
+
     private void attemptLogin()
     {
-        // Do not start another login while one is already running.
         if (loginProgress.getVisibility() == View.VISIBLE)
         {
             return;
         }
 
-        // Clear errors from the previous attempt.
         workerIdInput.setError(null);
         passwordInput.setError(null);
         loginError.setVisibility(View.GONE);
 
-        // Read the values entered by the user.
         String workerId = workerIdInput.getText().toString().trim();
         String password = passwordInput.getText().toString();
 
-        // Require a worker ID.
         if (workerId.isEmpty())
         {
             workerIdInput.setError(getString(R.string.worker_id_required));
@@ -191,7 +191,6 @@ public class LoginActivity extends AppCompatActivity
             return;
         }
 
-        // Require a password.
         if (password.isEmpty())
         {
             passwordInput.setError(getString(R.string.password_required));
@@ -199,7 +198,7 @@ public class LoginActivity extends AppCompatActivity
             return;
         }
 
-        // Request local network permission before contacting a local server.
+        // Ask before contacting a server on the local network.
         if (localNetworkApi
             && Build.VERSION.SDK_INT >= 37
             && checkSelfPermission(Manifest.permission.ACCESS_LOCAL_NETWORK)
@@ -211,22 +210,20 @@ public class LoginActivity extends AppCompatActivity
             return;
         }
 
-        // Show progress while login and location requests run.
         setLoading(true);
 
-        // Run network work on the background worker.
         loginExecutor.execute(() ->
         {
             Result<LoggedInUser> result = loginRepository.login(workerId, password);
 
             boolean locationsFailed = false;
 
-            // Fetch locations after login for users who are not safety officers.
             if (result instanceof Result.Success)
             {
                 LoggedInUser user =
                     (LoggedInUser) ((Result.Success<?>) result).getData();
 
+                // Reporting users need locations; Safety Officers do not.
                 if (!"SAFETY_OFFICER".equalsIgnoreCase(user.getRole()))
                 {
                     try
@@ -244,10 +241,8 @@ public class LoginActivity extends AppCompatActivity
 
             boolean showLocationWarning = locationsFailed;
 
-            // Update the screen on Android's main thread.
             runOnUiThread(() ->
             {
-                // Stop if this screen is closing or has already closed.
                 if (isFinishing() || isDestroyed())
                 {
                     return;
@@ -257,10 +252,8 @@ public class LoginActivity extends AppCompatActivity
 
                 if (result instanceof Result.Success)
                 {
-                    // Clear the password after a successful login.
                     passwordInput.getText().clear();
 
-                    // Login can succeed even if locations could not refresh.
                     if (showLocationWarning)
                     {
                         Toast.makeText(
@@ -276,7 +269,6 @@ public class LoginActivity extends AppCompatActivity
                 }
                 else
                 {
-                    // Show the server error, or a default message if there is none.
                     String message =
                         ((Result.Error) result).getError().getMessage();
 
@@ -289,14 +281,15 @@ public class LoginActivity extends AppCompatActivity
         });
     }
 
-    // Opens the landing page. The offline button uses this function.
     private void openLandingPage()
     {
         startActivity(new Intent(this, LandingPageActivity.class));
         finish();
     }
 
-    // Sends the user to a screen based on their role.
+    // HOME ROUTING
+    // Safety Officers see incidents; other users see reporting.
+
     private void openHomeForUser(LoggedInUser user)
     {
         if (user != null
@@ -307,19 +300,16 @@ public class LoginActivity extends AppCompatActivity
             return;
         }
 
-        // Queue report syncing for other users, then open the landing page.
         ReportSyncWorker.enqueueNow(this);
         openLandingPage();
     }
 
-    // Displays an error message on the login screen.
     private void showLoginError(String message)
     {
         loginError.setText(message);
         loginError.setVisibility(View.VISIBLE);
     }
 
-    // Enables or disables the form and shows or hides the progress indicator.
     private void setLoading(boolean loading)
     {
         workerIdInput.setEnabled(!loading);
@@ -330,7 +320,6 @@ public class LoginActivity extends AppCompatActivity
         loginProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
-    // Stops the background worker when Android closes this screen.
     @Override
     protected void onDestroy()
     {

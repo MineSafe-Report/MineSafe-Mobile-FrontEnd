@@ -26,14 +26,14 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
-/**
- * Stores one encrypted session outside Android's automatic backup.
- */
+//SESSION STORE
+//Encryption of login token on device
+
 final class SessionStore
 {
     private static final String KEY_ALIAS = "reporting_system_session_key";
     private static final String KEYSTORE = "AndroidKeyStore";
-    // Old mock-server sessions had refresh tokens and cannot authenticate with the real API.
+    //Clear old sesion
     private static final int FORMAT_VERSION = 2;
     private static final int IV_LENGTH = 12;
     private static final int TAG_BITS = 128;

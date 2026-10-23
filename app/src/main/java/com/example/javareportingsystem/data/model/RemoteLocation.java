@@ -1,8 +1,8 @@
 package com.example.javareportingsystem.data.model;
 
-/**
- * A location supplied by the protected locations API.
- */
+//REMOTE LOCATION
+//Holds locatins that are reternd form the API call
+
 public final class RemoteLocation
 {
     public final String id;

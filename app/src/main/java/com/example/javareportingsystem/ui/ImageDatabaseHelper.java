@@ -1,6 +1,5 @@
 package com.example.javareportingsystem.ui;
 
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -13,6 +12,9 @@ import androidx.annotation.WorkerThread;
 
 import java.util.ArrayList;
 import java.util.List;
+
+//IMAGE DATABASE HELPER
+//Stores repport images on this device
 
 public class ImageDatabaseHelper extends SQLiteOpenHelper
 {
@@ -39,10 +41,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
             + COL_REPORT_LOCAL_ID + " INTEGER NOT NULL"
             + ")";
 
-    /**
-     * Represents one stored image.
-     * The byte array contains the compressed JPEG data.
-     */
+
     public static class ImageRecord
     {
 
@@ -86,7 +85,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
 
         if (oldVersion < 2)
         {
-            // Old images cannot be attributed to a report. Keep them out of new reports.
+            //Do not add old images to new reports.
             db.execSQL("ALTER TABLE " + TABLE_IMAGES + " ADD COLUMN "
                 + COL_REPORT_LOCAL_ID + " INTEGER NOT NULL DEFAULT 0");
             db.execSQL("CREATE INDEX index_report_images_report_local_id ON "
@@ -94,10 +93,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    /**
-     * Returns the number of images currently stored.
-     * Call from the database executor, not the main thread.
-     */
+
     @WorkerThread
     public int getImageCount()
     {
@@ -118,9 +114,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    /**
-     * Image IDs for report viewers, without loading every image into memory.
-     */
+
     @WorkerThread
     @NonNull
     public List<Long> getImageIds()
@@ -136,12 +130,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         return ids;
     }
 
-    /**
-     * Inserts a compressed image.
-     *
-     * @return the new row ID, or -1 if the image cannot be inserted
-     * or the image limit has been reached.
-     */
+
     @WorkerThread
     public long insertImage(@NonNull byte[] imageData)
     {
@@ -156,8 +145,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
 
         try
         {
-            // Check and insert in the same transaction so the limit
-            // cannot be exceeded by concurrent writers.
+
             try (Cursor cursor = db.rawQuery(
                 "SELECT COUNT(*) FROM " + TABLE_IMAGES
                     + " WHERE " + COL_REPORT_LOCAL_ID + " = ?",
@@ -192,9 +180,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    /**
-     * Returns all stored images, oldest first.
-     */
+    //Gets saved immages from oldest to newest.
     @WorkerThread
     @NonNull
     public List<ImageRecord> getAllImages()
@@ -237,9 +223,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         return result;
     }
 
-    /**
-     * Fetches one image by its unique ID.
-     */
+    //Gets one immage by ID.
     @WorkerThread
     @Nullable
     public ImageRecord getImage(long imageId)
@@ -277,11 +261,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         }
     }
 
-    /**
-     * Deletes exactly one image.
-     *
-     * @return true if a row was deleted.
-     */
+    //Deletes one immage and reports if it worked.
     @WorkerThread
     public boolean deleteImage(long imageId)
     {
@@ -296,9 +276,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
         return deletedRows > 0;
     }
 
-    /**
-     * Optional utility to remove every stored image.
-     */
+    //Deletes all saved images.
     @WorkerThread
     public void deleteAllImages()
     {
@@ -307,9 +285,7 @@ public class ImageDatabaseHelper extends SQLiteOpenHelper
             new String[]{String.valueOf(reportLocalId)});
     }
 
-    /**
-     * Call only after all database work has finished.
-     */
+    //Closes the db after its work is done.
     @WorkerThread
     @Override
     public synchronized void close()

@@ -5,9 +5,13 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+//SYNCED REPORT ENTITY
+//Storage of report that was accepted by the server
+
 @Entity(
     tableName = "synced_reports",
     indices = @Index(value = "sourceLocalReportId", unique = true))
+
 public class SyncedReportEntity
 {
     @PrimaryKey
@@ -33,7 +37,8 @@ public class SyncedReportEntity
     public long serverReceivedAtEpochMillis;
     public boolean anonymous;
 
-    // Present only for identified incident reports.
+    //Personal; identafiers are excluded for hazerd and near misses
+    //This stores the personal information of the reporter for only incedinces
     public String reporterWorkerId;
     public Integer reporterAccountId;
 

@@ -35,7 +35,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Captures and manages image evidence for the current report draft. */
+//REPORT IMAGES ACTIVITY
+//Adds and shows image evidence for a draft.
+
 public class ReportImagesActivity extends AppCompatActivity
 {
 
@@ -54,11 +56,11 @@ public class ReportImagesActivity extends AppCompatActivity
     private final ArrayList<ImageDatabaseHelper.ImageRecord> images =
         new ArrayList<>();
 
-    // All database and image-processing work runs sequentially here.
+    //Run image and database work in order.
     private final ExecutorService databaseExecutor =
         Executors.newSingleThreadExecutor();
 
-    // All UI callbacks are posted to the main thread.
+    //Update the screen on the main thread.
     private final Handler mainHandler =
         new Handler(Looper.getMainLooper());
 
@@ -211,7 +213,6 @@ public class ReportImagesActivity extends AppCompatActivity
             this, ReportOverviewActivity.class, draftId));
     }
 
-    // UI helper: always execute the action on the main thread.
     private void postToUi(Runnable action)
     {
         mainHandler.post(() ->
@@ -223,7 +224,9 @@ public class ReportImagesActivity extends AppCompatActivity
         });
     }
 
-    // CAMERA CAPTURE
+    //CAMERA CAPTURE
+    //Check the image limit before opening the camera.
+
     private void checkSlotsAndLaunchCamera()
     {
         databaseExecutor.execute(() ->
@@ -271,8 +274,9 @@ public class ReportImagesActivity extends AppCompatActivity
         showMessage("Maximum of 10 images. Delete one to add more.");
     }
 
-    // GALLERY IMPORT
-    // Gallery reading, compression, and inserts run on the worker thread.
+    //GALLERY IMPORT
+    //Import gallery images in the background.
+
     private void saveGalleryImages(List<Uri> uris)
     {
         if (uris == null || uris.isEmpty())
@@ -332,7 +336,7 @@ public class ReportImagesActivity extends AppCompatActivity
         });
     }
 
-    // Decode a smaller image rather than loading the full-resolution file.
+    //Load a smaller image to save memory.
     private byte[] compressUri(Uri uri)
     {
         Bitmap decoded = null;
@@ -464,8 +468,9 @@ public class ReportImagesActivity extends AppCompatActivity
         }
     }
 
-    // IMAGE LIST
-    // Called on the main thread; the actual database read is asynchronous.
+    //IMAGE LIST
+    //Reload saved images after the user ads or removes one.
+
     @MainThread
     private void reloadImages()
     {
@@ -494,7 +499,6 @@ public class ReportImagesActivity extends AppCompatActivity
         });
     }
 
-    // Load image bytes and decode the bitmap on the worker thread.
     private void showFullscreenImage(long imageId)
     {
         databaseExecutor.execute(() ->
@@ -528,7 +532,6 @@ public class ReportImagesActivity extends AppCompatActivity
         });
     }
 
-    // All dialog creation and view operations happen on the main thread.
     @MainThread
     private void displayFullscreenImage(long imageId, Bitmap bitmap)
     {

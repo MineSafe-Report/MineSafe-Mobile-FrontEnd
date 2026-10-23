@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Chooses the report location from the locally available location catalogue. */
+//LOCATION SELECTION ACTIVITY
+//Lets the user choose a report location.
+
 public class LocationSelectionActivity extends AppCompatActivity
 {
     static final String EXTRA_FROM_OVERVIEW = "com.example.javareportingsystem.FROM_OVERVIEW";
@@ -108,7 +110,9 @@ public class LocationSelectionActivity extends AppCompatActivity
         });
     }
 
-    // LOCATION CATALOGUE
+    //LOCATION CATALOGUE
+    //Read available locations from the local database.
+
     private void loadLocations()
     {
         databaseExecutor.execute(() ->
@@ -258,7 +262,9 @@ public class LocationSelectionActivity extends AppCompatActivity
         });
     }
 
-    // DRAFT NAVIGATION
+    //DRAFT NAVIGATION
+    //Save the chosen location before leaving this step.
+
     private void saveDraftAndExit()
     {
         if (busy)
